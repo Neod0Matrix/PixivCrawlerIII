@@ -1,0 +1,1 @@
+﻿python3 E:\Python_Files\Crawler\PixivCrawlerIII\pixivcrawleriii.py
