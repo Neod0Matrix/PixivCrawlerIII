@@ -331,17 +331,17 @@ class RepertoAll(object):
         artwork_ids = []
         target_capture = []
         basepages = []
+        # download image number limit
         for i in all_targeturls[:nbr_capture]:
-            target_capture.append(i)
-            img_id = i[57:-7]
+            target_capture.append(i)                        # elements move
+            img_id = i[57:-7]                               # get image own id
             artwork_ids.append(img_id)
-            basepage = dataload.BASEPAGE_URL + img_id
+            basepage = dataload.BASEPAGE_URL + img_id       # build basepage url
             basepages.append(basepage)
 
         log_context = ('Illustrator: ' + arthor_name + ' id: '
                        + self.user_input_id + ' artworks info====>')
         _pvmx.logprowork(log_path, log_context)
-
         for k, i in enumerate(all_artworknames[:nbr_capture]):
             log_context = ('No.%d image: [%s | id: %s | url: %s]'
                            % ((k + 1), i, artwork_ids[k], target_capture[k]))

@@ -10,7 +10,7 @@ from retrying import retry
 import threading
 from PIL import Image
 from collections import OrderedDict
-import time, random, re, os, getpass, linecache, sys
+import time, random, re, os, getpass, linecache
 import dataload
 
 class Matrix:
@@ -80,7 +80,7 @@ class Matrix:
             else:
                 check = dataload.logtime_input(
                     "Read data from the login.cr file, check this: \n"
-                    "[!Username]: %s[!Password]: %s"
+                    "[!Username] %s[!Password] %s"
                     "Is that correct?(y/N): " % (user_mailbox, user_password))
                 # if user judge info are error
                 if check != 'y' and check != 'Y':
@@ -447,8 +447,8 @@ class Matrix:
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
-            log_context = 'Target no.%d image download finished, image size: %dkB' \
-                % (index + 1, source_size)
+            log_context = 'Target no.%d(%s) image download finished, image size: %dkB' \
+                % (index + 1, image_name, source_size)
             self.logprowork(log_path, log_context)
 
     class _MultiThreading(threading.Thread):
@@ -573,8 +573,9 @@ class Matrix:
         endtime = time.time()
         elapesd_time = endtime - starttime
         average_download_speed = float(Matrix._datastream_pool / elapesd_time)
-        log_context = ("All of threads reclaim, average download speed: %0.2fkB/s"
-                            % average_download_speed)
+        log_context = ("All of threads reclaim, total download datatstream size:\
+            %0.2fMB, average download speed: %0.2fkB/s"
+            % (float(Matrix._datastream_pool / 1024), average_download_speed))
         self.logprowork(log_path, log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):
@@ -643,8 +644,8 @@ class Matrix:
         log_context = (
             dataload.LABORATORY + ' ' + dataload.ORGANIZATION + ' technology support |'                       
             ' Code by ' + dataload.ORGANIZATION + '@' + dataload.DEVELOPER)
-        # open work directory, check result
         self.logprowork(log_path, log_context)
+        # open work directory, check result
         os.system(dataload.fs_operation[2] + ' ' + dataload.fs_operation[0])
 
 # =====================================================================
