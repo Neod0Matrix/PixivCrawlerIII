@@ -24,7 +24,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
-    |       Version: 2.5.1 LTE                                                                                      |
+    |       Version: 2.5.2 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -314,8 +314,7 @@ class Matrix:
         :param web_src:         webpage source
         :return:                original target urls, image infos
         """
-        gather_info = []
-        gather_url = []
+        gather_info, gather_url = [], []
         datasrc_pattern = re.compile(dataload.DATASRC_REGEX, re.S)
         span_pattern = re.compile(dataload.SPAN_REGEX, re.S)
         img_whole_info = re.findall(whole_pattern, web_src)
@@ -329,14 +328,14 @@ class Matrix:
 
             # check jpg/png or gif
             if judge_word == dataload.JUDGE_NOGIF_WORD:
-                span_nbr = re.findall(span_pattern, item)
+                span_word = re.findall(span_pattern, item)
                 # get vaild word
                 vaild_word = thumbnail[44:-18]
 
                 # try to check multi-span images
-                if len(span_nbr) != 0:
+                if len(span_word) != 0:
                     # one commit artwork has more pages, iter it
-                    for _px in range(int(span_nbr[0])):
+                    for _px in range(int(span_word[0])):
                         # set same info
                         info = re.findall(info_pattern, item)[0]
                         gather_info.append(info)
@@ -351,7 +350,7 @@ class Matrix:
                     # only _p0 page
                     target_url = dataload.ORIGINAL_IMAGE_HEAD + vaild_word \
                                  + dataload.ORIGINAL_IMAGE_TAIL(0)
-                    gather_url.append(target_url)
+                    gather_url.append(target_url)  
             # give up gif format
             else:
                 pass

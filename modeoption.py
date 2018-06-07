@@ -155,15 +155,15 @@ class RankingTop(object):
         log_context = 'Gather rankingtop ' + str(img_nbr) + '======>'
         _pvmx.logprowork(log_path, log_context)
 
-        basepages = []
         # use prettytable package info list
-        image_info_table = PrettyTable(["ImageNumber", "ImageTitle", 
-            "AuthorName", "ImageID", "ImageID+PageNumber", "AuthorID"])
+        basepages = []
+        image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
+            "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
             # basepage will be a headers referer
             basepages.append(dataload.BASEPAGE_URL + i[3])
-            # rank-index image-name arthur-name image-id image-id+p author-id
-            image_info_table.add_row([(k + 1), i[1], i[2], i[3], target_urls[k][-15:-4], i[4]])
+            image_info_table.add_row([(k + 1), i[3], i[1], 
+                target_urls[k][57:-4], i[4], i[2]])
 
         # save table without time word
         _pvmx.logprowork(log_path, str(image_info_table), 'N')
@@ -332,13 +332,13 @@ class RepertoAll(object):
         _pvmx.logprowork(log_path, log_context)
 
         # cut need data
-        artwork_ids = []
-        target_capture = []
-        basepages = []
+        artwork_ids, target_capture, basepages = [], [], []
+        number_regex_comp = re.compile(dataload.NUMBER_REGEX, re.S)
         # download image number limit
-        for i in all_targeturls[:nbr_capture]:
+        for k, i in enumerate(all_targeturls[:nbr_capture]):
             target_capture.append(i)                        # elements move
-            img_id = i[57:-7]                               # get image own id
+            # get image own id    
+            img_id = re.findall(number_regex_comp, i[57:])[0]
             artwork_ids.append(img_id)
             basepage = dataload.BASEPAGE_URL + img_id       # build basepage url
             basepages.append(basepage)
@@ -348,9 +348,11 @@ class RepertoAll(object):
         _pvmx.logprowork(log_path, log_context)
 
         # use prettytable build a table save and print info list
-        image_info_table = PrettyTable(["ImageNumber", "ImageTitle", "ImageID"])
+        image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle",
+             "ImageID+PageNumber"])
         for k, i in enumerate(all_artworknames[:nbr_capture]):
-            image_info_table.add_row([(k + 1), i, artwork_ids[k]])
+            image_info_table.add_row([(k + 1), artwork_ids[k], 
+                i, all_targeturls[k][57:-4]])
         # save with str format and no time word
         _pvmx.logprowork(log_path, str(image_info_table), 'N') 
 
