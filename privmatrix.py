@@ -24,7 +24,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
-    |       Version: 2.4.0 LTE                                                                                      |
+    |       Version: 2.5.1 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -79,7 +79,7 @@ class Matrix:
             # get all essential info 
             else:
                 check = dataload.logtime_input(
-                    "Read data from the login.cr file, check this: \n"
+                    "Read user info from the login.cr file, check this: \n"
                     "[!Username] %s[!Password] %s"
                     "Is that correct?(y/N): " % (user_mailbox, user_password))
                 # if user judge info are error
@@ -113,20 +113,27 @@ class Matrix:
         return username, passwd, getway_data
 
     @staticmethod
-    def logprowork(log_path, log_content):
+    def logprowork(log_path, log_content, withtime='y'):
         """Universal work log save
 
         :param log_path:    log save path
         :param log_content: log save content
+        :param withtime:    default parameter, print and save with real time or not
         :return:            none
         """
         # add context to the file use option 'a+'
         # write content may have some not utf8 code, example Japanese
         log_filepath = open(log_path, 'a+', encoding='utf-8')
-        dataload.logtime_print(log_content)
-        # use variable-length argument write word to the log file
-        print(dataload.realtime_logword(dataload.base_time)
-                            + log_content, file=log_filepath)
+
+        # select add real time word
+        if withtime == 'y':
+            dataload.logtime_print(log_content)
+            # use variable-length argument write word to the log file
+            print(dataload.realtime_logword(dataload.base_time)
+                                + log_content, file=log_filepath)
+        else:
+            print(log_content)
+            print(log_content, file=log_filepath)
 
     def mkworkdir(self, log_path, folder):
         """Create a crawler work directory
@@ -275,6 +282,7 @@ class Matrix:
             self.logprowork(log_path, log_context)
             response = None
             exit()
+
         if response.getcode() == dataload.HTTP_OK_CODE_200:
             log_context = 'Login response successed'
         else:
@@ -573,8 +581,9 @@ class Matrix:
         endtime = time.time()
         elapesd_time = endtime - starttime
         average_download_speed = float(Matrix._datastream_pool / elapesd_time)
-        log_context = ("All of threads reclaim, total download datatstream size:\
-            %0.2fMB, average download speed: %0.2fkB/s"
+        log_context = (
+            "All of threads reclaim, total download datatstream size: %0.2fMB, "
+            "average download speed: %0.2fkB/s"
             % (float(Matrix._datastream_pool / 1024), average_download_speed))
         self.logprowork(log_path, log_context)
 

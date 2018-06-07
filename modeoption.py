@@ -5,6 +5,7 @@
 # provide modes setting target object
 
 import re
+from prettytable import PrettyTable
 import dataload, privmatrix
 
 # iterable call class
@@ -155,15 +156,18 @@ class RankingTop(object):
         _pvmx.logprowork(log_path, log_context)
 
         basepages = []
+        # use prettytable package info list
+        image_info_table = PrettyTable(["ImageNumber", "ImageTitle", 
+            "AuthorName", "ImageID", "ImageID+PageNumber", "AuthorID"])
         for k, i in enumerate(img_infos[:img_nbr]):
-            # rank-index image-name arthur-name arthur-id original-image-url
-            log_context = (
-                'No.%d image: [%s | name: %s | illustrator: %s | id: %s | url: %s]'
-                         % (k + 1, i[0], i[1], i[2], i[4], target_urls[k]))
-            _pvmx.logprowork(log_path, log_context)
             # basepage will be a headers referer
-            basepages.append(dataload.BASEPAGE_URL + i[4])
+            basepages.append(dataload.BASEPAGE_URL + i[3])
+            # rank-index image-name arthur-name image-id image-id+p author-id
+            image_info_table.add_row([(k + 1), i[1], i[2], i[3], target_urls[k][-15:-4], i[4]])
 
+        # save table without time word
+        _pvmx.logprowork(log_path, str(image_info_table), 'N')
+            
         return target_urls, basepages
 
     def start(self):
@@ -342,10 +346,13 @@ class RepertoAll(object):
         log_context = ('Illustrator: ' + arthor_name + ' id: '
                        + self.user_input_id + ' artworks info====>')
         _pvmx.logprowork(log_path, log_context)
+
+        # use prettytable build a table save and print info list
+        image_info_table = PrettyTable(["ImageNumber", "ImageTitle", "ImageID"])
         for k, i in enumerate(all_artworknames[:nbr_capture]):
-            log_context = ('No.%d image: [%s | id: %s | url: %s]'
-                           % ((k + 1), i, artwork_ids[k], target_capture[k]))
-            _pvmx.logprowork(log_path, log_context)
+            image_info_table.add_row([(k + 1), i, artwork_ids[k]])
+        # save with str format and no time word
+        _pvmx.logprowork(log_path, str(image_info_table), 'N') 
 
         return target_capture, basepages
 

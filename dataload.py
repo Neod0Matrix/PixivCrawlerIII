@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = 'v2p4_LTE'
+VERSION             = 'v2p5_LTE'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -25,6 +25,7 @@ logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
 logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
 
 SYSTEM_MAX_THREADS = 500            # setting system can contain max tasks
+DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'# default pure dns by Google
 
 def platform_setting():
     """Set os platform to set folder format
@@ -202,8 +203,9 @@ def build_original_headers(referer):
 # if website update or change them, regex need to be updated 
 POSTKEY_REGEX = 'key".*?"(.*?)"'
 # group match info
-RANKING_INFO_REGEX = ('data-rank-text="(.*?)" data-title="(.*?)" '
-    'data-user-name="(.*?)" data-date="(.*?)".*?data-id="(.*?)"')
+RANKING_INFO_REGEX = (
+    'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
+    '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
 NUMBER_REGEX = '\d+\.?\d*'              # universal number match
 IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
 DATASRC_REGEX = 'data-src="(.*?)"'

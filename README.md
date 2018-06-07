@@ -23,8 +23,8 @@ License
 Update
 ======
 
-    Version: v2p4_LTE
-    Last Update Time: 20180415pm1604
+    Version: v2p5_LTE
+    Last Update Time: 20180607pm1951
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -40,6 +40,7 @@ Platform
 
 * retrying
 * Pillow
+* prettytable
 
 Run
 ======
@@ -73,7 +74,7 @@ Problems that may arise
     
     If your test network environment has been dns-polluted, I suggest you 
     fix your PC dns-server to a pure server
-    In China, such as 115.159.146.99 from https://aixyz.com/
+    like Google Pure DNS: 8.8.8.8:53
     
     IRA mode you need input that illuster id, not image id
     crawler log image will rename to array number + image id, 
