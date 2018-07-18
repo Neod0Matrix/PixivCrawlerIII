@@ -24,7 +24,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
-    |       Version: 2.5.2 LTE                                                                                      |
+    |       Version: 2.6.1 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -175,14 +175,20 @@ class Matrix:
                 request,
                 timeout=30)
         except Exception as e:
-            log_context = str(e) + " Request proxy website failed"
+            log_context = "Error Type: " + str(e)
             self.logprowork(log_path, log_context)
             response = None
-        if response.getcode() == dataload.HTTP_OK_CODE_200:
-            log_context = 'Crawl proxy successed'
+            # here don't exit, log error
+
+        # proxy error but don't exit, ignore this
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = 'Crawl proxy successed'
+            else:
+                log_context = 'Crawl proxy not ok, return code: %d' \
+                            % response.getcode()
         else:
-            log_context = 'Crawl proxy failed, return code: %d' \
-                          % response.getcode()
+            log_context = 'Get proxy response failed, check network'
         self.logprowork(log_path, log_context)
 
         web_src = response.read().decode("UTF-8", "ignore")
@@ -223,15 +229,22 @@ class Matrix:
                 dataload.LOGIN_POSTKEY_URL,
                 timeout=30)
         except Exception as e:
-            log_context = str(e) + " Request post-key failed"
+            log_context = "Error type: " + str(e)
             self.logprowork(log_path, log_context)
             response = None
-        if response.getcode() == dataload.HTTP_OK_CODE_200:
-            log_context = 'POST-key response successed'
+
+        # if response failed, crawler must exit
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = 'POST-key response successed'
+            else:
+                log_context = 'POST-key response not ok, return code: %d' \
+                            % response.getcode()
+            self.logprowork(log_path, log_context)
         else:
-            log_context = 'POST-key response failed, return code: %d' \
-                          % response.getcode()
-        self.logprowork(log_path, log_context)
+            log_context = 'Get post-key request failed, check network and proxy setting, crawler exit'
+            self.logprowork(log_path, log_context)
+            exit()
 
         # cookie check
         for item in self.cookie:
@@ -278,18 +291,22 @@ class Matrix:
                 data=postway_data,
                 timeout=30)
         except Exception as e:
-            log_context = str(e) + " Login timeout failed"
+            log_context = "Error Type: " + str(e)
             self.logprowork(log_path, log_context)
             response = None
-            exit()
 
-        if response.getcode() == dataload.HTTP_OK_CODE_200:
-            log_context = 'Login response successed'
+        # if login failed, crawler must exit
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = 'Login response successed'
+            else:
+                log_context = 'Login response not ok, return code %d' \
+                            % response.getcode()
+            self.logprowork(log_path, log_context)
         else:
-            log_context = 'Login response failed, return code %d' \
-                          % response.getcode()
+            log_context = 'Get login request failed, check network and proxy, crawler exit'
+            self.logprowork(log_path, log_context)
             exit()
-        self.logprowork(log_path, log_context)
 
     def save_test_html(self, workdir, content, log_path):
         """Save request web source page in a html file, test use
@@ -412,16 +429,17 @@ class Matrix:
             response = self.opener.open(fullurl=url, timeout=timeout)
         # first request fatal
         except urllib.error.HTTPError as e:
-            ## log_context = str(e.code)
+            ## log_context = "Error Type: " + str(e)
             ## self.logprowork(logpath, log_context)
             # http error 404, change image type
             if e.code == dataload.HTTP_NOTFOUND_CODE_404:
                 img_datatype = 'jpg'                    # change data type
                 jpg_img_url = url[0:-3] + img_datatype  # replace url content
+                # after change image type word try again
                 try:
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
                 except urllib.error.HTTPError as e:
-                    ## log_context = str(e.code)
+                    ## log_context = "Error Type: " + str(e)
                     ## self.logprowork(logpath, log_context)
                     # not 404 change proxy, cause request server forbidden
                     if e.code != dataload.HTTP_NOTFOUND_CODE_404:
@@ -498,11 +516,11 @@ class Matrix:
             :return:    none
             """
             try:
-                # create a new thread
+                # try to create a new thread
                 Matrix()._save_oneimage(self.i, self.img_url, self.base_pages,
                                         self.img_path, self.logpath)
             except Exception as e:
-                log_context = str(e) + "Create thread failed"
+                log_context = "Error Type: " + str(e)
                 Matrix.logprowork(log_context, self.logpath)
 
             self.lock.acquire()
@@ -560,8 +578,10 @@ class Matrix:
             # continue to create new one
             sub_thread = self._MultiThreading(lock, i, one_url,
                         basepages, workdir, log_path, thread_max_count)
-            # set every download sub-process is non-daemon process
-            sub_thread.setDaemon(False)
+            # set every download sub-process daemon property
+            # set false, then if you exit one thread, others threads will not end
+            # set true, quit one is quit all
+            sub_thread.setDaemon(True)            
             sub_thread.create()
 
         # parent thread wait all sub-thread end

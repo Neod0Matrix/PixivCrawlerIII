@@ -130,18 +130,25 @@ class RankingTop(object):
                 data=_pvmx.login_bias[2],
                 timeout=30)
         except Exception as e:
-            log_context = str(e) + " Open ranking page failed"
+            log_context = "Error Type: " + str(e)
             _pvmx.logprowork(log_path, log_context)
             response = None
-        if response.getcode() == dataload.HTTP_OK_CODE_200:
-            log_context = 'Website response successed'
+        
+        # if rank page can't get, crawler must exit
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = 'Rankpage response successed'
+            else:
+                log_context = 'Rankpage response not ok, return code %d' \
+                            % response.getcode()
+            _pvmx.logprowork(log_path, log_context)
         else:
-            log_context = 'Website response fatal, return code %d' \
-                          % response.getcode()
-        _pvmx.logprowork(log_path, log_context)
-        web_src = response.read().decode("UTF-8", "ignore")
+            log_context = 'Rankpage response failed'
+            _pvmx.logprowork(log_path, log_context)
+            exit()
 
         # size info in webpage source
+        web_src = response.read().decode("UTF-8", "ignore")
         imgitem_pattern = re.compile(dataload.RANKING_SECTION_REGEX, re.S)
         info_pattern = re.compile(dataload.RANKING_INFO_REGEX, re.S)
         sizer_result = _pvmx.commit_spansizer(imgitem_pattern, info_pattern, web_src)
@@ -222,19 +229,29 @@ class RepertoAll(object):
                 data=_pvmx.login_bias[2],
                 timeout=30)
         except Exception as e:
-            dataload.logtime_print(
-                str(e) + " Open first mainpage failed")
+            # here has no log file, just print error
+            dataload.logtime_print("Error Type: " + str(e))
             response = None
-        web_src = response.read().decode("UTF-8", "ignore")
 
+        # if preload page can't get, crawler must exit
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = 'Preload response successed'
+            else:
+                log_context = 'Preload response not ok, return code %d' \
+                            % response.getcode()
+        else:
+            log_context = 'Preload response failed'
+            exit()
+    
         # mate illustrator name
+        web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
         arthor_names = re.findall(illust_name_pattern, web_src)
         # if login failed, this step will raise an error
         arthor_name = None
         if len(arthor_names) == 0:
-            dataload.logtime_print(
-                "Login failed, please check method call")
+            dataload.logtime_print("Login failed, please check method call")
             exit()
         else:
             arthor_name = arthor_names[0]
@@ -273,14 +290,21 @@ class RepertoAll(object):
                  data=_pvmx.login_bias[2],
                  timeout=30)
         except Exception as e:
-            log_context = str(e) + " Open %d page failed" % index
+            log_context = "Error type: " + str(e) + " Open %d page failed" % index
             _pvmx.logprowork(log_path, log_context)
             response = None
-        if response.getcode() == dataload.HTTP_OK_CODE_200:
-            log_context = "Mainpage %d response successed" % index
+        
+        # if can't get mainpage, crawler must exit
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = "Mainpage %d response successed" % index
+            else:
+                log_context = "Mainpage %d response not ok" % index
+            _pvmx.logprowork(log_path, log_context)
         else:
-            log_context = "Mainpage %d response timeout, failed" % index
-        _pvmx.logprowork(log_path, log_context)
+            log_context = 'Mainpage response failed'
+            _pvmx.logprowork(log_path, log_context)
+            exit()
 
         # catch need info from web source
         web_src = response.read().decode("UTF-8", "ignore")
