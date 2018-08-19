@@ -3,4 +3,7 @@
 __pycache__/
 .dist/
 .idea/
-login.cr
+.git/
+.vscode/
+.aes_crypto_login.ini
+.gitignore

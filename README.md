@@ -23,8 +23,8 @@ License
 Update
 ======
 
-    Version: 2.6.1
-    Last Update Time: 20180718pm1447
+    Version: 2.6.3
+    Last Update Time: 20180819pm1902
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -41,6 +41,7 @@ Platform
 * retrying
 * Pillow
 * prettytable
+* pycrypto
 
 Run
 ======
@@ -90,3 +91,17 @@ Problems that may arise
     as long as the opener is guaranteed to be used correctly, 
     no headers can be successfully logged in
     Now you can use this crawler to crawl all targets in Pixiv
+
+    Version 2.6.2+ use pycrypto to encrypt username and password, of course
+    we cancel login.cr rule. 
+    In Linux system, you may just run "pip3 install pycrypto" install pycypto module.
+    But if you run our program in Windows system, install pycrypto may a little hard. 
+    We suggest first install VS2015, just select python and VC option.
+    When VS2015 install finished, add "VCINSTALLDIR" env-variable to system,
+    its target directory is {VS2015_INSTALL_DIR/VC}.
+    Then download pycrypto source code and run "python3 setup.py install" to install
+    pycrypto module. After it compile finish, change {PYTHON3_DIR/Lib/site-packages/crypto}
+    to {PYTHON3_DIR/Lib/site-packages/Crypto}, in Crypto directory, has a Crypto\Random\OSRNG
+    directory, change here nt.py "import winrandom" to "from . import winrandom",
+    now you may finish install pycrypto in Windows system.
+    Good luck, it's so hard not my fault.

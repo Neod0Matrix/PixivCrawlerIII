@@ -8,9 +8,11 @@ from __future__ import print_function
 import urllib.request, urllib.parse, urllib.error, http.cookiejar
 from retrying import retry
 import threading
+from Crypto.Cipher import AES
+from Crypto import Random
 from PIL import Image
 from collections import OrderedDict
-import time, random, re, os, getpass, linecache
+import time, random, re, os, getpass
 import dataload
 
 class Matrix:
@@ -24,7 +26,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
-    |       Version: 2.6.1 LTE                                                                                      |
+    |       Version: 2.6.3 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -49,63 +51,83 @@ class Matrix:
         urllib.request.install_opener(self.opener)
 
     @staticmethod
-    def _login_preload(logincr_path):
-        """Get user input username and password
+    def _login_preload(md5hash_login_path):
+        """Get user input login info and storage hash value in file
 
-        login.cr file example:
-        =================================
-        [login]
-        <mail>@xxx.com          # read usermailbox row 2
-        <passwd>                # read password row 3
-        =================================
-        :param logincr_path:    login.cr file path
-        :return:                username, password, get data
+        Only first run this program need input username and password
+        First run will storage user input username and password md5 hash string
+        :param md5hash_login_path:      md5_hash_login.ini file path
+        :return:                        username, password, get data
         """
-        is_login_file_existed = os.path.exists(logincr_path)
-        if is_login_file_existed:
-            # stable read row 2, 3 get username and password
-            user_mailbox = linecache.getline(logincr_path, 2)
-            user_password = linecache.getline(logincr_path, 3)
-            # if login.cr isn't complete
-            if user_mailbox == '' or user_password == '':
+        is_md5_ini_file_existed = os.path.exists(md5hash_login_path)
+        if is_md5_ini_file_existed:
+            # stable read rows get username and password
+            # read bin file content to a list
+            read_aes_file_pointer = open(md5hash_login_path, 'rb+')
+            readline_cache = read_aes_file_pointer.readlines()              # all line list
+            read_aes_file_pointer.close()           
+
+            read_aes_iv_param_raw = readline_cache[0]                       # row 1 is AES IV PARAM
+            read_user_mailbox_raw = readline_cache[1]                       # row 2 is username
+            read_user_passwd_raw = readline_cache[2]                        # row 3 is password   
+            # cut last char (b'\n')
+            read_aes_iv_param_raw = read_aes_iv_param_raw[:-1]
+            read_user_mailbox_raw = read_user_mailbox_raw[:-1]
+            read_user_passwd_raw = read_user_passwd_raw[:-1]
+
+            # analysis hash value to string
+            username_aes_decrypt_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, read_aes_iv_param_raw)
+            username = str(username_aes_decrypt_cipher.decrypt(read_user_mailbox_raw[AES.block_size:]), 'UTF-8')
+            password_aes_decrypt_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, read_aes_iv_param_raw)
+            passwd = str(password_aes_decrypt_cipher.decrypt(read_user_passwd_raw[AES.block_size:]), 'UTF-8')
+
+            # check username and password
+            check = dataload.logtime_input(
+                "Read user info from the login.cr file, check this: \n"
+                "[!Username] %s\n[!Password] %s\n"
+                "Is that correct?(y/N): " % (username, passwd))
+            # if user judge info are error
+            if check != 'y' and check != 'Y':
+                # delete existed md5 hash file, last time run will new input
+                os.remove(md5hash_login_path)
+
+                # temp input content
                 dataload.logtime_print(
-                    "File login.cr invaild, input your login info: ")
-                user_mailbox = dataload.logtime_input(
+                    "Well, you need reinput your login data: ")
+                username = dataload.logtime_input(
                     'Enter your pixiv id(mailbox), must be a R18: ')
-                # pycharm python console not support getpass input
-                user_password = getpass.getpass(
+                passwd = getpass.getpass(
                     dataload.realtime_logword(dataload.base_time)
                     + 'Enter your account password: ')
-            # get all essential info 
-            else:
-                check = dataload.logtime_input(
-                    "Read user info from the login.cr file, check this: \n"
-                    "[!Username] %s[!Password] %s"
-                    "Is that correct?(y/N): " % (user_mailbox, user_password))
-                # if user judge info are error
-                if check != 'y' and check != 'Y':
-                    dataload.logtime_print(
-                        "Well, you need rewrite your login data: ")
-                    user_mailbox = dataload.logtime_input(
-                        'Enter your pixiv id(mailbox), must be a R18: ')
-                    user_password = getpass.getpass(
-                        dataload.realtime_logword(dataload.base_time)
-                        + 'Enter your account password: ')
-                else:
-                    pass
-        # if no login.cr file
+
+        # if no md5_hash_login.ini file, then create new and write md5 value into it
         else:
             dataload.logtime_print(
-                "Cannot find login.cr file, just input your login data: ")
-            user_mailbox = dataload.logtime_input(
+                "Create new AES encrypt file to storage your username and password: ")
+            username = dataload.logtime_input(
                 'Enter your pixiv id(mailbox), must be a R18: ')
-            user_password = getpass.getpass(
+            passwd = getpass.getpass(
                 dataload.realtime_logword(dataload.base_time)
                 + 'Enter your account password: ')
 
-        # strip() delete symbol '\n' and build GET way need data
-        username = user_mailbox.strip()
-        passwd = user_password.strip()
+            # generate random aes iv param
+            generate_aes_iv_param = Random.new().read(AES.block_size)
+            # encrypt login info
+            username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+            username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
+            passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+            passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
+            
+            # create new md5 file, set write bin bytes mode
+            write_aes_crypto_file = open(md5hash_login_path, 'wb')
+            # write hash value to file with '\n'
+            write_aes_crypto_file.write(generate_aes_iv_param + b'\n')
+            write_aes_crypto_file.write(username_encrypto + b'\n')
+            write_aes_crypto_file.write(passwd_encrypto + b'\n')
+            # close file
+            write_aes_crypto_file.close()
+
+        # build data string
         getway_register = [('user', username), ('pass', passwd)]
         getway_data = urllib.parse.urlencode(getway_register).encode(encoding='UTF8')
 
@@ -221,7 +243,7 @@ class Matrix:
         """
 
         # call gather login data function
-        Matrix.login_bias = self._login_preload(dataload.LOGINCR_PATH)
+        Matrix.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
 
         # request a post key
         try:
@@ -271,6 +293,9 @@ class Matrix:
 
         # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
+
+        # clear username and password cache
+        ## del Matrix.login_bias
 
         return postway_data
 
@@ -674,7 +699,7 @@ class Matrix:
             ' Code by ' + dataload.ORGANIZATION + '@' + dataload.DEVELOPER)
         self.logprowork(log_path, log_context)
         # open work directory, check result
-        os.system(dataload.fs_operation[2] + ' ' + dataload.fs_operation[0])
+        ## os.system(dataload.fs_operation[2] + ' ' + dataload.fs_operation[0])
 
 # =====================================================================
 # code by </MATRIX>@Neod Anderjon(LeaderN)

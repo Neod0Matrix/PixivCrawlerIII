@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.6.1'
+VERSION             = '2.6.3'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -24,8 +24,8 @@ SHELL_BASHHEAD = PROJECT_NAME + '@' + ORGANIZATION + ':~$ '
 logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
 logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
 
-SYSTEM_MAX_THREADS = 500            # setting system can contain max tasks
-DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'# default pure dns by Google
+SYSTEM_MAX_THREADS = 500                # setting system can contain max tasks
+DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
 
 def platform_setting():
     """Set os platform to set folder format
@@ -35,10 +35,11 @@ def platform_setting():
     """
     
     work_dir, symbol, file_manager = None, None, None
-    home_dir = os.environ['HOME']   # get system default setting home folder
+    home_dir = os.environ['HOME']   # get system default setting home folder, for windows
+    get_login_user = os.getlogin()  # get login user name to build user home directory, for linux
     # linux
     if os.name == 'posix':
-        work_dir, symbol = home_dir + '/Pictures/Crawler/', '/'
+        work_dir, symbol = '/home/' + get_login_user + '/Pictures/Crawler/', '/'
         file_manager = 'nautilus'
     # windows
     elif os.name == 'nt':
@@ -55,8 +56,11 @@ fs_operation = platform_setting()
 _rtc = time.localtime()
 _ymd = '%d-%d-%d' % (_rtc[0], _rtc[1], _rtc[2])
 
+# AES encrypto use secret key
+AES_SECRET_KEY = 'secretkeyfrommat'             # 16 bytes secret key
+
 # universal path
-LOGINCR_PATH = os.getcwd() + fs_operation[1] + 'login.cr'   # default file name
+LOGIN_AES_INI_PATH = os.getcwd() + fs_operation[1] + '.aes_crypto_login.ini' # storage login info AES crypto file, default hide
 LOG_NAME = fs_operation[1] + 'CrawlerWork[%s].log' % _ymd
 HTML_NAME = fs_operation[1] + 'CrawlerWork[%s].html' % _ymd
 RANK_DIR = fs_operation[0] + 'rankingtop_%s%s' % (_ymd, fs_operation[1])
