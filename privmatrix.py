@@ -83,7 +83,7 @@ class Matrix:
 
             # check username and password
             check = dataload.logtime_input(
-                "Read user info from the login.cr file, check this: \n"
+                "Read user login information configuration ok, check this: \n"
                 "[!Username] %s\n[!Password] %s\n"
                 "Is that correct?(y/N): " % (username, passwd))
             # if user judge info are error
@@ -93,12 +93,14 @@ class Matrix:
 
                 # temp input content
                 dataload.logtime_print(
-                    "Well, you need reinput your login data: ")
+                    "Well, you need hand-input your login data: ")
                 username = dataload.logtime_input(
                     'Enter your pixiv id(mailbox), must be a R18: ')
                 passwd = getpass.getpass(
                     dataload.realtime_logword(dataload.base_time)
                     + 'Enter your account password: ')
+            else:
+                pass
 
         # if no md5_hash_login.ini file, then create new and write md5 value into it
         else:
