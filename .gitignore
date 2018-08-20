@@ -1,9 +1,0 @@
-﻿# don't upload python compile cache and private info files		
-		
-__pycache__/
-.dist/
-.idea/
-.git/
-.vscode/
-.aes_crypto_login.ini
-.gitignore
