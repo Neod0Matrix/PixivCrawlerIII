@@ -26,7 +26,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
-    |       Version: 2.6.3 LTE                                                                                      |
+    |       Version: 2.6.4 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -51,21 +51,22 @@ class Matrix:
         urllib.request.install_opener(self.opener)
 
     @staticmethod
-    def _login_preload(md5hash_login_path):
-        """Get user input login info and storage hash value in file
+    def _login_preload(aes_file_path):
+        """Get user input login info and storage into aes file
 
-        Only first run this program need input username and password
-        First run will storage user input username and password md5 hash string
-        :param md5hash_login_path:      md5_hash_login.ini file path
-        :return:                        username, password, get data
+        If project directory has no file, you need hand-input login info,
+        then program will create new file to storage AES encrypt info to it
+        This method use pycrypto, need import external call
+        :param aes_file_path:       .aes_crypto_login.ini file path
+        :return:                    username, password, get data
         """
-        is_md5_ini_file_existed = os.path.exists(md5hash_login_path)
-        if is_md5_ini_file_existed:
+        is_aes_file_existed = os.path.exists(aes_file_path)
+        if is_aes_file_existed:
             # stable read rows get username and password
             # read bin file content to a list
-            read_aes_file_pointer = open(md5hash_login_path, 'rb+')
-            readline_cache = read_aes_file_pointer.readlines()              # all line list
-            read_aes_file_pointer.close()           
+            read_aes_file = open(aes_file_path, 'rb+')
+            readline_cache = read_aes_file.readlines()                      # all line list
+            read_aes_file.close()           
 
             read_aes_iv_param_raw = readline_cache[0]                       # row 1 is AES IV PARAM
             read_user_mailbox_raw = readline_cache[1]                       # row 2 is username
@@ -86,10 +87,11 @@ class Matrix:
                 "Read user login information configuration ok, check this: \n"
                 "[!Username] %s\n[!Password] %s\n"
                 "Is that correct?(y/N): " % (username, passwd))
-            # if user judge info are error
+
+            # if user judge info are error, delete old AES file and record new info
             if check != 'y' and check != 'Y':
-                # delete existed md5 hash file, last time run will new input
-                os.remove(md5hash_login_path)
+                # delete old AES file
+                os.remove(aes_file_path)
 
                 # temp input content
                 dataload.logtime_print(
@@ -99,10 +101,28 @@ class Matrix:
                 passwd = getpass.getpass(
                     dataload.realtime_logword(dataload.base_time)
                     + 'Enter your account password: ')
+
+                # generate random aes iv param
+                generate_aes_iv_param = Random.new().read(AES.block_size)
+                # encrypt login info
+                username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+                username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
+                passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+                passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
+                
+                # create new aes file rewrite it
+                write_aes_file = open(aes_file_path, 'wb')
+                # write bin value to file with b'\n' to wrap
+                write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
+                write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
+                write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
+                # close file
+                write_aes_file.close()
+            # read info correct, jump out here
             else:
                 pass
 
-        # if no md5_hash_login.ini file, then create new and write md5 value into it
+        # if no AES file, then create new and write md5 value into it
         else:
             dataload.logtime_print(
                 "Create new AES encrypt file to storage your username and password: ")
@@ -120,21 +140,20 @@ class Matrix:
             passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
             passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
             
-            # create new md5 file, set write bin bytes mode
-            write_aes_crypto_file = open(md5hash_login_path, 'wb')
-            # write hash value to file with '\n'
-            write_aes_crypto_file.write(generate_aes_iv_param + b'\n')
-            write_aes_crypto_file.write(username_encrypto + b'\n')
-            write_aes_crypto_file.write(passwd_encrypto + b'\n')
+            # create new AES file, set write bin bytes mode
+            write_aes_file = open(aes_file_path, 'wb')
+            # write bin value to file with b'\n' to wrap
+            write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
+            write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
+            write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
             # close file
-            write_aes_crypto_file.close()
+            write_aes_file.close()
 
         # build data string
         getway_register = [('user', username), ('pass', passwd)]
         getway_data = urllib.parse.urlencode(getway_register).encode(encoding='UTF8')
 
-        # return login use 3 elements
-        return username, passwd, getway_data
+        return username, passwd, getway_data                        # return login use 3 elements
 
     @staticmethod
     def logprowork(log_path, log_content, withtime='y'):
@@ -649,7 +668,7 @@ class Matrix:
         html_file.writelines(
             "<html>\r\n"
             "<head>\r\n"
-            "<title>MatPixivCrawler3 ResultPage</title>\r\n"
+            "<title>PixivCrawlerIII ResultPage</title>\r\n"
             "</head>\r\n"
             "<body>\r\n")
         # put all crawl images into html source code
