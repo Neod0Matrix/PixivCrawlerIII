@@ -25,7 +25,7 @@ class Matrix:
     |       ██║     ██║██╔╝ ██╗██║ ╚████╔╝ ╚██████╗██║  ██║██║  ██║╚███╔███╔╝███████╗███████╗██║  ██║██║██║██║      |
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
-    |       Copyright (c) 2018 @T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                            |
+    |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
     |       Version: 2.6.4 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
@@ -647,7 +647,7 @@ class Matrix:
         elapesd_time = endtime - starttime
         average_download_speed = float(Matrix._datastream_pool / elapesd_time)
         log_context = (
-            "All of threads reclaim, total download datatstream size: %0.2fMB, "
+            "All of threads reclaim, total download data-stream size: %0.2fMB, "
             "average download speed: %0.2fkB/s"
             % (float(Matrix._datastream_pool / 1024), average_download_speed))
         self.logprowork(log_path, log_context)

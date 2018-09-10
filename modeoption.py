@@ -290,7 +290,7 @@ class RepertoAll(object):
                  data=_pvmx.login_bias[2],
                  timeout=30)
         except Exception as e:
-            log_context = "Error type: " + str(e) + " Open %d page failed" % index
+            log_context = "Error occur: " + str(e) + " open no.%d page failed" % index
             _pvmx.logprowork(log_path, log_context)
             response = None
         

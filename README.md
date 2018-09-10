@@ -24,7 +24,7 @@ Update
 ======
 
     Version: 2.6.4
-    Last Update Time: 20180820pm1153
+    Last Update Time: 20180905pm2111
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -60,7 +60,7 @@ Run
     
     cd PixivCrawlerIII
     
-    First config your local folder in dataload.py and login.cr
+    First config your local folder in dataload.py, then run this:
     
     python3 pixivcrawleriii.py
 
