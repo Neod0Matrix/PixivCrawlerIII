@@ -13,6 +13,7 @@ from Crypto import Random
 from PIL import Image
 from collections import OrderedDict
 import time, random, re, os, getpass
+from functools import wraps
 import dataload
 
 class Matrix:
@@ -26,7 +27,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.6.4 LTE                                                                                      |
+    |       Version: 2.6.5 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -166,17 +167,17 @@ class Matrix:
         """
         # add context to the file use option 'a+'
         # write content may have some not utf8 code, example Japanese
-        log_filepath = open(log_path, 'a+', encoding='utf-8')
+        log_file_ptr = open(log_path, 'a+', encoding='utf-8')
 
         # select add real time word
         if withtime == 'y':
             dataload.logtime_print(log_content)
             # use variable-length argument write word to the log file
             print(dataload.realtime_logword(dataload.base_time)
-                                + log_content, file=log_filepath)
+                                + log_content, file=log_file_ptr)
         else:
             print(log_content)
-            print(log_content, file=log_filepath)
+            print(log_content, file=log_file_ptr)
 
     def mkworkdir(self, log_path, folder):
         """Create a crawler work directory
@@ -585,8 +586,44 @@ class Matrix:
             self.lock.acquire()
             self.queue_t.append(self)
             self.lock.release()
-            self.start()        # finally call start() method
+            self.start()        # finally call start() method 
 
+    def timer_decorator(func):
+        """Timer decorator
+
+        Using python decorator feature to design program runtime timer
+        :param func:        decorate function
+        :return:            decorated function
+        """
+
+        @wraps(func)
+        def wrapper(self, urls, basepages, workdir, log_path):
+            """Timer wrapper
+
+            Last parameter directly copy from function download_alltarget()
+            :param urls:        all original images urls
+            :param basepages:   all referer basic pages
+            :param workdir:     work directory
+            :param log_path:    log save path
+            :return:            none
+            """
+
+            log_context = "Launch timer decorator, start program runtime timer..."
+            self.logprowork(log_path, log_context)
+            starttime = time.time()         
+            func(self, urls, basepages, workdir, log_path)                        
+            endtime = time.time()
+            elapesd_time = endtime - starttime
+            average_download_speed = float(self._datastream_pool / elapesd_time)
+            log_context = (
+                "All of threads reclaim, total download data-stream size: %0.2fMB, "
+                "average download speed: %0.2fkB/s"
+                % (float(self._datastream_pool / 1024), average_download_speed))
+            self.logprowork(log_path, log_context)
+
+        return wrapper
+
+    @timer_decorator
     def download_alltarget(self, urls, basepages, workdir, log_path):
         """Multi-process download all image
 
@@ -605,8 +642,6 @@ class Matrix:
             else queueLength - dataload.SYSTEM_MAX_THREADS 
         log_context = 'Start to download %d target(s)======>' % queueLength
         self.logprowork(log_path, log_context)
-
-        starttime = time.time()         # log download elapsed time
 
         # create overwrite threading.Thread object
         lock = threading.Lock()
@@ -633,24 +668,14 @@ class Matrix:
         # parent thread wait all sub-thread end
         while aliveThreadCnt > 1:
             # global variable update
-            Matrix._alivethread_counter = threading.active_count()
+            self._alivethread_counter = threading.active_count()
             # when alive thread count change, print its value
-            if aliveThreadCnt != Matrix._alivethread_counter:
+            if aliveThreadCnt != self._alivethread_counter:
                 # update alive thread count
-                aliveThreadCnt = Matrix._alivethread_counter
+                aliveThreadCnt = self._alivethread_counter
                 log_context = ('Currently remaining sub-thread(s): %d/%d'
                               % (aliveThreadCnt - 1, queueLength))
                 self.logprowork(log_path, log_context)
-
-        # calcus average download speed and whole elapesd time
-        endtime = time.time()
-        elapesd_time = endtime - starttime
-        average_download_speed = float(Matrix._datastream_pool / elapesd_time)
-        log_context = (
-            "All of threads reclaim, total download data-stream size: %0.2fMB, "
-            "average download speed: %0.2fkB/s"
-            % (float(Matrix._datastream_pool / 1024), average_download_speed))
-        self.logprowork(log_path, log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
