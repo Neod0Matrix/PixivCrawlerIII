@@ -190,8 +190,8 @@ class RankingTop(object):
         option = self.target_confirm(self.logpath)
         web_bias = self.gather_rankingdata(option, self.logpath)
 
-        _pvmx.download_alltarget(web_bias[0], web_bias[1],
-                                 self.workdir, self.logpath)
+        _pvmx.download_alltarget(self.logpath, web_bias[0], web_bias[1],
+                                 self.workdir)
         _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
         _pvmx.work_finished(self.logpath)
 
@@ -396,8 +396,8 @@ class RepertoAll(object):
         web_bias = self.crawl_allpage_target(self.user_input_id,
                                              info[0], info[1], self.logpath)
 
-        _pvmx.download_alltarget(web_bias[0], web_bias[1],
-                                 self.workdir, self.logpath)
+        _pvmx.download_alltarget(self.logpath, web_bias[0], web_bias[1],
+                                 self.workdir)
         _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
         _pvmx.work_finished(self.logpath)
 

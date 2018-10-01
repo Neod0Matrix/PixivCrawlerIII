@@ -265,7 +265,7 @@ class Matrix:
         """
 
         # call gather login data function
-        Matrix.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
+        self.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
 
         # request a post key
         try:
@@ -304,8 +304,8 @@ class Matrix:
 
         # build post-way data order dict
         post_orderdict = OrderedDict()
-        post_orderdict['pixiv_id'] = Matrix.login_bias[0]
-        post_orderdict['password'] = Matrix.login_bias[1]
+        post_orderdict['pixiv_id'] = self.login_bias[0]
+        post_orderdict['password'] = self.login_bias[1]
         post_orderdict['captcha'] = ""
         post_orderdict['g_recaptcha_response'] = ""
         post_orderdict['post_key'] = postkey
@@ -317,7 +317,7 @@ class Matrix:
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
         # clear username and password cache
-        ## del Matrix.login_bias
+        ## del self.login_bias
 
         return postway_data
 
@@ -493,8 +493,8 @@ class Matrix:
                         log_context = "Add proxy server in request"
                         self.logprowork(log_path, log_context)
                         # preload a proxy handler, just run once
-                        if Matrix._proxy_hasrun_flag is False:
-                            Matrix._proxy_hasrun_flag = True
+                        if self._proxy_hasrun_flag is False:
+                            self._proxy_hasrun_flag = True
                             proxy = self._getproxyserver(log_path)
                             proxy_handler = urllib.request.ProxyHandler(proxy)
                         # with proxy request again
@@ -515,7 +515,7 @@ class Matrix:
             img_bindata = response.read()
             # calcus target source total size
             source_size = float(len(img_bindata) / 1024)
-            Matrix._datastream_pool += source_size
+            self._datastream_pool += source_size
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
@@ -529,7 +529,7 @@ class Matrix:
         This class can be placed outside the main class, you can also put inside
         Threads are the smallest unit of program execution flow
         That is less burdensome than process creation
-        Internal call
+        Only internal call
         """
 
         # handle thread max limit
@@ -588,30 +588,34 @@ class Matrix:
             self.lock.release()
             self.start()        # finally call start() method 
 
-    def timer_decorator(func):
+    def timer_decorator(origin_func):
         """Timer decorator
 
         Using python decorator feature to design program runtime timer
-        :param func:        decorate function
-        :return:            decorated function
+        In this project this function only have used in internal call
+        But it also can be used in external call
+        :param origin_func: decorated function
+        :return:            wrapper function
         """
 
-        @wraps(func)
-        def wrapper(self, urls, basepages, workdir, log_path):
+        @wraps(origin_func)     # reserve property of original function 
+        def wrapper(self, log_path, *args, **kwargs):
             """Timer wrapper
 
-            Last parameter directly copy from function download_alltarget()
-            :param urls:        all original images urls
-            :param basepages:   all referer basic pages
-            :param workdir:     work directory
+            Mainly for the function download_alltarget() to achieve timing expansion
             :param log_path:    log save path
+            :param *args:       pythonic variable argument
+            :param **kwargs:    pythonic variable argument
             :return:            none
             """
 
             log_context = "Launch timer decorator, start program runtime timer..."
             self.logprowork(log_path, log_context)
-            starttime = time.time()         
-            func(self, urls, basepages, workdir, log_path)                        
+            starttime = time.time()    
+
+            # packaged original function 
+            origin_func(self, log_path, *args, **kwargs)       
+
             endtime = time.time()
             elapesd_time = endtime - starttime
             average_download_speed = float(self._datastream_pool / elapesd_time)
@@ -623,8 +627,8 @@ class Matrix:
 
         return wrapper
 
-    @timer_decorator
-    def download_alltarget(self, urls, basepages, workdir, log_path):
+    @timer_decorator            # add timig decorator
+    def download_alltarget(self, log_path, urls, basepages, workdir):
         """Multi-process download all image
 
         :param urls:        all original images urls
