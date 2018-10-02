@@ -27,7 +27,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.6.7 LTE                                                                                      |
+    |       Version: 2.7.8 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -92,15 +92,15 @@ class Matrix:
             # check username and password
             check = dataload.logtime_input(
                 "Read user login information configuration ok, check this: \n"
-                "[!Username] %s\n[!Password] %s\n"
-                "Is that correct?(y/N): " % (username, passwd))
+                "[-> Username] %s\n[-> Password] %s\n"
+                "Is that correct? (Y/N): " % (username, passwd))
 
             # if user judge info are error, delete old AES file and record new info
-            if check != 'y' and check != 'Y':
+            if check == 'N' or check == 'n':
                 # delete old AES file
                 os.remove(aes_file_path)
 
-                # temp input content
+                # temporarily enter login information
                 dataload.logtime_print(
                     "Well, you need hand-input your login data: ")
                 username = dataload.logtime_input(
@@ -263,10 +263,9 @@ class Matrix:
 
         return proxyserver_d
 
-    def _gatherpostkey(self, log_path):
+    def _gatherpostkey(self):
         """POST way login need post-key
 
-        :param log_path:    log save path
         :return:            post way request data
         """
 
@@ -280,7 +279,7 @@ class Matrix:
                 timeout=30)
         except Exception as e:
             log_context = "Error type: " + str(e)
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
             response = None
 
         # if response failed, crawler must exit
@@ -290,23 +289,23 @@ class Matrix:
             else:
                 log_context = 'POST-key response not ok, return code: %d' \
                             % response.getcode()
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
         else:
             log_context = 'Get post-key request failed, check network and proxy setting, crawler exit'
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
             exit()
 
         # cookie check
         for item in self.cookie:
             log_context = 'Cookie: [name:' + item.name + '-value:' + item.value + ']'
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
 
         # mate post key
         web_src = response.read().decode("UTF-8", "ignore")
         post_pattern = re.compile(dataload.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
         log_context = 'Get post-key: ' + postkey
-        self.logprowork(log_path, log_context)
+        dataload.logtime_print(log_context)
 
         # build post-way data order dict
         post_orderdict = OrderedDict()
@@ -318,20 +317,18 @@ class Matrix:
         post_orderdict['source'] = "pc"
         post_orderdict['ref'] = dataload.LOGIN_POSTDATA_REF
         post_orderdict['return_to'] = dataload.HTTPS_HOST_URL
-
         # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
         return postway_data
 
-    def camouflage_login(self, log_path):
+    def camouflage_login(self):
         """Camouflage browser to login
 
-        :param log_path: log save path
         :return:        none
         """
         # login init need to commit post data to Pixiv
-        postway_data = self._gatherpostkey(log_path)
+        postway_data = self._gatherpostkey()
 
         # the most important step
         # if this step failed, then crawler will exit 
@@ -342,7 +339,7 @@ class Matrix:
                 timeout=30)
         except Exception as e:
             log_context = "Error Type: " + str(e)
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
             response = None
 
         # if login failed, crawler must exit
@@ -352,17 +349,17 @@ class Matrix:
             else:
                 log_context = 'Login response not ok, return code %d' \
                             % response.getcode()
-            self.logprowork(log_path, log_context)
+            dataload.logtime_print(log_context)
         else:
             log_context = 'Get login request failed, check network and proxy, crawler exit'
-            self.logprowork(log_path, log_context)
-            exit()
+            dataload.logtime_print(log_context)
+            exit(-1)
 
     def save_test_html(self, workdir, content, log_path):
         """Save request web source page in a html file, test use
 
         :param workdir:     work directory
-        :param content:     save content
+        :param content:     save content(web source code)
         :param log_path:    log save path
         :return:            none
         """

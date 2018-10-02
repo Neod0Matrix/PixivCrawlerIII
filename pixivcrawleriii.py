@@ -15,26 +15,36 @@ def main():
     :return:    none
     """
     print(Matrix.__doc__)
-
-    mode = dataload.logtime_input('Select mode: ')
-    if mode == 'rtn' or mode == '1':
-        build_task = rtn(
-            dataload.RANK_DIR, 
-            dataload.LOG_PATH, 
-            dataload.HTML_PATH)
-        build_task.start()
-    elif mode == 'ira' or mode == '2':
-        build_task = ira(
-            dataload.REPO_DIR, 
-            dataload.LOG_NAME, 
-            dataload.HTML_NAME)
-        build_task.start()
-    elif mode == 'help' or mode == '3':
-        print(Matrix.__doc__)
-    elif mode == 'exit' or mode == '4':
+    # program work continue ask
+    ask_res = dataload.logtime_input('%s lanuch, continue? (Y/N): ' % dataload.PROJECT_NAME)
+    if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
+        dataload.logtime_print("User exit program\n")
         exit(0)
-    else:
-        dataload.logtime_print("Argument(s) error\n")
+    ask_res = dataload.logtime_input(
+        'Crawler will use your Pixiv-ID and password to login to the website, agree? (Y/N): ')
+    if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
+        dataload.logtime_print("No ID and password crawler cannot work, exit")
+        exit(0)
+    
+    myPrivMatrix = Matrix()         # instance class to a object
+    myPrivMatrix.camouflage_login() # user agree input id and password, crawler simulated login
+    while (True):
+        mode = dataload.logtime_input('Login finished, select mode: ')
+        if mode == 'rtn' or mode == '1':
+            rtn_instance = rtn(dataload.RANK_DIR, dataload.LOG_PATH, 
+                dataload.HTML_PATH, myPrivMatrix)
+            rtn_instance.start()
+        elif mode == 'ira' or mode == '2':
+            ira_instance = ira(dataload.REPO_DIR, dataload.LOG_NAME, 
+                dataload.HTML_NAME, myPrivMatrix)
+            ira_instance.start()
+        elif mode == 'help' or mode == '3':
+            print(Matrix.__doc__)
+        elif mode == 'exit' or mode == '4':
+            dataload.logtime_print("User exit program\n")
+            exit(0)
+        else:
+            dataload.logtime_print("Argument(s) error\n")
 
 if __name__ == '__main__':
     main()

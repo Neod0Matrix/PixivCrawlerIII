@@ -6,27 +6,31 @@
 
 import re
 from prettytable import PrettyTable
-import dataload, privmatrix
-
-# iterable call class
-_pvmx = privmatrix.Matrix()
+import dataload
 
 class RankingTop(object):
     """Ranking top crawl mode
 
     Pixiv website has a rank top, ordinary and R18, daily, weekly, monthly
     This class include fuction will gather all of those ranks
+    Parameter require: 
+        work directory
+        log save path
+        result html page file save path
+        class Matrix() instance
     """
 
-    def __init__(self, workdir, log_path, html_path):
+    def __init__(self, workdir, log_path, html_path, pvmx):
         """
         :param workdir:     work directory
-        :param log_path:     log save path
-        :param html_path:    html save path
+        :param log_path:    log save path
+        :param html_path:   html save path
+        :param pvmx:        class Matrix() instance    
         """
         self.workdir = workdir
         self.logpath = log_path
         self.htmlpath = html_path
+        self.pvmx = pvmx
         # class inside global variable
         self.target_urls = []
         self.basepages = []      
@@ -68,17 +72,15 @@ class RankingTop(object):
 
         return img_cnt
 
-    @staticmethod
-    def target_confirm(log_path):
+    def target_confirm(self):
         """Input option and confirm target
 
-        :param log_path:    log save path
         :return:            request mainpage url, mode
         """
 
         rank_word, req_url = None, None
         log_context = 'Gather ranking list======>'
-        _pvmx.logprowork(log_path, log_context)
+        self.pvmx.logprowork(self.logpath, log_context)
 
         ormode = dataload.logtime_input(
             'Select ranking type, ordinary(o|1) or r18(r|2): ')
@@ -111,31 +113,28 @@ class RankingTop(object):
                     "Argument(s) error\n")
             log_context = 'Crawler set target to %s r18 rank top' % rank_word
         else:
-            dataload.logtime_print(
-                "Argument(s) error\n")
+            dataload.logtime_print("Argument(s) error\n")
             log_context = None
-        _pvmx.logprowork(log_path, log_context)
+        self.pvmx.logprowork(self.logpath, log_context)
 
         return req_url, ormode
 
-    def gather_rankingdata(self, option, log_path):
+    def gather_rankingdata(self, option):
         """Crawl dailyRank list
 
-        :param self:        self class
         :param option:      user choose option
-        :param log_path:    log save path
         :return:            none
         """
 
         page_url, ormode = option[0], option[1]
         try:
-            response = _pvmx.opener.open(
+            response = self.pvmx.opener.open(
                 fullurl=page_url,
-                data=_pvmx.login_bias[2],
+                data=self.pvmx.login_bias[2],
                 timeout=30)
         except Exception as e:
             log_context = "Error Type: " + str(e)
-            _pvmx.logprowork(log_path, log_context)
+            self.pvmx.logprowork(self.logpath, log_context)
             response = None
         
         # if rank page can't get, crawler must exit
@@ -145,17 +144,17 @@ class RankingTop(object):
             else:
                 log_context = 'Rankpage response not ok, return code %d' \
                             % response.getcode()
-            _pvmx.logprowork(log_path, log_context)
+            self.pvmx.logprowork(self.logpath, log_context)
         else:
             log_context = 'Rankpage response failed'
-            _pvmx.logprowork(log_path, log_context)
-            exit()
+            self.pvmx.logprowork(self.logpath, log_context)
+            exit(-1)
 
         # size info in webpage source
         web_src = response.read().decode("UTF-8", "ignore")
         imgitem_pattern = re.compile(dataload.RANKING_SECTION_REGEX, re.S)
         info_pattern = re.compile(dataload.RANKING_INFO_REGEX, re.S)
-        sizer_result = _pvmx.commit_spansizer(imgitem_pattern, info_pattern, web_src)
+        sizer_result = self.pvmx.commit_spansizer(imgitem_pattern, info_pattern, web_src)
         # whole data cache pool
         whole_urls, img_infos = sizer_result[0], sizer_result[1]
 
@@ -164,7 +163,7 @@ class RankingTop(object):
         img_nbr = self.gather_essential_info(ormode, alive_targets)
         self.target_urls = whole_urls[:img_nbr]
         log_context = 'Gather rankingtop ' + str(img_nbr) + '======>'
-        _pvmx.logprowork(log_path, log_context)
+        self.pvmx.logprowork(self.logpath, log_context)
 
         # use prettytable package info list        
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
@@ -176,7 +175,7 @@ class RankingTop(object):
                 self.target_urls[k][57:-4], i[4], i[2]])
 
         # save table without time header word
-        _pvmx.logprowork(log_path, str(image_info_table), 'N')
+        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
 
     def start(self):
         """Call method start()
@@ -185,29 +184,34 @@ class RankingTop(object):
         Then run build_task.start() to boot this mode
         :return:    none
         """
-        _pvmx.mkworkdir(self.logpath, self.workdir)
-        _pvmx.camouflage_login(self.logpath)
+        self.pvmx.mkworkdir(self.logpath, self.workdir)
 
-        option = self.target_confirm(self.logpath)
-        self.gather_rankingdata(option, self.logpath)
-        _pvmx.download_alltarget(self.logpath, self.target_urls, 
+        option = self.target_confirm()
+        self.gather_rankingdata(option)
+
+        self.pvmx.download_alltarget(self.logpath, self.target_urls, 
             self.basepages, self.workdir)
-            
-        _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
-        _pvmx.work_finished(self.logpath)
+        self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
+        self.pvmx.work_finished(self.logpath)
 
 class RepertoAll(object):
     """Crawl any illustrator repertory all artworks
 
     Every illustrator in Pixiv has own mainpage
     This class include fuction will crawl all of those page all images
+    Parameter require: 
+        work directory
+        log file name
+        result html page file name
+        class Matrix() instance
     """
 
-    def __init__(self, workdir, log_name, html_name):
+    def __init__(self, workdir, log_name, html_name, pvmx):
         """
         :param workdir:     work directory
         :param log_name:    log name
         :param html_name:   html name
+        :param pvmx:        class Matrix() instance    
         """
         target_id = dataload.logtime_input(
                     'Target crawl illustrator pixiv-id: ')
@@ -215,24 +219,24 @@ class RepertoAll(object):
         self.workdir = workdir + 'illustrepo_' + self.user_input_id
         self.logpath = self.workdir + log_name
         self.htmlpath = self.workdir + html_name
+        self.pvmx = pvmx
         # class inside call global variable
         self.author_name = None
         self.max_cnt = 0
         self.target_capture = []
         self.basepages = []
 
-    def gather_preloadinfo(self, illust_id):
+    def gather_preloadinfo(self):
         """Crawler need to know how many images do you want
 
-        :param illust_id:   illustrator id
         :return:            request images count
         """
         # get illust artwork whole count mainpage url
-        cnt_url = dataload.MEMBER_ILLUST_URL + illust_id
+        cnt_url = dataload.MEMBER_ILLUST_URL + self.user_input_id
         try:
-            response = _pvmx.opener.open(
+            response = self.pvmx.opener.open(
                 fullurl=cnt_url,
-                data=_pvmx.login_bias[2],
+                data=self.pvmx.login_bias[2],
                 timeout=30)
         except Exception as e:
             # here has no log file, just print error
@@ -246,40 +250,43 @@ class RepertoAll(object):
             else:
                 log_context = 'Preload response not ok, return code %d' \
                             % response.getcode()
+            dataload.logtime_print(log_context)
         else:
-            log_context = 'Preload response failed'
+            dataload.logtime_print('Preload response failed')
             exit()
     
         # mate illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
         author_info = re.findall(illust_name_pattern, web_src)
-        # if login failed, this step will raise an error
+        # if login failed, regex parsing result will be a empty list
         if len(author_info) == 0:
-            dataload.logtime_print("Login failed, please check method call")
+            dataload.logtime_print("Regex parsing result error, no author info, exit")
             exit()
         else:
             self.author_name = author_info[0]
 
         # mate max count
         pattern = re.compile(dataload.REPO_WHOLE_NUMBER_REGEX, re.S)
-        max_cntword = re.findall(pattern, web_src)[1][:-1]
-        self.max_cnt = int(max_cntword)
+        max_cntword = re.findall(pattern, web_src)
+        if len(max_cntword) == 0:
+            dataload.logtime_print("Regex parsing result error, no author info, exit")
+            exit()
+        else:
+            self.max_cnt = int(max_cntword[1][:-1])
 
-    @staticmethod
-    def crawl_onepage_data(illust_id, index, log_path):
+    def crawl_onepage_data(self, index):
         """Crawl all target url about images
 
         Page request regular:
         No.1 referer: &type=all     request url: &type=all&p=2
         No.2 referer: &type=all&p=2 request url: &type=all&p=3
         No.3 referer: &type=all&p=3 request url: &type=all&p=4
-        :param illust_id:   illustrator id
+        
         :param index:       count cut to every 20 images from each page
-        :param log_path:    log save path
         :return:            use regex to mate web src thumbnail images url
         """
-        step1url = (dataload.MEMBER_ILLUST_URL + illust_id
+        step1url = (dataload.MEMBER_ILLUST_URL + self.user_input_id
                    + dataload.TYPE_ALL_WORD)
         if index == 1:
             urlTarget = step1url
@@ -288,13 +295,13 @@ class RepertoAll(object):
         else:
             urlTarget = step1url + dataload.PAGE_NUM_WORD + str(index)
         try:
-            response = _pvmx.opener.open(
+            response = self.pvmx.opener.open(
                 fullurl=urlTarget,
-                 data=_pvmx.login_bias[2],
+                 data=self.pvmx.login_bias[2],
                  timeout=30)
         except Exception as e:
             log_context = "Error occur: " + str(e) + " open no.%d page failed" % index
-            _pvmx.logprowork(log_path, log_context)
+            self.pvmx.logprowork(self.logpath, log_context)
             response = None
         
         # if can't get mainpage, crawler must exit
@@ -303,10 +310,10 @@ class RepertoAll(object):
                 log_context = "Mainpage %d response successed" % index
             else:
                 log_context = "Mainpage %d response not ok" % index
-            _pvmx.logprowork(log_path, log_context)
+            self.pvmx.logprowork(self.logpath, log_context)
         else:
             log_context = 'Mainpage response failed'
-            _pvmx.logprowork(log_path, log_context)
+            self.pvmx.logprowork(self.logpath, log_context)
             exit()
 
         # catch need info from web source
@@ -315,31 +322,26 @@ class RepertoAll(object):
         image_name_pattern = re.compile(dataload.IMAGE_NAME_REGEX, re.S)
         # sizer data
         sizer_result = \
-            _pvmx.commit_spansizer(imgitem_pattern, image_name_pattern, web_src)
+            self.pvmx.commit_spansizer(imgitem_pattern, image_name_pattern, web_src)
 
         return sizer_result
 
-    def crawl_allpage_target(self, illust_id, nbr, author_name, log_path):
+    def crawl_allpage_target(self):
         """Package all gather url
 
-        :param self:        self class
-        :param illust_id:   illustrator id
-        :param nbr:         package images count
-        :param author_name: author name
-        :param log_path:    log save path
         :return:            none
         """
         # calcus nbr need request count
         # each page at most 20 images
-        if nbr <= 20:
+        if self.max_cnt <= 20:
             need_pagecnt = 1
         else:
-            need_pagecnt = int(nbr / 20) + 1
+            need_pagecnt = int(self.max_cnt / 20) + 1
 
         # gather all data
         all_targeturls, all_artworknames = [], []
         for i in range(need_pagecnt):
-            data_capture = self.crawl_onepage_data(illust_id, i + 1, log_path)
+            data_capture = self.crawl_onepage_data(i + 1)
             # data write into list stack
             all_targeturls += data_capture[0]
             all_artworknames += data_capture[1]
@@ -347,8 +349,8 @@ class RepertoAll(object):
         # collection target count
         alive_targetcnt = len(all_targeturls)
         log_context = ("Gather all repo %d, whole target(s): %d"
-                       % (nbr, alive_targetcnt))
-        _pvmx.logprowork(log_path, log_context)
+                       % (self.max_cnt, alive_targetcnt))
+        self.pvmx.logprowork(self.logpath, log_context)
         nbr_capture = int(dataload.logtime_input(
                 'Enter you want count: '))
         while (nbr_capture > alive_targetcnt) or (nbr_capture <= 0):
@@ -356,7 +358,7 @@ class RepertoAll(object):
                 'Error, input count must <= %d and not 0: ' % alive_targetcnt))
         log_context = ("Check crawl illustrator id:" + self.user_input_id +
                       " image(s):%d" % nbr_capture)
-        _pvmx.logprowork(log_path, log_context)
+        self.pvmx.logprowork(self.logpath, log_context)
 
         # cut need data
         artwork_ids = []
@@ -372,7 +374,7 @@ class RepertoAll(object):
 
         log_context = ('Illustrator: ' + self.author_name + ' id: '
                        + self.user_input_id + ' artworks info====>')
-        _pvmx.logprowork(log_path, log_context)
+        self.pvmx.logprowork(self.logpath, log_context)
 
         # use prettytable build a table save and print info list
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle",
@@ -381,7 +383,7 @@ class RepertoAll(object):
             image_info_table.add_row([(k + 1), artwork_ids[k], 
                 i, all_targeturls[k][57:-4]])
         # save with str format and no time word
-        _pvmx.logprowork(log_path, str(image_info_table), 'N') 
+        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N') 
 
     def start(self):
         """Call method start()
@@ -390,17 +392,14 @@ class RepertoAll(object):
         Then run build_task.start() to boot this mode
         :return:    none
         """
-        _pvmx.mkworkdir(self.logpath, self.workdir)
-        _pvmx.camouflage_login(self.logpath)
+        self.pvmx.mkworkdir(self.logpath, self.workdir)
 
-        self.gather_preloadinfo(self.user_input_id)
-        self.crawl_allpage_target(self.user_input_id,
-            self.max_cnt, self.author_name, self.logpath)
-        _pvmx.download_alltarget(self.logpath, self.target_capture, 
-            self.basepages, self.workdir)
+        self.gather_preloadinfo()
+        self.crawl_allpage_target()
 
-        _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
-        _pvmx.work_finished(self.logpath)
+        self.pvmx.download_alltarget(self.logpath, self.target_capture, self.basepages, self.workdir)
+        self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
+        self.pvmx.work_finished(self.logpath)
 
 # =====================================================================
 # code by </MATRIX>@Neod Anderjon(LeaderN)
