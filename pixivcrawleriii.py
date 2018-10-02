@@ -31,6 +31,8 @@ def main():
         build_task.start()
     elif mode == 'help' or mode == '3':
         print(Matrix.__doc__)
+    elif mode == 'exit' or mode == '4':
+        exit(0)
     else:
         dataload.logtime_print("Argument(s) error\n")
 

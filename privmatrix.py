@@ -27,17 +27,19 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.6.5 LTE                                                                                      |
+    |       Version: 2.6.7 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
     |       2.ira  ---     IllustRepoAll, crawl Pixiv any illustrator all repertory artworks                        |
     |       3.help ---     Print this help page                                                                     |
+    |       4.exit ---     Exit crawler program                                                                     |
     =================================================================================================================
     """
 
-    login_bias = []
-    _proxy_hasrun_flag, _datastream_pool, _alivethread_counter = False, 0, 0
+    # this download data stream counter involves the simultaneous access of multi-threaded resources
+    # which must be declared as class attribute # variables for access
+    _datastream_pool = 0    
 
     def __init__(self):
         """Create a class public call webpage opener with cookie
@@ -50,6 +52,10 @@ class Matrix:
         self.cookieHandler = urllib.request.HTTPCookieProcessor(self.cookie)
         self.opener = urllib.request.build_opener(self.cookieHandler)
         urllib.request.install_opener(self.opener)
+        # class inside global variable
+        self.login_bias = []
+        self.proxy_hasrun_flag = False
+        self.alivethread_counter = 0
 
     @staticmethod
     def _login_preload(aes_file_path):
@@ -316,9 +322,6 @@ class Matrix:
         # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
-        # clear username and password cache
-        ## del self.login_bias
-
         return postway_data
 
     def camouflage_login(self, log_path):
@@ -423,7 +426,7 @@ class Matrix:
 
     @retry              # retrying decorator call
     def _save_oneimage(self, index, url, basepages, img_savepath, log_path):
-        """Download one target image, then multi-process will call here
+        """Download one target image, then multi-thread will call here
 
         Add retry decorator, if first try failed, it will auto-retry
         :param index:           image index
@@ -493,8 +496,8 @@ class Matrix:
                         log_context = "Add proxy server in request"
                         self.logprowork(log_path, log_context)
                         # preload a proxy handler, just run once
-                        if self._proxy_hasrun_flag is False:
-                            self._proxy_hasrun_flag = True
+                        if self.proxy_hasrun_flag is False:
+                            self.proxy_hasrun_flag = True
                             proxy = self._getproxyserver(log_path)
                             proxy_handler = urllib.request.ProxyHandler(proxy)
                         # with proxy request again
@@ -515,7 +518,8 @@ class Matrix:
             img_bindata = response.read()
             # calcus target source total size
             source_size = float(len(img_bindata) / 1024)
-            self._datastream_pool += source_size
+            # multi-thread, no resource lock, it must use class name to call
+            Matrix._datastream_pool += source_size   
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
@@ -672,11 +676,11 @@ class Matrix:
         # parent thread wait all sub-thread end
         while aliveThreadCnt > 1:
             # global variable update
-            self._alivethread_counter = threading.active_count()
+            self.alivethread_counter = threading.active_count()
             # when alive thread count change, print its value
-            if aliveThreadCnt != self._alivethread_counter:
+            if aliveThreadCnt != self.alivethread_counter:
                 # update alive thread count
-                aliveThreadCnt = self._alivethread_counter
+                aliveThreadCnt = self.alivethread_counter
                 log_context = ('Currently remaining sub-thread(s): %d/%d'
                               % (aliveThreadCnt - 1, queueLength))
                 self.logprowork(log_path, log_context)

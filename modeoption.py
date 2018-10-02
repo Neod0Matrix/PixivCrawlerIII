@@ -17,6 +17,7 @@ class RankingTop(object):
     Pixiv website has a rank top, ordinary and R18, daily, weekly, monthly
     This class include fuction will gather all of those ranks
     """
+
     def __init__(self, workdir, log_path, html_path):
         """
         :param workdir:     work directory
@@ -26,7 +27,10 @@ class RankingTop(object):
         self.workdir = workdir
         self.logpath = log_path
         self.htmlpath = html_path
-
+        # class inside global variable
+        self.target_urls = []
+        self.basepages = []      
+        
     @staticmethod
     def gather_essential_info(ormode, whole_nbr):
         """Get input image count
@@ -80,7 +84,7 @@ class RankingTop(object):
             'Select ranking type, ordinary(o|1) or r18(r|2): ')
         if ormode == 'o' or ormode == '1':
             dwm = dataload.logtime_input(
-                'Select daily(1)|weekly(2)|monthly(3) ordinary ranking type: ')
+                'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: ')
             if dwm == '1':
                 req_url = dataload.DAILY_RANKING_URL
                 rank_word = dataload.DAILY_WORD
@@ -120,7 +124,7 @@ class RankingTop(object):
         :param self:        self class
         :param option:      user choose option
         :param log_path:    log save path
-        :return:            original images urls list
+        :return:            none
         """
 
         page_url, ormode = option[0], option[1]
@@ -158,24 +162,21 @@ class RankingTop(object):
         # cut need image count to be target list
         alive_targets = len(whole_urls)
         img_nbr = self.gather_essential_info(ormode, alive_targets)
-        target_urls = whole_urls[:img_nbr]
+        self.target_urls = whole_urls[:img_nbr]
         log_context = 'Gather rankingtop ' + str(img_nbr) + '======>'
         _pvmx.logprowork(log_path, log_context)
 
-        # use prettytable package info list
-        basepages = []
+        # use prettytable package info list        
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
             # basepage will be a headers referer
-            basepages.append(dataload.BASEPAGE_URL + i[3])
+            self.basepages.append(dataload.BASEPAGE_URL + i[3])
             image_info_table.add_row([(k + 1), i[3], i[1], 
-                target_urls[k][57:-4], i[4], i[2]])
+                self.target_urls[k][57:-4], i[4], i[2]])
 
-        # save table without time word
+        # save table without time header word
         _pvmx.logprowork(log_path, str(image_info_table), 'N')
-            
-        return target_urls, basepages
 
     def start(self):
         """Call method start()
@@ -188,10 +189,10 @@ class RankingTop(object):
         _pvmx.camouflage_login(self.logpath)
 
         option = self.target_confirm(self.logpath)
-        web_bias = self.gather_rankingdata(option, self.logpath)
-
-        _pvmx.download_alltarget(self.logpath, web_bias[0], web_bias[1],
-                                 self.workdir)
+        self.gather_rankingdata(option, self.logpath)
+        _pvmx.download_alltarget(self.logpath, self.target_urls, 
+            self.basepages, self.workdir)
+            
         _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
         _pvmx.work_finished(self.logpath)
 
@@ -201,6 +202,7 @@ class RepertoAll(object):
     Every illustrator in Pixiv has own mainpage
     This class include fuction will crawl all of those page all images
     """
+
     def __init__(self, workdir, log_name, html_name):
         """
         :param workdir:     work directory
@@ -213,9 +215,13 @@ class RepertoAll(object):
         self.workdir = workdir + 'illustrepo_' + self.user_input_id
         self.logpath = self.workdir + log_name
         self.htmlpath = self.workdir + html_name
+        # class inside call global variable
+        self.author_name = None
+        self.max_cnt = 0
+        self.target_capture = []
+        self.basepages = []
 
-    @staticmethod
-    def gather_preloadinfo(illust_id):
+    def gather_preloadinfo(self, illust_id):
         """Crawler need to know how many images do you want
 
         :param illust_id:   illustrator id
@@ -247,21 +253,18 @@ class RepertoAll(object):
         # mate illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
-        arthor_names = re.findall(illust_name_pattern, web_src)
+        author_info = re.findall(illust_name_pattern, web_src)
         # if login failed, this step will raise an error
-        arthor_name = None
-        if len(arthor_names) == 0:
+        if len(author_info) == 0:
             dataload.logtime_print("Login failed, please check method call")
             exit()
         else:
-            arthor_name = arthor_names[0]
+            self.author_name = author_info[0]
 
         # mate max count
         pattern = re.compile(dataload.REPO_WHOLE_NUMBER_REGEX, re.S)
         max_cntword = re.findall(pattern, web_src)[1][:-1]
-        max_cnt = int(max_cntword)
-
-        return max_cnt, arthor_name
+        self.max_cnt = int(max_cntword)
 
     @staticmethod
     def crawl_onepage_data(illust_id, index, log_path):
@@ -316,15 +319,15 @@ class RepertoAll(object):
 
         return sizer_result
 
-    def crawl_allpage_target(self, illust_id, nbr, arthor_name, log_path):
+    def crawl_allpage_target(self, illust_id, nbr, author_name, log_path):
         """Package all gather url
 
         :param self:        self class
         :param illust_id:   illustrator id
         :param nbr:         package images count
-        :param arthor_name: arthor name
+        :param author_name: author name
         :param log_path:    log save path
-        :return:            build original images urls list
+        :return:            none
         """
         # calcus nbr need request count
         # each page at most 20 images
@@ -356,18 +359,18 @@ class RepertoAll(object):
         _pvmx.logprowork(log_path, log_context)
 
         # cut need data
-        artwork_ids, target_capture, basepages = [], [], []
+        artwork_ids = []
         number_regex_comp = re.compile(dataload.NUMBER_REGEX, re.S)
         # download image number limit
         for k, i in enumerate(all_targeturls[:nbr_capture]):
-            target_capture.append(i)                        # elements move
+            self.target_capture.append(i)                        # elements move
             # get image own id    
             img_id = re.findall(number_regex_comp, i[57:])[0]
             artwork_ids.append(img_id)
-            basepage = dataload.BASEPAGE_URL + img_id       # build basepage url
-            basepages.append(basepage)
+            # build basepage url
+            self.basepages.append(dataload.BASEPAGE_URL + img_id)
 
-        log_context = ('Illustrator: ' + arthor_name + ' id: '
+        log_context = ('Illustrator: ' + self.author_name + ' id: '
                        + self.user_input_id + ' artworks info====>')
         _pvmx.logprowork(log_path, log_context)
 
@@ -380,8 +383,6 @@ class RepertoAll(object):
         # save with str format and no time word
         _pvmx.logprowork(log_path, str(image_info_table), 'N') 
 
-        return target_capture, basepages
-
     def start(self):
         """Call method start()
 
@@ -392,12 +393,12 @@ class RepertoAll(object):
         _pvmx.mkworkdir(self.logpath, self.workdir)
         _pvmx.camouflage_login(self.logpath)
 
-        info = self.gather_preloadinfo(self.user_input_id)
-        web_bias = self.crawl_allpage_target(self.user_input_id,
-                                             info[0], info[1], self.logpath)
+        self.gather_preloadinfo(self.user_input_id)
+        self.crawl_allpage_target(self.user_input_id,
+            self.max_cnt, self.author_name, self.logpath)
+        _pvmx.download_alltarget(self.logpath, self.target_capture, 
+            self.basepages, self.workdir)
 
-        _pvmx.download_alltarget(self.logpath, web_bias[0], web_bias[1],
-                                 self.workdir)
         _pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
         _pvmx.work_finished(self.logpath)
 
