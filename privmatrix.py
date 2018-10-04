@@ -543,7 +543,7 @@ class Matrix:
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
-            log_context = 'Target no.%d(%s) image download finished, image size: %dkB' \
+            log_context = 'No.%d target[%s] download finished, image size [%dkB]' \
                 % (index + 1, image_name, source_size)
             self.logprowork(log_path, log_context)
 

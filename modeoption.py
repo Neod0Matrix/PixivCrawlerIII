@@ -328,7 +328,10 @@ class RepertoAll(object):
         if self.max_cnt <= dataload.ONE_PAGE_COMMIT:
             need_pagecnt = 1
         else:
-            need_pagecnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT) + 1
+            need_pagecnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT)
+            # remainder decision
+            if self.max_cnt % dataload.ONE_PAGE_COMMIT != 0:
+                need_pagecnt += 1
 
         # build request url of one page 
         iid_string_tail = ''

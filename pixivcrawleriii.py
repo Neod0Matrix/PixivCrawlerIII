@@ -20,6 +20,7 @@ def main():
     if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
         dataload.logtime_print("User exit program\n")
         exit(0)
+    # website id and password require
     ask_res = dataload.logtime_input(
         'Crawler will use your Pixiv-ID and password to login to the website, agree? (Y/N): ')
     if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
@@ -33,11 +34,13 @@ def main():
         mode = dataload.logtime_input('Login finished, select mode: ')
         # ranking top N mode
         if mode == 'rtn' or mode == '1':
+            dataload.logtime_print('Mode: [Ranking Top N]')
             rtn_instance = rtn(dataload.RANK_DIR, dataload.LOG_PATH, 
                 dataload.HTML_PATH, myPrivMatrix)
             rtn_instance.start()
         # illustrator repositories all mode
         elif mode == 'ira' or mode == '2':
+            dataload.logtime_print('Mode: [Illustrator Repository All]')
             ira_instance = ira(dataload.REPO_DIR, dataload.LOG_NAME, 
                 dataload.HTML_NAME, myPrivMatrix)
             ira_instance.start()
