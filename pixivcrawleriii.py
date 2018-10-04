@@ -28,21 +28,27 @@ def main():
     
     myPrivMatrix = Matrix()         # instance class to a object
     myPrivMatrix.camouflage_login() # user agree input id and password, crawler simulated login
-    while (True):
+    # multiple task cycles
+    while True:
         mode = dataload.logtime_input('Login finished, select mode: ')
+        # ranking top N mode
         if mode == 'rtn' or mode == '1':
             rtn_instance = rtn(dataload.RANK_DIR, dataload.LOG_PATH, 
                 dataload.HTML_PATH, myPrivMatrix)
             rtn_instance.start()
+        # illustrator repositories all mode
         elif mode == 'ira' or mode == '2':
             ira_instance = ira(dataload.REPO_DIR, dataload.LOG_NAME, 
                 dataload.HTML_NAME, myPrivMatrix)
             ira_instance.start()
+        # help page
         elif mode == 'help' or mode == '3':
             print(Matrix.__doc__)
+        # user normal exit program
         elif mode == 'exit' or mode == '4':
             dataload.logtime_print("User exit program\n")
             exit(0)
+        # input parameter error
         else:
             dataload.logtime_print("Argument(s) error\n")
 

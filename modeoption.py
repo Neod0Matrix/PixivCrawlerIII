@@ -125,31 +125,13 @@ class RankingTop(object):
         :param option:      user choose option
         :return:            none
         """
-
-        page_url, ormode = option[0], option[1]
-        try:
-            response = self.pvmx.opener.open(
-                fullurl=page_url,
-                data=self.pvmx.login_bias[2],
-                timeout=30)
-        except Exception as e:
-            log_context = "Error Type: " + str(e)
-            self.pvmx.logprowork(self.logpath, log_context)
-            response = None
-        
-        # if rank page can't get, crawler must exit
-        if response is not None:
-            if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = 'Rankpage response successed'
-            else:
-                log_context = 'Rankpage response not ok, return code %d' \
-                            % response.getcode()
-            self.pvmx.logprowork(self.logpath, log_context)
-        else:
-            log_context = 'Rankpage response failed'
-            self.pvmx.logprowork(self.logpath, log_context)
-            exit(-1)
-
+        response = self.pvmx.url_request_handler(
+            target_url=option[0],
+            post_data=self.pvmx.login_bias[2], 
+            timeout=30, 
+            target_page_word='Rankpage',
+            need_log=True,
+            log_path=self.logpath)
         # size info in webpage source
         web_src = response.read().decode("UTF-8", "ignore")
         imgitem_pattern = re.compile(dataload.RANKING_SECTION_REGEX, re.S)
@@ -160,7 +142,7 @@ class RankingTop(object):
 
         # cut need image count to be target list
         alive_targets = len(whole_urls)
-        img_nbr = self.gather_essential_info(ormode, alive_targets)
+        img_nbr = self.gather_essential_info(option[1], alive_targets)
         self.target_urls = whole_urls[:img_nbr]
         log_context = 'Gather rankingtop ' + str(img_nbr) + '======>'
         self.pvmx.logprowork(self.logpath, log_context)
@@ -173,7 +155,6 @@ class RankingTop(object):
             self.basepages.append(dataload.BASEPAGE_URL + i[3])
             image_info_table.add_row([(k + 1), i[3], i[1], 
                 self.target_urls[k][57:-4], i[4], i[2]])
-
         # save table without time header word
         self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
 
@@ -223,38 +204,54 @@ class RepertoAll(object):
         # class inside call global variable
         self.author_name = None
         self.max_cnt = 0
+        self.pure_idlist = []
         self.target_capture = []
         self.basepages = []
 
     def gather_preloadinfo(self):
         """Crawler need to know how many images do you want
 
-        :return:            request images count
+        This function will get author name base on author id
+        :return:            none
         """
-        # get illust artwork whole count mainpage url
-        cnt_url = dataload.MEMBER_ILLUST_URL + self.user_input_id
-        try:
-            response = self.pvmx.opener.open(
-                fullurl=cnt_url,
-                data=self.pvmx.login_bias[2],
-                timeout=30)
-        except Exception as e:
-            # here has no log file, just print error
-            dataload.logtime_print("Error Type: " + str(e))
-            response = None
-
-        # if preload page can't get, crawler must exit
-        if response is not None:
-            if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = 'Preload response successed'
-            else:
-                log_context = 'Preload response not ok, return code %d' \
-                            % response.getcode()
-            dataload.logtime_print(log_context)
-        else:
-            dataload.logtime_print('Preload response failed')
-            exit()
-    
+        # request all of one illustrator's artworks
+        response = self.pvmx.url_request_handler(
+            target_url=dataload.AJAX_ALL_URL(self.user_input_id),
+            post_data=self.pvmx.login_bias[2], 
+            timeout=30, 
+            target_page_word='Ajaxpage',
+            need_log=True,
+            log_path=self.logpath)
+        # mate illustrator name
+        web_src = response.read().decode("UTF-8", "ignore")
+        ajax_idlist_pattern = re.compile(dataload.AJAX_ALL_IDLIST_REGEX, re.S)
+        ajax_idlist = re.findall(ajax_idlist_pattern, web_src)
+        # id list result may include some garbages, use number regex get pure result
+        number_pattern = re.compile(dataload.NUMBER_REGEX, re.S)
+        for index in ajax_idlist:
+            one_pure_id = re.findall(number_pattern, index)[0]
+            self.pure_idlist.append(one_pure_id)
+        # use quick-sort algorithm to handle id number
+        # descending order sort
+        pure_idlist_nbr = []
+        for index in self.pure_idlist:
+            pure_idlist_nbr.append(int(index))      # string to integer number
+        self.pvmx.quick_sort(pure_idlist_nbr, 0, len(pure_idlist_nbr) - 1)
+        pure_idlist_nbr.reverse()                   # reverse order
+        self.pure_idlist.clear()                         # clear origin list
+        for index in pure_idlist_nbr:
+            self.pure_idlist.append(str(index))
+        del pure_idlist_nbr                         # clear number cache
+        self.max_cnt = len(self.pure_idlist)
+        
+        # get author name from member-main-page
+        response = self.pvmx.url_request_handler(
+            target_url=dataload.MEMBER_ILLUST_URL + self.user_input_id,
+            post_data=self.pvmx.login_bias[2], 
+            timeout=30, 
+            target_page_word='Mainpage',
+            need_log=True,
+            log_path=self.logpath)
         # mate illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
@@ -265,89 +262,120 @@ class RepertoAll(object):
             exit()
         else:
             self.author_name = author_info[0]
-
-        # mate max count
-        pattern = re.compile(dataload.REPO_WHOLE_NUMBER_REGEX, re.S)
-        max_cntword = re.findall(pattern, web_src)
-        if len(max_cntword) == 0:
-            dataload.logtime_print("Regex parsing result error, no author info, exit")
-            exit()
-        else:
-            self.max_cnt = int(max_cntword[1][:-1])
-
-    def crawl_onepage_data(self, index):
+        
+    def crawl_onepage_data(self, index, index_url):
         """Crawl all target url about images
 
-        Page request regular:
-        No.1 referer: &type=all     request url: &type=all&p=2
-        No.2 referer: &type=all&p=2 request url: &type=all&p=3
-        No.3 referer: &type=all&p=3 request url: &type=all&p=4
-        
-        :param index:       count cut to every 20 images from each page
-        :return:            use regex to mate web src thumbnail images url
+        :param index:       request page index
+        :param index_url:   index group url
+        :return:            one page get info list(2-d)
         """
-        step1url = (dataload.MEMBER_ILLUST_URL + self.user_input_id
-                   + dataload.TYPE_ALL_WORD)
-        if index == 1:
-            urlTarget = step1url
-        elif index == 2:
-            urlTarget = step1url + dataload.PAGE_NUM_WORD + str(index)
-        else:
-            urlTarget = step1url + dataload.PAGE_NUM_WORD + str(index)
-        try:
-            response = self.pvmx.opener.open(
-                fullurl=urlTarget,
-                 data=self.pvmx.login_bias[2],
-                 timeout=30)
-        except Exception as e:
-            log_context = "Error occur: " + str(e) + " open no.%d page failed" % index
-            self.pvmx.logprowork(self.logpath, log_context)
-            response = None
-        
-        # if can't get mainpage, crawler must exit
-        if response is not None:
-            if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = "Mainpage %d response successed" % index
-            else:
-                log_context = "Mainpage %d response not ok" % index
-            self.pvmx.logprowork(self.logpath, log_context)
-        else:
-            log_context = 'Mainpage response failed'
-            self.pvmx.logprowork(self.logpath, log_context)
-            exit()
-
+        response = self.pvmx.url_request_handler(
+            target_url=index_url,
+            post_data=self.pvmx.login_bias[2], 
+            timeout=30, 
+            target_page_word='Data group',
+            need_log=True,
+            log_path=self.logpath)
         # catch need info from web source
         web_src = response.read().decode("UTF-8", "ignore")
-        imgitem_pattern = re.compile(dataload.IMAGEITEM_REGEX, re.S)
-        image_name_pattern = re.compile(dataload.IMAGE_NAME_REGEX, re.S)
-        # sizer data
-        sizer_result = \
-            self.pvmx.commit_spansizer(imgitem_pattern, image_name_pattern, web_src)
+        error_status_pattern = re.compile(dataload.PAGE_REQUEST_SYM_REGEX, re.S)
+        error_status = re.findall(error_status_pattern, web_src)[0]
+        # page display error is "true" status
+        if error_status == 'true':
+            log_context = 'Data group %d response failed' % index
+            self.pvmx.logprowork(self.logpath, log_context)
+            exit(-1)
+        # crawl one page items info
+        page_target_pattern = re.compile(dataload.PAGE_TARGET_INFO_REGEX, re.S)
+        page_target_info_tuple = re.findall(page_target_pattern, web_src)
+        # tuple transform to list
+        tmp_target_info_list = []
+        for i in range(len(page_target_info_tuple)):
+            tmp_target_info_list.append([])
+            for j in range(len(page_target_info_tuple[i])):
+                tmp_target_info_list[i] = list(page_target_info_tuple[i])
+        # delete no use info items
+        del page_target_info_tuple
+        # judge illust type, if it's gif(type symbol: 2), delete this item
+        page_target_info_list = []
+        illust_type_pattern = re.compile(dataload.ILLUST_TYPE_REGEX, re.S)
+        for k in range(len(tmp_target_info_list)):
+            illust_type_sym = re.findall(illust_type_pattern, tmp_target_info_list[k][2])
+            # regex process result error
+            if len(illust_type_sym) == 0:
+                log_context = 'Illust type process error, exit!'
+                self.pvmx.logprowork(self.logpath, log_context)
+                exit(-1)
+            # jump gif out
+            if illust_type_sym[0] == '2':
+                continue
+            del tmp_target_info_list[k][2]
+            del tmp_target_info_list[k][-2]
+            page_target_info_list.append(tmp_target_info_list[k])
+        del tmp_target_info_list
 
-        return sizer_result
+        return page_target_info_list 
 
     def crawl_allpage_target(self):
         """Package all gather url
 
         :return:            none
         """
+
         # calcus nbr need request count
-        # each page at most 20 images
-        if self.max_cnt <= 20:
+        # each page at most ONE_AUTHOR_MAINPAGE_IMGCOUNT(20181003:48) images
+        if self.max_cnt <= dataload.ONE_PAGE_COMMIT:
             need_pagecnt = 1
         else:
-            need_pagecnt = int(self.max_cnt / 20) + 1
+            need_pagecnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT) + 1
 
-        # gather all data
-        all_targeturls, all_artworknames = [], []
+        # build request url of one page 
+        iid_string_tail = ''
+        page_url_array = []
+        for ix in range(need_pagecnt):
+            # tail number limit
+            tmp_tail_nbr = dataload.ONE_PAGE_COMMIT * (ix + 1)
+            if tmp_tail_nbr > self.max_cnt:
+                tmp_tail_nbr = self.max_cnt
+            for index in self.pure_idlist[(dataload.ONE_PAGE_COMMIT * ix):tmp_tail_nbr]:
+                iid_string_tail += dataload.IDS_UNIT(index)
+            one_page_request_url = dataload.ALLREPOINFO_URL(self.user_input_id, iid_string_tail)
+            iid_string_tail = ''                                # clear last cache
+            page_url_array.append(one_page_request_url)
+        
+        # gather all data from response xhr page into a temp list
+        tmp_receive_list = []
         for i in range(need_pagecnt):
-            data_capture = self.crawl_onepage_data(i + 1)
-            # data write into list stack
-            all_targeturls += data_capture[0]
-            all_artworknames += data_capture[1]
+            tmp_receive_list += self.crawl_onepage_data(i + 1, page_url_array[i])
+        # handle url string
+        repo_target_all_list = []
+        for i in range(len(tmp_receive_list)):
+            # build original url without image format
+            tmp = tmp_receive_list[i][2]
+            tmp = tmp.replace('\\', '')                         # delete character '\' 
+            tmp_receive_list[i][2] = dataload.ORIGINAL_IMAGE_HEAD + tmp[50:] + '.png'
+            repo_target_all_list.append(tmp_receive_list[i])    # move original item to target list
+            # use page count number build total url
+            tmp_page_count_str = tmp_receive_list[i][3]
+            if tmp_page_count_str.isdigit():
+                index_page_count = int(tmp_page_count_str)
+                if index_page_count != 1:
+                    # add others items into list
+                    for px in range(index_page_count - 1):
+                        insert_item = [tmp_receive_list[i][0], 
+                            tmp_receive_list[i][1], 
+                            tmp_receive_list[i][2][:-5] + str(px + 1) + '.png', 
+                            tmp_receive_list[i][3]]
+                        repo_target_all_list.append(insert_item)
+            else:
+                log_context = 'Page count process error!'
+                self.pvmx.logprowork(self.logpath, log_context)
+                exit(-1)
+        del tmp_receive_list                                    # clear cache
 
         # collection target count
-        alive_targetcnt = len(all_targeturls)
+        alive_targetcnt = len(repo_target_all_list)
         log_context = ("Gather all repo %d, whole target(s): %d"
                        % (self.max_cnt, alive_targetcnt))
         self.pvmx.logprowork(self.logpath, log_context)
@@ -360,28 +388,21 @@ class RepertoAll(object):
                       " image(s):%d" % nbr_capture)
         self.pvmx.logprowork(self.logpath, log_context)
 
-        # cut need data
-        artwork_ids = []
-        number_regex_comp = re.compile(dataload.NUMBER_REGEX, re.S)
         # download image number limit
-        for k, i in enumerate(all_targeturls[:nbr_capture]):
-            self.target_capture.append(i)                        # elements move
-            # get image own id    
-            img_id = re.findall(number_regex_comp, i[57:])[0]
-            artwork_ids.append(img_id)
-            # build basepage url
-            self.basepages.append(dataload.BASEPAGE_URL + img_id)
-
+        for k, i in enumerate(repo_target_all_list[:nbr_capture]):
+            self.target_capture.append(i[2])    # put url into target capture list
+            self.basepages.append(dataload.BASEPAGE_URL + i[0]) # build basepage url
+        # display author info
         log_context = ('Illustrator: ' + self.author_name + ' id: '
                        + self.user_input_id + ' artworks info====>')
         self.pvmx.logprowork(self.logpath, log_context)
-
         # use prettytable build a table save and print info list
-        image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle",
-             "ImageID+PageNumber"])
-        for k, i in enumerate(all_artworknames[:nbr_capture]):
-            image_info_table.add_row([(k + 1), artwork_ids[k], 
-                i, all_targeturls[k][57:-4]])
+        image_info_table = PrettyTable(
+            ["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
+        for k, i in enumerate(repo_target_all_list[:nbr_capture]):
+            image_info_table.add_row([(k + 1), i[0], 
+            # '\\uxxxx' code need encode and decode
+            i[1].encode('utf-8').decode('unicode_escape'), i[2][57:-4]]) 
         # save with str format and no time word
         self.pvmx.logprowork(self.logpath, str(image_info_table), 'N') 
 

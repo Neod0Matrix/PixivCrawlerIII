@@ -23,8 +23,8 @@ License
 Update
 ======
 
-    Version: 2.7.8
-    Last Update Time: 20181002pm1903
+    Version: 2.8.2
+    Last Update Time: 20181004pm1803
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -105,3 +105,13 @@ Problems that may arise
     directory, change here nt.py "import winrandom" to "from . import winrandom",
     now you may finish install pycrypto in Windows system.
     Good luck, it's so hard not my fault.
+
+    Version 2.7.8 is the last batch download solution 
+    that loads the main-page for the Pixiv website's old static HTML page.
+    From October 2, 2018, 
+    Pixiv began to use js-dynamically load the artist's home page information.
+
+    On October 4, 2018, in response to the countermeasures made 
+    on the website 1002 big change event, version V2.8.2 was fully optimized 
+    and upgraded, the original two download modes were restored. 
+    At the same time, one request for downloading was suspended after one login.

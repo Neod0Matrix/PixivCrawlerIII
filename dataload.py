@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.7.8'
+VERSION             = '2.8.2'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -81,6 +81,8 @@ LOGIN_REQUEST_URL = "https://accounts.pixiv.net/api/login?lang=en"
 _LOGIN_REQUEST_URL = "https://accounts.pixiv.net"
 # request universal original image constant words
 ORIGINAL_IMAGE_HEAD = 'https://i.pximg.net/img-original/img'
+####NEW_WEBSITE_FORMAT
+ORIGINAL_IMAGE_PAGE = lambda iid, px: 'https://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=%s&page=%d' % (iid, px)
 ORIGINAL_IMAGE_TAIL = lambda px: '_p%d.png' % px
 # page request http proxy
 PROXYSERVER_URL = 'http://www.xicidaili.com/nn/'
@@ -98,10 +100,13 @@ WEEKLY_RANKING_R18_URL = WEEKLY_RANKING_URL + R18_WORD
 BASEPAGE_URL = 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id='
 MEMBER_URL = 'http://www.pixiv.net/member.php?id='
 MEMBER_ILLUST_URL = 'http://www.pixiv.net/member_illust.php?id='
-TYPE_ALL_WORD = '&type=all'
-PAGE_NUM_WORD = '&p='
-JUDGE_NOGIF_WORD = '_p0_master1200.jpg'     # don't download gif format
-PROXYIP_STR_BUILD = lambda ix,list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
+AJAX_ALL_URL = lambda aid: 'http://www.pixiv.net/ajax/user/%s/profile/all' % aid
+IDS_UNIT = lambda iid: 'ids%%5B%%5D=%s&' % iid      # ids[]=
+ALLREPOINFO_URL = lambda aid, ids_sym: \
+    'http://www.pixiv.net/ajax/user/%s/profile/illusts?%sis_manga_top=0' % (aid, ids_sym)
+ONE_PAGE_COMMIT = 48
+JUDGE_NOGIF_WORD = '_p0_master1200.jpg'             # don't download gif format
+PROXYIP_STR_BUILD = lambda ix, list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
 
 # http status code
 HTTP_OK_CODE_200 = 200
@@ -124,6 +129,27 @@ _HEADERS_CACHE_CONTROL = "no-cache"
 _HEADERS_CONNECTION = "keep-alive"
 _HEADERS_CONTENT_TYPE = "application/x-www-form-urlencoded; charset=UTF-8"
 _HEADERS_XMLHTTPREQUEST = "XMLHttpRequest"
+
+# some regex words depend on website url or webpage source
+# if website update or change them, regex need to be updated 
+POSTKEY_REGEX = 'key".*?"(.*?)"'
+# group match info
+RANKING_INFO_REGEX = (
+    'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
+    '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
+NUMBER_REGEX = '\d+\.?\d*'              # universal number match
+IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
+DATASRC_REGEX = 'data-src="(.*?)"'
+ILLUST_NAME_REGEX = '<title>「(.*?)」'
+AJAX_ALL_IDLIST_REGEX = '"(.*?)":null'
+AJAX_INFO_REGEX = 'ter(.*?)_p0_square1200'
+PAGE_REQUEST_SYM_REGEX = '"error":(.*?),'
+PAGE_TARGET_INFO_REGEX = \
+    '"id":"(.*?)","title":"(.*?)"(.*?)"url":"(.*?)_square1200.jpg"(.*?)"pageCount":(.*?),'
+ILLUST_TYPE_REGEX = '"illustType":(.*?),'
+SPAN_REGEX = '<span>(.*?)</span>'
+RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
+PROXYIP_REGEX = '<td>(.*?)</td>'
 
 def dict_transto_list (input_dict):
     """Change dict data-type to list
@@ -202,23 +228,6 @@ def build_original_headers(referer):
     build_headers = dict(base_headers, **uc_user_agent())
 
     return build_headers
-
-# some regex words depend on website url or webpage source
-# if website update or change them, regex need to be updated 
-POSTKEY_REGEX = 'key".*?"(.*?)"'
-# group match info
-RANKING_INFO_REGEX = (
-    'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
-    '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
-NUMBER_REGEX = '\d+\.?\d*'              # universal number match
-IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
-DATASRC_REGEX = 'data-src="(.*?)"'
-ILLUST_NAME_REGEX = 'me"title="(.*?)"'
-IMAGE_NAME_REGEX = 'e" title="(.*?)"'
-REPO_WHOLE_NUMBER_REGEX = 'dge">(.*?)<'
-SPAN_REGEX = '<span>(.*?)</span>'
-RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
-PROXYIP_REGEX = '<td>(.*?)</td>'
 
 # =====================================================================
 # code by </MATRIX>@Neod Anderjon(LeaderN)

@@ -27,7 +27,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.7.8 LTE                                                                                      |
+    |       Version: 2.8.2 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -175,20 +175,20 @@ class Matrix:
         # write content may have some not utf8 code, example Japanese
         log_file_ptr = open(log_path, 'a+', encoding='utf-8')
 
-        # select add real time word
+        # select add real time word or not
         if withtime == 'y':
             dataload.logtime_print(log_content)
             # use variable-length argument write word to the log file
-            print(dataload.realtime_logword(dataload.base_time)
-                                + log_content, file=log_file_ptr)
+            log_file_ptr.write(dataload.realtime_logword(dataload.base_time)
+                + log_content + '\n')
         else:
             print(log_content)
-            print(log_content, file=log_file_ptr)
+            log_file_ptr.write(log_content + '\n')
+        log_file_ptr.close()
 
     def mkworkdir(self, log_path, folder):
         """Create a crawler work directory
 
-        :param self:        self class
         :param log_path:    log save path
         :param folder:      folder create path
         :return:            folder create path
@@ -207,6 +207,40 @@ class Matrix:
             os.remove(log_path)
         # this step will create a new log file and write the first line
         self.logprowork(log_path, log_context)
+
+    def quick_sort(self, array, l, r):
+        """Quick sort algorithm
+
+        code by CSDN@lookupheaven
+        :param array:       wait for sort array
+        :param l:           edge left
+        :param r:           edge right
+        :return:            none
+        """
+        if l < r:
+            q = self.partition(array, l, r)
+            self.quick_sort(array, l, q - 1)
+            self.quick_sort(array, q + 1, r)
+    
+    @staticmethod
+    def partition(array, l, r):
+        """Partition of quick sort algorithm
+
+        code by CSDN@lookupheaven
+        :param array:       wait for sort array
+        :param l:           edge left
+        :param r:           edge right
+        :return:            part index
+        """
+        x = array[r]
+        i = l - 1
+        for j in range(l, r):
+            if array[j] <= x:
+                i += 1
+                array[i], array[j] = array[j], array[i]
+        array[i + 1], array[r] = array[r], array[i+1]
+
+        return i + 1
 
     def _getproxyserver(self, log_path):
         """Catch a proxy server
@@ -263,6 +297,51 @@ class Matrix:
 
         return proxyserver_d
 
+    def url_request_handler(self, target_url, post_data, timeout, target_page_word, need_log, log_path):
+        """Universal URL request format handler
+
+        :param target_url:          target request url
+        :param post_data:           post way data
+        :param timeout:             request timeout, suggest 30s
+        :param target_page_word:    target page symbol word
+        :param need_log:            need log? True is need, then log_path is must
+        :param log_path:            log save path
+        :return:                    request result response(raw)
+        """
+        response = ''
+        try:
+            response = self.opener.open(
+                fullurl=target_url,
+                data=post_data,
+                timeout=timeout)
+        except Exception as e:
+            log_context = "Error Type: " + str(e)
+            if need_log == True:
+                self.logprowork(log_path, log_context)
+            else:
+                dataload.logtime_print(log_context)
+            response = None
+        # if response failed, crawler will exit with error code -1
+        if response is not None:
+            if response.getcode() == dataload.HTTP_OK_CODE_200:
+                log_context = target_page_word + ' response successed'
+            else:
+                log_context = (target_page_word + 
+                    ' response not ok, return code %d' % response.getcode())
+            if need_log == True:
+                self.logprowork(log_path, log_context)
+            else:
+                dataload.logtime_print(log_context)
+        else:
+            log_context = target_page_word + ' response failed'
+            if need_log == True:
+                self.logprowork(log_path, log_context)
+            else:
+                dataload.logtime_print(log_context)
+            exit(-1)
+
+        return response
+
     def _gatherpostkey(self):
         """POST way login need post-key
 
@@ -271,30 +350,13 @@ class Matrix:
 
         # call gather login data function
         self.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
-
-        # request a post key
-        try:
-            response = self.opener.open(
-                dataload.LOGIN_POSTKEY_URL,
-                timeout=30)
-        except Exception as e:
-            log_context = "Error type: " + str(e)
-            dataload.logtime_print(log_context)
-            response = None
-
-        # if response failed, crawler must exit
-        if response is not None:
-            if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = 'POST-key response successed'
-            else:
-                log_context = 'POST-key response not ok, return code: %d' \
-                            % response.getcode()
-            dataload.logtime_print(log_context)
-        else:
-            log_context = 'Get post-key request failed, check network and proxy setting, crawler exit'
-            dataload.logtime_print(log_context)
-            exit()
-
+        response = self.url_request_handler(
+            target_url=dataload.LOGIN_POSTKEY_URL, 
+            post_data=None, 
+            timeout=30, 
+            target_page_word='POST-key',
+            need_log=False,
+            log_path='')
         # cookie check
         for item in self.cookie:
             log_context = 'Cookie: [name:' + item.name + '-value:' + item.value + ']'
@@ -329,31 +391,13 @@ class Matrix:
         """
         # login init need to commit post data to Pixiv
         postway_data = self._gatherpostkey()
-
-        # the most important step
-        # if this step failed, then crawler will exit 
-        try:
-            response = self.opener.open(
-                fullurl=dataload.LOGIN_REQUEST_URL,
-                data=postway_data,
-                timeout=30)
-        except Exception as e:
-            log_context = "Error Type: " + str(e)
-            dataload.logtime_print(log_context)
-            response = None
-
-        # if login failed, crawler must exit
-        if response is not None:
-            if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = 'Login response successed'
-            else:
-                log_context = 'Login response not ok, return code %d' \
-                            % response.getcode()
-            dataload.logtime_print(log_context)
-        else:
-            log_context = 'Get login request failed, check network and proxy, crawler exit'
-            dataload.logtime_print(log_context)
-            exit(-1)
+        response = self.url_request_handler(
+            target_url=dataload.LOGIN_REQUEST_URL,
+            post_data=postway_data, 
+            timeout=30, 
+            target_page_word='Login',
+            need_log=False,
+            log_path='')
 
     def save_test_html(self, workdir, content, log_path):
         """Save request web source page in a html file, test use
@@ -363,7 +407,8 @@ class Matrix:
         :param log_path:    log save path
         :return:            none
         """
-        htmlfile = open(workdir + dataload.fs_operation[1] + 'test.html', "w")
+        htmlfile = open(workdir + dataload.fs_operation[1] + 'test.html', "w", 
+            encoding='utf-8')
         htmlfile.write(content)
         htmlfile.close()
         log_context = 'Save test request html page ok'
@@ -440,28 +485,6 @@ class Matrix:
         img_save_path = (img_savepath + dataload.fs_operation[1]
                          + image_name + '.' + img_datatype)
 
-        # use urlretrieve() method:
-        # def __progress(count, block_size, total_size):
-        #     """Use in urllib.request.urlretrieve() function display progress
-        #
-        #     :param count:       finished part size
-        #     :param block_size:  data block size
-        #     :param total_size:  remote file size
-        #     :return:            none
-        #     """
-        #     finish_percent = float(100.0 * count * block_size / total_size)
-        #     if finish_percent > 100:
-        #         finish_percent = 100
-        #     # flush finished percent
-        #     # if use in multi-threads crawler, target number will flush with percent
-        #     sys.stdout.write('\r' + dataload.realtime_logword(dataload.base_time)
-        #         + 'Target no.%d finished percent: %.1f%%'
-        #             % ((index + 1), finish_percent))
-        #     sys.stdout.flush()
-        # urllib.request.urlretrieve(url=url,
-        #                            filename=img_save_path,
-        #                            reporthook=__progress)
-
         # use opener method
         headers = dataload.build_original_headers(basepages[index])
         proxy_handler = None
@@ -493,7 +516,7 @@ class Matrix:
                         log_context = "Add proxy server in request"
                         self.logprowork(log_path, log_context)
                         # preload a proxy handler, just run once
-                        if self.proxy_hasrun_flag is False:
+                        if self.proxy_hasrun_flag == False:
                             self.proxy_hasrun_flag = True
                             proxy = self._getproxyserver(log_path)
                             proxy_handler = urllib.request.ProxyHandler(proxy)
@@ -619,12 +642,13 @@ class Matrix:
 
             endtime = time.time()
             elapesd_time = endtime - starttime
-            average_download_speed = float(self._datastream_pool / elapesd_time)
+            average_download_speed = float(Matrix._datastream_pool / elapesd_time)
             log_context = (
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(self._datastream_pool / 1024), average_download_speed))
+                % (float(Matrix._datastream_pool / 1024), average_download_speed))
             self.logprowork(log_path, log_context)
+            Matrix._datastream_pool = 0   # once task finished, clear pool cache
 
         return wrapper
 
@@ -640,7 +664,7 @@ class Matrix:
         """
 
         # here init var alive thread count
-        aliveThreadCnt = queueLength = len(urls)
+        alive_thread_cnt = queueLength = len(urls)
         # first push N tasks to stack 
         thread_max_count = queueLength if queueLength \
             <= dataload.SYSTEM_MAX_THREADS \
@@ -663,7 +687,7 @@ class Matrix:
                 lock.release()
             # continue to create new one
             sub_thread = self._MultiThreading(lock, i, one_url,
-                        basepages, workdir, log_path, thread_max_count)
+                basepages, workdir, log_path, thread_max_count)
             # set every download sub-process daemon property
             # set false, then if you exit one thread, others threads will not end
             # set true, quit one is quit all
@@ -671,15 +695,15 @@ class Matrix:
             sub_thread.create()
 
         # parent thread wait all sub-thread end
-        while aliveThreadCnt > 1:
+        while alive_thread_cnt > 1:
             # global variable update
             self.alivethread_counter = threading.active_count()
             # when alive thread count change, print its value
-            if aliveThreadCnt != self.alivethread_counter:
+            if alive_thread_cnt != self.alivethread_counter:
                 # update alive thread count
-                aliveThreadCnt = self.alivethread_counter
+                alive_thread_cnt = self.alivethread_counter
                 log_context = ('Currently remaining sub-thread(s): %d/%d'
-                              % (aliveThreadCnt - 1, queueLength))
+                    % (alive_thread_cnt - 1, queueLength))
                 self.logprowork(log_path, log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):
