@@ -356,6 +356,8 @@ class RepertoAll(object):
         for i in range(len(tmp_receive_list)):
             # tasnform title '\\uxxx' to unicode
             tmp_receive_list[i][1] = self.pvmx.unicode_escape(tmp_receive_list[i][1])
+            # replace emoji string
+            tmp_receive_list[i][1] = self.pvmx.replace_emoji(tmp_receive_list[i][1])
             # build original url without image format
             tmp = tmp_receive_list[i][2]
             tmp = tmp.replace('\\', '')                         # delete character '\' 
@@ -406,7 +408,7 @@ class RepertoAll(object):
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
             image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]]) 
         # save with str format and no time word
-        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N') 
+        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
         del repo_target_all_list            # clear cache 
 
     def start(self):

@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.8.3'
+VERSION             = '2.8.4'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -150,6 +150,13 @@ ILLUST_TYPE_REGEX = '"illustType":(.*?),'
 SPAN_REGEX = '<span>(.*?)</span>'
 RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
 PROXYIP_REGEX = '<td>(.*?)</td>'
+#### code by CSDN@orangleliu
+EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
+    u"(\ud83c[\udf00-\uffff])|"                 # symbols & pictographs (1 of 2)
+    u"(\ud83d[\u0000-\uddff])|"                 # symbols & pictographs (2 of 2)
+    u"(\ud83d[\ude80-\udeff])|"                 # transport & map symbols
+    u"(\ud83c[\udde0-\uddff])"                  # flags (iOS)
+    "+")
 
 def dict_transto_list (input_dict):
     """Change dict data-type to list

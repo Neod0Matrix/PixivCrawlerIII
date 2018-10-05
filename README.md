@@ -23,8 +23,8 @@ License
 Update
 ======
 
-    Version: 2.8.3
-    Last Update Time: 20181005pm1207
+    Version: 2.8.4
+    Last Update Time: 20181005pm1757
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -33,7 +33,7 @@ Update
 Platform
 ======
 
-    Linux x86_64 and Windows NT(tested in Ubuntu 16.04 and Windows 10)
+    Linux x86_64 and Windows NT(tested in Ubuntu 16.04 x64 and Windows 10 x64 1803)
     Python: 3.x(not support 2.x) suggest 3.4+
 
 ## Requirements
@@ -115,3 +115,6 @@ Problems that may arise
     on the website 1002 big change event, version V2.8.2 was fully optimized 
     and upgraded, the original two download modes were restored. 
     At the same time, one request for downloading was suspended after one login.
+
+    If you want to optimze CPU and memory usage, you can use cProfile tool to 
+    analysis object usage and use module gc to collecte garbage.

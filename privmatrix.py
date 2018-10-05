@@ -27,7 +27,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.8.3 LTE                                                                                      |
+    |       Version: 2.8.4 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -163,9 +163,26 @@ class Matrix:
         return username, passwd, getway_data                        # return login use 3 elements
 
     @staticmethod
+    def replace_emoji(judge_str):
+        """Replace emoji symbol to string '[EMOJI]'
+
+        Remove trouble emoji code, if string not emoji, return origin string
+        Judge method: regex match
+        code by CSDN@orangleliu
+        :param judge_str:   wait for judge string
+        :return:            string '[EMOJI]'
+        """
+        emoji_pattern = re.compile(dataload.EMOJI_REGEX, re.S)  # re.UNICODE
+
+        # match emoji string and replace it
+        return emoji_pattern.sub(r'[EMOJI]', judge_str)
+
+    @staticmethod
     def logprowork(log_path, log_content, withtime='y'):
         """Universal work log save
 
+        Notice: If here print series fucntion raise UnicodeEncodeError, it must web page 
+        include emoji symbol encode title when use prettytable to package title info
         :param log_path:    log save path
         :param log_content: log save content
         :param withtime:    default parameter, print and save with real time or not
