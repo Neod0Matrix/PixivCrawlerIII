@@ -12,6 +12,7 @@ from modeoption import RepertoAll as ira            # call illustrator repo mode
 def main():
     """main() function
 
+    Get user input arguments and launch mode function
     :return:    none
     """
     print(Matrix.__doc__)
@@ -51,7 +52,7 @@ def main():
         elif mode == 'exit' or mode == '4':
             dataload.logtime_print("User exit program\n")
             exit(0)
-        # input parameter error
+        # input parameter error, into next circle
         else:
             dataload.logtime_print("Argument(s) error\n")
 

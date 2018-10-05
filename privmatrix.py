@@ -27,7 +27,7 @@ class Matrix:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.8.2 LTE                                                                                      |
+    |       Version: 2.8.3 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -415,9 +415,22 @@ class Matrix:
         self.logprowork(log_path, log_context)
 
     @staticmethod
+    def unicode_escape(raw_str):
+        """Transform '\\uxxx' code to unicode
+
+        Notice: code '\(uxxx)' can auto transform
+        Normally this method only use in javascript page
+        :param raw_str:     wait to decode raw string
+        :return:            unicode escape code
+        """
+
+        return raw_str.encode('utf-8').decode('unicode_escape')
+
+    @staticmethod
     def commit_spansizer(whole_pattern, info_pattern, web_src):
         """A sizer for all of images in once commit item
 
+        After Pixiv 20181002 update, this method only support mode rtn
         :param whole_pattern:   whole info data regex compile pattern
         :param info_pattern:    image info regex compile pattern
         :param web_src:         webpage source

@@ -144,9 +144,8 @@ class RankingTop(object):
         alive_targets = len(whole_urls)
         img_nbr = self.gather_essential_info(option[1], alive_targets)
         self.target_urls = whole_urls[:img_nbr]
-        log_context = 'Gather rankingtop ' + str(img_nbr) + '======>'
+        log_context = 'Gather rankingtop ' + str(img_nbr) + ', target table:'
         self.pvmx.logprowork(self.logpath, log_context)
-
         # use prettytable package info list        
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
@@ -274,7 +273,7 @@ class RepertoAll(object):
             target_url=index_url,
             post_data=self.pvmx.login_bias[2], 
             timeout=30, 
-            target_page_word='Data group',
+            target_page_word='Data group %d' % index,
             need_log=True,
             log_path=self.logpath)
         # catch need info from web source
@@ -325,18 +324,19 @@ class RepertoAll(object):
 
         # calcus nbr need request count
         # each page at most ONE_AUTHOR_MAINPAGE_IMGCOUNT(20181003:48) images
+        require_page_cnt = 0
         if self.max_cnt <= dataload.ONE_PAGE_COMMIT:
-            need_pagecnt = 1
+            require_page_cnt = 1
         else:
-            need_pagecnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT)
+            require_page_cnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT)
             # remainder decision
             if self.max_cnt % dataload.ONE_PAGE_COMMIT != 0:
-                need_pagecnt += 1
+                require_page_cnt += 1
 
         # build request url of one page 
         iid_string_tail = ''
         page_url_array = []
-        for ix in range(need_pagecnt):
+        for ix in range(require_page_cnt):
             # tail number limit
             tmp_tail_nbr = dataload.ONE_PAGE_COMMIT * (ix + 1)
             if tmp_tail_nbr > self.max_cnt:
@@ -349,11 +349,13 @@ class RepertoAll(object):
         
         # gather all data from response xhr page into a temp list
         tmp_receive_list = []
-        for i in range(need_pagecnt):
+        for i in range(require_page_cnt):
             tmp_receive_list += self.crawl_onepage_data(i + 1, page_url_array[i])
         # handle url string
         repo_target_all_list = []
         for i in range(len(tmp_receive_list)):
+            # tasnform title '\\uxxx' to unicode
+            tmp_receive_list[i][1] = self.pvmx.unicode_escape(tmp_receive_list[i][1])
             # build original url without image format
             tmp = tmp_receive_list[i][2]
             tmp = tmp.replace('\\', '')                         # delete character '\' 
@@ -382,32 +384,30 @@ class RepertoAll(object):
         log_context = ("Gather all repo %d, whole target(s): %d"
                        % (self.max_cnt, alive_targetcnt))
         self.pvmx.logprowork(self.logpath, log_context)
-        nbr_capture = int(dataload.logtime_input(
+        require_img_nbr = int(dataload.logtime_input(
                 'Enter you want count: '))
-        while (nbr_capture > alive_targetcnt) or (nbr_capture <= 0):
-            nbr_capture = int(dataload.logtime_input(
+        while (require_img_nbr > alive_targetcnt) or (require_img_nbr <= 0):
+            require_img_nbr = int(dataload.logtime_input(
                 'Error, input count must <= %d and not 0: ' % alive_targetcnt))
-        log_context = ("Check crawl illustrator id:" + self.user_input_id +
-                      " image(s):%d" % nbr_capture)
-        self.pvmx.logprowork(self.logpath, log_context)
 
         # download image number limit
-        for k, i in enumerate(repo_target_all_list[:nbr_capture]):
+        for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
             self.target_capture.append(i[2])    # put url into target capture list
             self.basepages.append(dataload.BASEPAGE_URL + i[0]) # build basepage url
+            
         # display author info
         log_context = ('Illustrator: ' + self.author_name + ' id: '
-                       + self.user_input_id + ' artworks info====>')
+            + self.user_input_id + ' require image(s): ' 
+            + str(require_img_nbr) + ', target table:')
         self.pvmx.logprowork(self.logpath, log_context)
         # use prettytable build a table save and print info list
         image_info_table = PrettyTable(
             ["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
-        for k, i in enumerate(repo_target_all_list[:nbr_capture]):
-            image_info_table.add_row([(k + 1), i[0], 
-            # '\\uxxxx' code need encode and decode
-            i[1].encode('utf-8').decode('unicode_escape'), i[2][57:-4]]) 
+        for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
+            image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]]) 
         # save with str format and no time word
         self.pvmx.logprowork(self.logpath, str(image_info_table), 'N') 
+        del repo_target_all_list            # clear cache 
 
     def start(self):
         """Call method start()
