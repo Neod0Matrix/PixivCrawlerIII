@@ -5,7 +5,7 @@
 # provide modes setting target object
 
 import re
-from prettytable import PrettyTable
+from prettytable import PrettyTable     # info list package table module
 import dataload
 
 class RankingTop(object):
@@ -17,7 +17,7 @@ class RankingTop(object):
         work directory
         log save path
         result html page file save path
-        class Matrix() instance
+        API lib class instance
     """
 
     def __init__(self, workdir, log_path, html_path, pvmx):
@@ -25,7 +25,7 @@ class RankingTop(object):
         :param workdir:     work directory
         :param log_path:    log save path
         :param html_path:   html save path
-        :param pvmx:        class Matrix() instance    
+        :param pvmx:        API library class instance    
         """
         self.workdir = workdir
         self.logpath = log_path
@@ -183,7 +183,7 @@ class RepertoAll(object):
         work directory
         log file name
         result html page file name
-        class Matrix() instance
+        API lib class instance
     """
 
     def __init__(self, workdir, log_name, html_name, pvmx):
@@ -191,7 +191,7 @@ class RepertoAll(object):
         :param workdir:     work directory
         :param log_name:    log name
         :param html_name:   html name
-        :param pvmx:        class Matrix() instance    
+        :param pvmx:        API library class instance
         """
         target_id = dataload.logtime_input(
                     'Target crawl illustrator pixiv-id: ')
@@ -317,7 +317,7 @@ class RepertoAll(object):
         return page_target_info_list 
 
     def crawl_allpage_target(self):
-        """Package all gather url
+        """Package all gather urls
 
         :return:            none
         """

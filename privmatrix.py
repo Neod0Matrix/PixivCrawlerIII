@@ -5,18 +5,18 @@
 # write all universal function into a class and package them
 
 from __future__ import print_function
-import urllib.request, urllib.parse, urllib.error, http.cookiejar
-from retrying import retry
-import threading
-from Crypto.Cipher import AES
-from Crypto import Random
-from PIL import Image
-from collections import OrderedDict
+import urllib.request, urllib.parse, urllib.error, http.cookiejar   # crawler main modules
+from retrying import retry          # timeout auto retry decorator
+import threading                    # multi-thread
+from Crypto.Cipher import AES       # user info local crypto storage
+from Crypto import Random           
+from PIL import Image               # image process module
+from collections import OrderedDict # order dictory
 import time, random, re, os, getpass
-from functools import wraps
+from functools import wraps         # decorator wrapper
 import dataload
 
-class Matrix:
+class PixivAPILib:
     """
     =================================================================================================================
     |       ██████╗ ██╗██╗  ██╗██╗██╗   ██╗ ██████╗██████╗  █████╗ ██╗    ██╗██╗     ███████╗██████╗ ██╗██╗██╗      |
@@ -97,9 +97,7 @@ class Matrix:
 
             # if user judge info are error, delete old AES file and record new info
             if check == 'N' or check == 'n':
-                # delete old AES file
-                os.remove(aes_file_path)
-
+                os.remove(aes_file_path)        # delete old AES file
                 # temporarily enter login information
                 dataload.logtime_print(
                     "Well, you need hand-input your login data: ")
@@ -109,9 +107,7 @@ class Matrix:
                     dataload.realtime_logword(dataload.base_time)
                     + 'Enter your account password: ')
 
-                # generate random aes iv param
-                generate_aes_iv_param = Random.new().read(AES.block_size)
-                # encrypt login info
+                generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
                 username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
                 username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
                 passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
@@ -123,7 +119,6 @@ class Matrix:
                 write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
                 write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
                 write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
-                # close file
                 write_aes_file.close()
             # read info correct, jump out here
             else:
@@ -139,9 +134,7 @@ class Matrix:
                 dataload.realtime_logword(dataload.base_time)
                 + 'Enter your account password: ')
 
-            # generate random aes iv param
-            generate_aes_iv_param = Random.new().read(AES.block_size)
-            # encrypt login info
+            generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
             username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
             username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
             passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
@@ -153,7 +146,6 @@ class Matrix:
             write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
             write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
             write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
-            # close file
             write_aes_file.close()
 
         # build data string
@@ -164,13 +156,14 @@ class Matrix:
 
     @staticmethod
     def replace_emoji(judge_str):
-        """Replace emoji symbol to string '[EMOJI]'
+        """Replace emoji symbol to a replaced string
 
+        @@API that allows external calls
         Remove trouble emoji code, if string not emoji, return origin string
         Judge method: regex match
         code by CSDN@orangleliu
         :param judge_str:   wait for judge string
-        :return:            string '[EMOJI]'
+        :return:            origin string or replaced string
         """
         emoji_pattern = re.compile(dataload.EMOJI_REGEX, re.S)  # re.UNICODE
 
@@ -181,6 +174,7 @@ class Matrix:
     def logprowork(log_path, log_content, withtime='y'):
         """Universal work log save
 
+        @@API that allows external calls
         Notice: If here print series fucntion raise UnicodeEncodeError, it must web page 
         include emoji symbol encode title when use prettytable to package title info
         :param log_path:    log save path
@@ -206,6 +200,7 @@ class Matrix:
     def mkworkdir(self, log_path, folder):
         """Create a crawler work directory
 
+        @@API that allows external calls
         :param log_path:    log save path
         :param folder:      folder create path
         :return:            folder create path
@@ -225,22 +220,8 @@ class Matrix:
         # this step will create a new log file and write the first line
         self.logprowork(log_path, log_context)
 
-    def quick_sort(self, array, l, r):
-        """Quick sort algorithm
-
-        code by CSDN@lookupheaven
-        :param array:       wait for sort array
-        :param l:           edge left
-        :param r:           edge right
-        :return:            none
-        """
-        if l < r:
-            q = self.partition(array, l, r)
-            self.quick_sort(array, l, q - 1)
-            self.quick_sort(array, q + 1, r)
-    
     @staticmethod
-    def partition(array, l, r):
+    def _partition(array, l, r):
         """Partition of quick sort algorithm
 
         code by CSDN@lookupheaven
@@ -259,10 +240,29 @@ class Matrix:
 
         return i + 1
 
+    def quick_sort(self, array, l, r):
+        """Quick sort algorithm
+
+        @@API that allows external calls
+        code by CSDN@lookupheaven
+        Private quick sort algorithm achieve
+        Of course You can use the sorting method provided by the list directly
+        :param array:       wait for sort array
+        :param l:           edge left
+        :param r:           edge right
+        :return:            none
+        """
+        if l < r:
+            q = self._partition(array, l, r)
+            self.quick_sort(array, l, q - 1)
+            self.quick_sort(array, q + 1, r)
+
     def _getproxyserver(self, log_path):
         """Catch a proxy server
 
         When crwaler crawl many times website forbidden host ip
+        If you use VPS as a proxy server, you can set the cost proxy port directly
+        Example: 127.0.0.1:1080
         :param log_path: log save path
         :return:        proxy server, add to opener
         """
@@ -314,9 +314,11 @@ class Matrix:
 
         return proxyserver_d
 
-    def url_request_handler(self, target_url, post_data, timeout, target_page_word, need_log, log_path):
+    def url_request_handler(self, target_url, post_data, timeout, 
+        target_page_word, need_log, log_path):
         """Universal URL request format handler
 
+        @@API that allows external calls
         :param target_url:          target request url
         :param post_data:           post way data
         :param timeout:             request timeout, suggest 30s
@@ -325,7 +327,7 @@ class Matrix:
         :param log_path:            log save path
         :return:                    request result response(raw)
         """
-        response = ''
+        response = None
         try:
             response = self.opener.open(
                 fullurl=target_url,
@@ -337,7 +339,6 @@ class Matrix:
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
-            response = None
         # if response failed, crawler will exit with error code -1
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
@@ -369,7 +370,7 @@ class Matrix:
         self.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
         response = self.url_request_handler(
             target_url=dataload.LOGIN_POSTKEY_URL, 
-            post_data=None, 
+            post_data=None,                 # cannot set data when get post key
             timeout=30, 
             target_page_word='POST-key',
             need_log=False,
@@ -386,7 +387,7 @@ class Matrix:
         log_context = 'Get post-key: ' + postkey
         dataload.logtime_print(log_context)
 
-        # build post-way data order dict
+        # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
         post_orderdict['pixiv_id'] = self.login_bias[0]
         post_orderdict['password'] = self.login_bias[1]
@@ -404,6 +405,7 @@ class Matrix:
     def camouflage_login(self):
         """Camouflage browser to login
 
+        @@API that allows external calls
         :return:        none
         """
         # login init need to commit post data to Pixiv
@@ -419,6 +421,7 @@ class Matrix:
     def save_test_html(self, workdir, content, log_path):
         """Save request web source page in a html file, test use
 
+        @@API that allows external calls
         :param workdir:     work directory
         :param content:     save content(web source code)
         :param log_path:    log save path
@@ -435,7 +438,9 @@ class Matrix:
     def unicode_escape(raw_str):
         """Transform '\\uxxx' code to unicode
 
+        @@API that allows external calls
         Notice: code '\(uxxx)' can auto transform
+        But emoji unicode can't decode
         Normally this method only use in javascript page
         :param raw_str:     wait to decode raw string
         :return:            unicode escape code
@@ -447,6 +452,7 @@ class Matrix:
     def commit_spansizer(whole_pattern, info_pattern, web_src):
         """A sizer for all of images in once commit item
 
+        @@API that allows external calls
         After Pixiv 20181002 update, this method only support mode rtn
         :param whole_pattern:   whole info data regex compile pattern
         :param info_pattern:    image info regex compile pattern
@@ -508,7 +514,6 @@ class Matrix:
         :param log_path:        log save path
         :return:                none
         """
-
         # setting image save info
         img_datatype = 'png'
         image_name = url[57:-4]             # name artwork_id + _px
@@ -529,7 +534,7 @@ class Matrix:
             response = self.opener.open(fullurl=url, timeout=timeout)
         # first request fatal
         except urllib.error.HTTPError as e:
-            ## log_context = "Error Type: " + str(e)
+            ## log_context = "Error type: " + str(e)
             ## self.logprowork(logpath, log_context)
             # http error 404, change image type
             if e.code == dataload.HTTP_NOTFOUND_CODE_404:
@@ -539,7 +544,7 @@ class Matrix:
                 try:
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
                 except urllib.error.HTTPError as e:
-                    ## log_context = "Error Type: " + str(e)
+                    ## log_context = "Error type: " + str(e)
                     ## self.logprowork(logpath, log_context)
                     # not 404 change proxy, cause request server forbidden
                     if e.code != dataload.HTTP_NOTFOUND_CODE_404:
@@ -569,7 +574,7 @@ class Matrix:
             # calcus target source total size
             source_size = float(len(img_bindata) / 1024)
             # multi-thread, no resource lock, it must use class name to call
-            Matrix._datastream_pool += source_size   
+            PixivAPILib._datastream_pool += source_size   
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
@@ -618,11 +623,11 @@ class Matrix:
             """
             try:
                 # try to create a new thread
-                Matrix()._save_oneimage(self.i, self.img_url, self.base_pages,
+                PixivAPILib()._save_oneimage(self.i, self.img_url, self.base_pages,
                                         self.img_path, self.logpath)
             except Exception as e:
                 log_context = "Error Type: " + str(e)
-                Matrix.logprowork(log_context, self.logpath)
+                PixivAPILib.logprowork(log_context, self.logpath)
 
             self.lock.acquire()
             if len(self.queue_t) == self.thmax - 1:
@@ -645,6 +650,7 @@ class Matrix:
     def timer_decorator(origin_func):
         """Timer decorator
 
+        @@API that allows external calls
         Using python decorator feature to design program runtime timer
         In this project this function only have used in internal call
         But it also can be used in external call
@@ -653,7 +659,7 @@ class Matrix:
         """
 
         @wraps(origin_func)     # reserve property of original function 
-        def wrapper(self, log_path, *args, **kwargs):
+        def _wrapper(self, log_path, *args, **kwargs):
             """Timer wrapper
 
             Mainly for the function download_alltarget() to achieve timing expansion
@@ -672,27 +678,27 @@ class Matrix:
 
             endtime = time.time()
             elapesd_time = endtime - starttime
-            average_download_speed = float(Matrix._datastream_pool / elapesd_time)
+            average_download_speed = float(PixivAPILib._datastream_pool / elapesd_time)
             log_context = (
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(Matrix._datastream_pool / 1024), average_download_speed))
+                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed))
             self.logprowork(log_path, log_context)
-            Matrix._datastream_pool = 0   # once task finished, clear pool cache
+            PixivAPILib._datastream_pool = 0   # once task finished, clear pool cache
 
-        return wrapper
+        return _wrapper
 
     @timer_decorator            # add timig decorator
     def download_alltarget(self, log_path, urls, basepages, workdir):
         """Multi-process download all image
 
+        @@API that allows external calls
         :param urls:        all original images urls
         :param basepages:   all referer basic pages
         :param workdir:     work directory
         :param log_path:    log save path
         :return:            none
         """
-
         # here init var alive thread count
         alive_thread_cnt = queueLength = len(urls)
         # first push N tasks to stack 
@@ -705,14 +711,11 @@ class Matrix:
         # create overwrite threading.Thread object
         lock = threading.Lock()
         for i, one_url in enumerate(urls):
-            # handle thread create max limit
-            lock.acquire()
+            lock.acquire()          # handle thread create max limit
             # if now all of threads count less than limit, ok
-            if len(self._MultiThreading.queue_t) \
-                    > thread_max_count:
+            if len(self._MultiThreading.queue_t) > thread_max_count:
                 lock.release()
-                # wait last threads work end
-                self._MultiThreading.event_t.wait()
+                self._MultiThreading.event_t.wait() # wait last threads work end
             else:
                 lock.release()
             # continue to create new one
@@ -730,8 +733,8 @@ class Matrix:
             self.alivethread_counter = threading.active_count()
             # when alive thread count change, print its value
             if alive_thread_cnt != self.alivethread_counter:
-                # update alive thread count
-                alive_thread_cnt = self.alivethread_counter
+                alive_thread_cnt = self.alivethread_counter # update alive thread count
+
                 log_context = ('Currently remaining sub-thread(s): %d/%d'
                     % (alive_thread_cnt - 1, queueLength))
                 self.logprowork(log_path, log_context)
@@ -739,6 +742,8 @@ class Matrix:
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
 
+        @@API that allows external calls
+        This function is not written by me, but I don't remember where it was copied
         :param self:        class self
         :param workdir:     work directory
         :param html_path:   html file save path
@@ -752,9 +757,9 @@ class Matrix:
         html_file.writelines(
             "<html>\r\n"
             "<head>\r\n"
-            "<title>PixivCrawlerIII ResultPage</title>\r\n"
+            "<title>%s ResultPage</title>\r\n"
             "</head>\r\n"
-            "<body>\r\n")
+            "<body>\r\n" % dataload.PROJECT_NAME)
         # put all crawl images into html source code
         html_file.writelines(
             "<script>window.onload = function(){"
@@ -794,11 +799,10 @@ class Matrix:
     def work_finished(self, log_path):
         """Work finished log
 
+        @@API that allows external calls
         :param log_path:    log save path
         :return:            none
         """
-
-        # logo display
         log_context = (
             dataload.LABORATORY + ' ' + dataload.ORGANIZATION + ' technology support |'                       
             ' Code by ' + dataload.ORGANIZATION + '@' + dataload.DEVELOPER)

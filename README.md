@@ -18,13 +18,14 @@ License
     Copyright (c) 2018 @T.WKVER </MATRIX>
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
-    Thanks to fork and watch my project
+    Thanks to watch my project
+    If you want to help me improve this project, please submit an issue or fork
 
 Update
 ======
 
     Version: 2.8.4
-    Last Update Time: 20181005pm1757
+    Last Update Time: 20181006pm1350
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
