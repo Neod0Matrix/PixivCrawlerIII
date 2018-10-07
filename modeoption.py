@@ -39,6 +39,7 @@ class RankingTop(object):
     def gather_essential_info(ormode, whole_nbr):
         """Get input image count
 
+        If user input number more than whole number, set target count is whole number
         :param ormode:      select ranktop ordinary or r18 mode
         :param whole_nbr:   whole ranking crawl count
         :return:            crawl images count
@@ -48,27 +49,34 @@ class RankingTop(object):
         # choose ordinary artwork images
         if ormode == 'o' or ormode == '1':
             # input a string for request image number
-            img_cnt = int(dataload.logtime_input(
-                'Gather whole ordinary vaild target %d, enter you want: '
-                % whole_nbr))
-            while img_cnt > whole_nbr:
-                dataload.logtime_print(
-                    'Input error, rank top at most %d' % whole_nbr)
-                img_cnt = int(dataload.logtime_input(
-                    'Enter again(max is %d): ' % whole_nbr))
+            img_str = dataload.logtime_input(
+                'Gather whole ordinary valid target %d, enter you want: '
+                % whole_nbr)
         # choose R18 artwork images
         elif ormode == 'r' or ormode == '2':
             # input a string for request image number
-            img_cnt = int(dataload.logtime_input(
+            img_str = dataload.logtime_input(
                 'Gather whole R18 vaild target %d, enter you want: '
-                % whole_nbr))
-            while img_cnt > whole_nbr:
-                dataload.logtime_print(
-                    'Input error, rank R18 top at most %d' % whole_nbr)
-                img_cnt = int(dataload.logtime_input(
-                    'Enter again(max is %d): ' % whole_nbr))
+                % whole_nbr)
+        # error input
         else:
-            pass
+            dataload.logtime_print("Argument(s) error\n")
+            exit(-1)
+
+        # if user input isn't number
+        while not img_str.isdigit():
+            dataload.logtime_print(
+                'Input error, your input content was not a decimal number')
+            img_str = dataload.logtime_input(
+                'Enter again(max is %d): ' % whole_nbr)
+        # check input content is a number
+        # if user input number more than limit max, set it to max
+        img_cnt = int(img_str)
+        if img_cnt > whole_nbr:
+            img_cnt = whole_nbr
+        elif img_cnt <= 0:
+            dataload.logtime_print('What the f**k is wrong with you?')
+            exit(-1)
 
         return img_cnt
 
@@ -383,14 +391,23 @@ class RepertoAll(object):
 
         # collection target count
         alive_targetcnt = len(repo_target_all_list)
-        log_context = ("Gather all repo %d, whole target(s): %d"
+        require_img_str = dataload.logtime_input(
+            'Gather all repo %d, whole target(s): %d, enter you want count: '
                        % (self.max_cnt, alive_targetcnt))
-        self.pvmx.logprowork(self.logpath, log_context)
-        require_img_nbr = int(dataload.logtime_input(
-                'Enter you want count: '))
-        while (require_img_nbr > alive_targetcnt) or (require_img_nbr <= 0):
-            require_img_nbr = int(dataload.logtime_input(
-                'Error, input count must <= %d and not 0: ' % alive_targetcnt))
+        # if user input isn't number
+        while not require_img_str.isdigit():
+            dataload.logtime_print(
+                'Input error, your input content was not a decimal number')
+            require_img_str = dataload.logtime_input(
+                'Enter again(max is %d): ' % alive_targetcnt)
+        # check input content is a number
+        # if user input number more than limit max, set it to max
+        require_img_nbr = int(require_img_str)
+        if require_img_nbr > alive_targetcnt:
+            require_img_nbr = alive_targetcnt
+        elif require_img_nbr <= 0:
+            dataload.logtime_print('What the f**k is wrong with you?')
+            exit(-1)
 
         # download image number limit
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):

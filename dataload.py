@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.8.4'
+VERSION             = '2.8.5'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -57,7 +57,7 @@ _rtc = time.localtime()
 _ymd = '%d-%d-%d' % (_rtc[0], _rtc[1], _rtc[2])
 
 # AES encrypto use secret key
-AES_SECRET_KEY = 'secretkeyfrommat'             # 16 bytes secret key
+AES_SECRET_KEY = 'secretkeyfrommat'.encode('utf-8')     # 16 bytes secret key
 
 # universal path
 LOGIN_AES_INI_PATH = os.getcwd() + fs_operation[1] + '.aes_crypto_login.ini' # storage login info AES crypto file, default hide

@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.8.4 LTE                                                                                      |
+    |       Version: 2.8.5 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -102,10 +102,10 @@ class PixivAPILib:
                 dataload.logtime_print(
                     "Well, you need hand-input your login data: ")
                 username = dataload.logtime_input(
-                    'Enter your pixiv id(mailbox), must be a R18: ')
+                    'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
                 passwd = getpass.getpass(
                     dataload.realtime_logword(dataload.base_time)
-                    + 'Enter your account password: ')
+                    + 'Enter your account password: ').encode('utf-8')
 
                 generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
                 username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
@@ -129,10 +129,10 @@ class PixivAPILib:
             dataload.logtime_print(
                 "Create new AES encrypt file to storage your username and password: ")
             username = dataload.logtime_input(
-                'Enter your pixiv id(mailbox), must be a R18: ')
+                'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
             passwd = getpass.getpass(
                 dataload.realtime_logword(dataload.base_time)
-                + 'Enter your account password: ')
+                + 'Enter your account password: ').encode('utf-8')
 
             generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
             username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
