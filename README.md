@@ -25,7 +25,7 @@ Update
 ======
 
     Version: 2.8.4
-    Last Update Time: 20181006pm1350
+    Last Update Time: 20181007pm1251
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -119,3 +119,13 @@ Problems that may arise
 
     If you want to optimze CPU and memory usage, you can use cProfile tool to 
     analysis object usage and use module gc to collecte garbage.
+
+    If you have pycryptodome or pycryptodomex modules installed in your python runtime environment, 
+    since these two modules have the same method as the pycrypto import module 
+    used in this project, it is very likely that such an error occurs:
+    TypeError: Object type <class 'str'> cannot be passed to C Code
+    This is due to the different parameter data types passed 
+    by pycryptodome and pycrypto when constructing crypto using the new method.
+    Solution:   
+        1.Uninstall pycryptodome or pycryptodomex;
+        2.use try and except to compatible two new methods.
