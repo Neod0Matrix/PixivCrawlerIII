@@ -25,7 +25,7 @@ Update
 ======
 
     Version: 2.8.5
-    Last Update Time: 20181007pm1446
+    Last Update Time: 20181007pm1455
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -39,10 +39,10 @@ Platform
 
 ## Requirements
 
-* retrying
-* Pillow
-* prettytable
-* pycryptodome
+* [retrying](https://github.com/rholder/retrying)
+* [Pillow](https://github.com/python-pillow/Pillow)
+* [prettytable](https://pypi.org/project/PrettyTable/)
+* [pycryptodome](https://github.com/Legrandin/pycryptodome)
 
 Run
 ======
