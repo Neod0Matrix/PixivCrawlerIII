@@ -24,8 +24,8 @@ License
 Update
 ======
 
-    Version: 2.8.5
-    Last Update Time: 20181007pm1455
+    Version: 2.8.6
+    Last Update Time: 20181028pm1443
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -65,10 +65,20 @@ Run
     
     python3 pixivcrawleriii.py
 
+    If your crawler is deployed on a remote server, 
+    you can use "python3 -m http.server <port number>" provided by python3 
+    to view the crawl results. 
+    Click the generated html file on the server page to render 
+    the crawl directly picture results in the browser. 
+
 Problems that may arise
 ======
 
     May the good network status with you
+
+    To ensure that the display output is normal, 
+    please set the console code to UTF-8, 
+    the windows system to use the command "chcp 65001".
 
     If you use the crawler too often to request data from the server, 
     the server may return an 10060 error for you, 

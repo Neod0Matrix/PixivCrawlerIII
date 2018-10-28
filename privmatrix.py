@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.8.5 LTE                                                                                      |
+    |       Version: 2.8.6 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -595,26 +595,22 @@ class PixivAPILib:
         queue_t = []
         event_t = threading.Event()     # use event let excess threads wait
 
-        def __init__(self, lock, i, img_url, basepages, img_savepath, log_path, thmax):
+        def __init__(self, lock, thmax, index, url, basepages, workdir, log_path):
             """Provide class arguments
 
-            :param lock:            object lock
-            :param i:               image index
-            :param img_url:         image url
-            :param basepages:       referer basic page
-            :param img_savepath:    image save path
-            :param log_path:        log save path
-            :param thmax:           thread queue max count
+            :param lock:                            object lock
+            :param thmax:                           thread queue max count
+            :param index, url, basepages, workdir:  function _save_oneimage param
+            :param log_path:                        log save path
             """
-
             threading.Thread.__init__(self)     # callable class init
             self.lock = lock
-            self.i = i
-            self.img_url = img_url
-            self.base_pages = basepages
-            self.img_path = img_savepath
-            self.logpath = log_path
             self.thmax = thmax
+            self.index = index
+            self.url = url
+            self.basepages = basepages
+            self.workdir = workdir
+            self.logpath = log_path
 
         def run(self):
             """Overwrite threading.thread run() method
@@ -623,8 +619,8 @@ class PixivAPILib:
             """
             try:
                 # try to create a new thread
-                PixivAPILib()._save_oneimage(self.i, self.img_url, self.base_pages,
-                                        self.img_path, self.logpath)
+                PixivAPILib()._save_oneimage(self.index, self.url, 
+                    self.basepages, self.workdir, self.logpath)
             except Exception as e:
                 log_context = "Error Type: " + str(e)
                 PixivAPILib.logprowork(log_context, self.logpath)
@@ -708,36 +704,44 @@ class PixivAPILib:
         log_context = 'Start to download %d target(s)======>' % queueLength
         self.logprowork(log_path, log_context)
 
-        # create overwrite threading.Thread object
-        lock = threading.Lock()
-        for i, one_url in enumerate(urls):
-            lock.acquire()          # handle thread create max limit
-            # if now all of threads count less than limit, ok
-            if len(self._MultiThreading.queue_t) > thread_max_count:
-                lock.release()
-                self._MultiThreading.event_t.wait() # wait last threads work end
-            else:
-                lock.release()
-            # continue to create new one
-            sub_thread = self._MultiThreading(lock, i, one_url,
-                basepages, workdir, log_path, thread_max_count)
-            # set every download sub-process daemon property
-            # set false, then if you exit one thread, others threads will not end
-            # set true, quit one is quit all
-            sub_thread.setDaemon(True)            
-            sub_thread.create()
+        try:
+            # create overwrite threading.Thread object
+            lock = threading.Lock()
+            for i, one_url in enumerate(urls):
+                lock.acquire()          # handle thread create max limit
+                # if now all of threads count less than limit, ok
+                if len(self._MultiThreading.queue_t) > thread_max_count:
+                    lock.release()
+                    self._MultiThreading.event_t.wait() # wait last threads work end
+                else:
+                    lock.release()
+                # continue to create new one
+                sub_thread = self._MultiThreading(lock, thread_max_count, i, 
+                    one_url, basepages, workdir, log_path)
+                # set every download sub-process daemon property
+                # set false, then if you exit one thread, others threads will not end
+                # set true, quit one is quit all
+                sub_thread.setDaemon(True)            
+                sub_thread.create()
 
-        # parent thread wait all sub-thread end
-        while alive_thread_cnt > 1:
-            # global variable update
-            self.alivethread_counter = threading.active_count()
-            # when alive thread count change, print its value
-            if alive_thread_cnt != self.alivethread_counter:
-                alive_thread_cnt = self.alivethread_counter # update alive thread count
+            # parent thread wait all sub-thread end
+            # the count of all threads is 1 parent thread and n sub-thread(s)
+            # when all pictures have been downloaded over, thread count is 1
+            while alive_thread_cnt > 1:
+                # global variable update
+                self.alivethread_counter = threading.active_count()
+                # when alive thread count change, print its value
+                if alive_thread_cnt != self.alivethread_counter:
+                    alive_thread_cnt = self.alivethread_counter # update alive thread count
 
-                log_context = ('Currently remaining sub-thread(s): %d/%d'
-                    % (alive_thread_cnt - 1, queueLength))
-                self.logprowork(log_path, log_context)
+                    # display alive sub-thread count
+                    log_context = ('Currently remaining sub-thread(s): %d/%d'
+                        % (alive_thread_cnt - 1, queueLength))
+                    self.logprowork(log_path, log_context)
+        # user press ctrl+c interrupt thread
+        except KeyboardInterrupt:
+            log_context = 'User interrupt thread, exit'
+            self.logprowork(log_path, log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
