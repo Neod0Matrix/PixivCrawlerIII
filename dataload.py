@@ -24,6 +24,16 @@ SHELL_BASHHEAD = PROJECT_NAME + '@' + ORGANIZATION + ':~$ '
 logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
 logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
 
+def crawler_logo():
+    """Print crawler logo
+
+    :return:            none
+    """
+    log_context = (
+        LABORATORY + ' ' + ORGANIZATION + ' technology support |'                       
+        ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
+    logtime_print(log_context)
+
 SYSTEM_MAX_THREADS = 500                # setting system can contain max tasks
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
 

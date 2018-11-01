@@ -280,6 +280,10 @@ class PixivAPILib:
             self.logprowork(log_path, log_context)
             response = None
             # here don't exit, log error
+        except KeyboardInterrupt:
+            log_context = 'User interrupt, exit'
+            self.logprowork(log_path, log_context)
+            response = None
 
         # proxy error but don't exit, ignore this
         if response is not None:
@@ -339,6 +343,12 @@ class PixivAPILib:
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
+        except KeyboardInterrupt:
+            log_context = 'User interrupt request, exit program'
+            if need_log == True:
+                self.logprowork(log_path, log_context)
+            exit()
+
         # if response failed, crawler will exit with error code -1
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
@@ -799,20 +809,6 @@ class PixivAPILib:
 
         log_context = 'Image browse html generate finished'
         self.logprowork(log_path, log_context)
-
-    def work_finished(self, log_path):
-        """Work finished log
-
-        @@API that allows external calls
-        :param log_path:    log save path
-        :return:            none
-        """
-        log_context = (
-            dataload.LABORATORY + ' ' + dataload.ORGANIZATION + ' technology support |'                       
-            ' Code by ' + dataload.ORGANIZATION + '@' + dataload.DEVELOPER)
-        self.logprowork(log_path, log_context)
-        # open work directory, check result
-        ## os.system(dataload.fs_operation[2] + ' ' + dataload.fs_operation[0])
 
 # =====================================================================
 # code by </MATRIX>@Neod Anderjon(LeaderN)

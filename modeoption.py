@@ -180,7 +180,6 @@ class RankingTop(object):
         self.pvmx.download_alltarget(self.logpath, self.target_urls, 
             self.basepages, self.workdir)
         self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
-        self.pvmx.work_finished(self.logpath)
 
 class RepertoAll(object):
     """Crawl any illustrator repertory all artworks
@@ -440,9 +439,9 @@ class RepertoAll(object):
         self.gather_preloadinfo()
         self.crawl_allpage_target()
 
-        self.pvmx.download_alltarget(self.logpath, self.target_capture, self.basepages, self.workdir)
+        self.pvmx.download_alltarget(self.logpath, self.target_capture, 
+            self.basepages, self.workdir)
         self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
-        self.pvmx.work_finished(self.logpath)
 
 # =====================================================================
 # code by </MATRIX>@Neod Anderjon(LeaderN)

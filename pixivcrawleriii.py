@@ -50,11 +50,12 @@ def main():
             print(PixivAPILib.__doc__)
         # user normal exit program
         elif mode == 'exit' or mode == '4':
-            dataload.logtime_print("User exit program\n")
+            dataload.logtime_print("User exit program")
+            dataload.crawler_logo()         # exit print logo
             exit(0)
         # input parameter error, into next circle
         else:
-            dataload.logtime_print("Argument(s) error\n")
+            dataload.logtime_print("Argument(s) error")
 
 if __name__ == '__main__':
     main()
