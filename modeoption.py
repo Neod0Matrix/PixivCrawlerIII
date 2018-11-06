@@ -34,7 +34,6 @@ class RankingTop(object):
         # class inside global variable
         self.target_urls = []
         self.basepages = []  
-        self.image_info_table = ''    
         
     @staticmethod
     def gather_essential_info(ormode, whole_nbr):
@@ -156,15 +155,15 @@ class RankingTop(object):
         log_context = 'Gather rankingtop ' + str(img_nbr) + ', target table:'
         self.pvmx.logprowork(self.logpath, log_context)
         # use prettytable package info list        
-        self.image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
+        image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
             # basepage will be a headers referer
             self.basepages.append(dataload.BASEPAGE_URL + i[3])
-            self.image_info_table.add_row([(k + 1), i[3], i[1], 
+            image_info_table.add_row([(k + 1), i[3], i[1], 
                 self.target_urls[k][57:-4], i[4], i[2]])
         # save table without time header word
-        self.pvmx.logprowork(self.logpath, str(self.image_info_table), 'N')
+        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
 
     def start(self):
         """Call method start()
@@ -180,7 +179,6 @@ class RankingTop(object):
 
         self.pvmx.download_alltarget(self.logpath, self.target_urls, 
             self.basepages, self.workdir)
-        self.pvmx.integrate_datastream_list(self.image_info_table, self.logpath)
         self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
 
 class RepertoAll(object):
@@ -215,7 +213,6 @@ class RepertoAll(object):
         self.pure_idlist = []
         self.target_capture = []
         self.basepages = []
-        self.image_info_table = ''
 
     def gather_preloadinfo(self):
         """Crawler need to know how many images do you want
@@ -421,12 +418,12 @@ class RepertoAll(object):
             + str(require_img_nbr) + ', target table:')
         self.pvmx.logprowork(self.logpath, log_context)
         # use prettytable build a table save and print info list
-        self.image_info_table = PrettyTable(
+        image_info_table = PrettyTable(
             ["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
-            self.image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]]) 
+            image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]]) 
         # save with str format and no time word
-        self.pvmx.logprowork(self.logpath, str(self.image_info_table), 'N')
+        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
         del repo_target_all_list            # clear cache 
 
     def start(self):
@@ -443,7 +440,6 @@ class RepertoAll(object):
 
         self.pvmx.download_alltarget(self.logpath, self.target_capture, 
             self.basepages, self.workdir)
-        self.pvmx.integrate_datastream_list(self.image_info_table, self.logpath)
         self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
 
 # =====================================================================

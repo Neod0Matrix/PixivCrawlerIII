@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.1 LTE                                                                                      |
+    |       Version: 2.9.2 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -39,7 +39,7 @@ class PixivAPILib:
 
     # this download data stream counter involves the simultaneous access of multi-threaded resources
     # which must be declared as class attribute # variables for access
-    _datastream_pool = []   
+    _datastream_pool = 0 
 
     def __init__(self):
         """Create a class public call webpage opener with cookie
@@ -582,9 +582,9 @@ class PixivAPILib:
         if response.getcode() == dataload.HTTP_OK_CODE_200:
             img_bindata = response.read()
             # calcus target source data stream size
-            source_size = round(float(len(img_bindata) / 1024), 2)
             # multi-thread, no resource lock, it must use class name to call
-            PixivAPILib._datastream_pool.insert(index, source_size)   
+            source_size = round(float(len(img_bindata) / 1024), 2)
+            PixivAPILib._datastream_pool += source_size
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
@@ -682,13 +682,13 @@ class PixivAPILib:
 
             endtime = time.time()
             elapesd_time = endtime - starttime
-            total_data_stream = sum(PixivAPILib._datastream_pool)
-            average_download_speed = float(total_data_stream / elapesd_time)
+            average_download_speed = float(PixivAPILib._datastream_pool / elapesd_time)
             log_context = (
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(total_data_stream / 1024), average_download_speed))
+                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed))
             self.logprowork(log_path, log_context)
+            PixivAPILib._datastream_pool = 0    # clear global data stream list
 
         return _wrapper
 
@@ -747,31 +747,16 @@ class PixivAPILib:
                 if alive_thread_cnt != self.alivethread_counter:
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
-                    log_context = 'Currently remaining sub-thread(s): {:4d}/{:4d}'
-                    dataload.logtime_flush_display(log_context, alive_thread_cnt - 1, queueLength)
+                    log_context = 'Currently remaining sub-thread(s):[{:4d}/{:4d}], completed:[{:4.1%}]'
+                    dataload.logtime_flush_display(log_context, \
+                        alive_thread_cnt - 1, queueLength, \
+                        ((queueLength - (alive_thread_cnt - 1)) / queueLength))
             log_context = ', sub-threads execute finished'
             self.logprowork(log_path, log_context, 'N')
-
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
-            log_context = 'User interrupt thread, exit'
-            self.logprowork(log_path, log_context)
-
-    def integrate_datastream_list(self, pt_list, log_path):
-        """Integrate data stream pool value to prettytable list 
-
-        Add an new column for data stream value
-        :param pt_list:     prettytable list
-        :param log_path:    log save path
-        :return:            none
-        """
-        # integrate data stream pool format
-        PixivAPILib._datastream_pool = list(map(lambda fn: str(fn) + 'kB', \
-            PixivAPILib._datastream_pool))
-        pt_list.add_column('Size', PixivAPILib._datastream_pool)
-        self.logprowork(log_path, str(pt_list), 'N')
-        PixivAPILib._datastream_pool.clear()    # clear global data stream list
-        pt_list.clear()                         # clear param prettytable list            
+            log_context = ', user interrupt thread, exit'
+            self.logprowork(log_path, log_context, 'N')  
 
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
