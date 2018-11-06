@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.8.6 LTE                                                                                      |
+    |       Version: 2.9.1 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -39,7 +39,7 @@ class PixivAPILib:
 
     # this download data stream counter involves the simultaneous access of multi-threaded resources
     # which must be declared as class attribute # variables for access
-    _datastream_pool = 0    
+    _datastream_pool = []   
 
     def __init__(self):
         """Create a class public call webpage opener with cookie
@@ -581,16 +581,13 @@ class PixivAPILib:
         # save image bin data to files
         if response.getcode() == dataload.HTTP_OK_CODE_200:
             img_bindata = response.read()
-            # calcus target source total size
-            source_size = float(len(img_bindata) / 1024)
+            # calcus target source data stream size
+            source_size = round(float(len(img_bindata) / 1024), 2)
             # multi-thread, no resource lock, it must use class name to call
-            PixivAPILib._datastream_pool += source_size   
+            PixivAPILib._datastream_pool.insert(index, source_size)   
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
-            log_context = 'No.%d target[%s] download finished, image size [%dkB]' \
-                % (index + 1, image_name, source_size)
-            self.logprowork(log_path, log_context)
 
     class _MultiThreading(threading.Thread):
         """Overrides its run method by inheriting the Thread class
@@ -628,13 +625,14 @@ class PixivAPILib:
             :return:    none
             """
             try:
-                # try to create a new thread
+                # package download one image thread
                 PixivAPILib()._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
                 log_context = "Error Type: " + str(e)
                 PixivAPILib.logprowork(log_context, self.logpath)
 
+            # thread queue adjust, lock it
             self.lock.acquire()
             if len(self.queue_t) == self.thmax - 1:
                 self.event_t.set()
@@ -675,7 +673,7 @@ class PixivAPILib:
             :return:            none
             """
 
-            log_context = "Launch timer decorator, start program runtime timer..."
+            log_context = "Launch timer decorator, start download threads timer"
             self.logprowork(log_path, log_context)
             starttime = time.time()    
 
@@ -684,13 +682,13 @@ class PixivAPILib:
 
             endtime = time.time()
             elapesd_time = endtime - starttime
-            average_download_speed = float(PixivAPILib._datastream_pool / elapesd_time)
+            total_data_stream = sum(PixivAPILib._datastream_pool)
+            average_download_speed = float(total_data_stream / elapesd_time)
             log_context = (
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed))
+                % (float(total_data_stream / 1024), average_download_speed))
             self.logprowork(log_path, log_context)
-            PixivAPILib._datastream_pool = 0   # once task finished, clear pool cache
 
         return _wrapper
 
@@ -711,11 +709,12 @@ class PixivAPILib:
         thread_max_count = queueLength if queueLength \
             <= dataload.SYSTEM_MAX_THREADS \
             else queueLength - dataload.SYSTEM_MAX_THREADS 
-        log_context = 'Start to download %d target(s)======>' % queueLength
+        log_context = 'Hit %d target(s), start download task' % queueLength
         self.logprowork(log_path, log_context)
 
+        # the download process may fail
+        # capture timeout and the user interrupt fault and exit the failed thread
         try:
-            # create overwrite threading.Thread object
             lock = threading.Lock()
             for i, one_url in enumerate(urls):
                 lock.acquire()          # handle thread create max limit
@@ -725,7 +724,9 @@ class PixivAPILib:
                     self._MultiThreading.event_t.wait() # wait last threads work end
                 else:
                     lock.release()
-                # continue to create new one
+                # build overwrite threading.Thread object
+                log_context = 'Create no.{:4d} download target object'
+                dataload.logtime_flush_display(log_context, i + 1)
                 sub_thread = self._MultiThreading(lock, thread_max_count, i, 
                     one_url, basepages, workdir, log_path)
                 # set every download sub-process daemon property
@@ -733,6 +734,8 @@ class PixivAPILib:
                 # set true, quit one is quit all
                 sub_thread.setDaemon(True)            
                 sub_thread.create()
+            log_context = ', all threads have been created OK'
+            self.logprowork(log_path, log_context, 'N')
 
             # parent thread wait all sub-thread end
             # the count of all threads is 1 parent thread and n sub-thread(s)
@@ -743,15 +746,32 @@ class PixivAPILib:
                 # when alive thread count change, print its value
                 if alive_thread_cnt != self.alivethread_counter:
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
-
                     # display alive sub-thread count
-                    log_context = ('Currently remaining sub-thread(s): %d/%d'
-                        % (alive_thread_cnt - 1, queueLength))
-                    self.logprowork(log_path, log_context)
+                    log_context = 'Currently remaining sub-thread(s): {:4d}/{:4d}'
+                    dataload.logtime_flush_display(log_context, alive_thread_cnt - 1, queueLength)
+            log_context = ', sub-threads execute finished'
+            self.logprowork(log_path, log_context, 'N')
+
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
             log_context = 'User interrupt thread, exit'
             self.logprowork(log_path, log_context)
+
+    def integrate_datastream_list(self, pt_list, log_path):
+        """Integrate data stream pool value to prettytable list 
+
+        Add an new column for data stream value
+        :param pt_list:     prettytable list
+        :param log_path:    log save path
+        :return:            none
+        """
+        # integrate data stream pool format
+        PixivAPILib._datastream_pool = list(map(lambda fn: str(fn) + 'kB', \
+            PixivAPILib._datastream_pool))
+        pt_list.add_column('Size', PixivAPILib._datastream_pool)
+        self.logprowork(log_path, str(pt_list), 'N')
+        PixivAPILib._datastream_pool.clear()    # clear global data stream list
+        pt_list.clear()                         # clear param prettytable list            
 
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
@@ -764,7 +784,6 @@ class PixivAPILib:
         :param log_path:    log save path
         :return:            none
         """
-
         html_file = open(html_path, "w")
         # build html background page text
         # write a title
@@ -800,13 +819,11 @@ class PixivAPILib:
                     "oriWidth = %d oriHeight = %d />\r\n"
                     % ("./" + i, width * 1.0 / height * 200, 200, width, height))
                 ## html_file.writelines("</a>\r\n")
-
         # end of htmlfile
         html_file.writelines(
             "</body>\r\n"
             "</html>")
         html_file.close()
-
         log_context = 'Image browse html generate finished'
         self.logprowork(log_path, log_context)
 

@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.8.6'
+VERSION             = '2.9.1'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -21,8 +21,13 @@ realtime_logword = lambda bt: "[%02d:%02d:%02d] " \
                                 (time.time() - bt) % 60)
 
 SHELL_BASHHEAD = PROJECT_NAME + '@' + ORGANIZATION + ':~$ '
-logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
-logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
+# input param method with time log
+logtime_input = lambda str_: input(realtime_logword(base_time) + str_)  
+# print string method with time log
+logtime_print = lambda str_: print(realtime_logword(base_time) + str_)  
+# flush simple line method with time log
+logtime_flush_display = lambda str_, *args_, **kwargs_: print(('\r' + \
+    realtime_logword(base_time) + str_).format(*args_, **kwargs_), end="") 
 
 def crawler_logo():
     """Print crawler logo
@@ -34,31 +39,32 @@ def crawler_logo():
         ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
     logtime_print(log_context)
 
-SYSTEM_MAX_THREADS = 500                # setting system can contain max tasks
+SYSTEM_MAX_THREADS = 500                # setting system can contain max sub-threads
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
 
 def platform_setting():
-    """Set os platform to set folder format
+    """Get OS platform to set folder format
 
     Folder must with directory symbol '/' or '\\'
     :return:    platform work directory
     """
-    
-    work_dir, symbol, file_manager = None, None, None
+    work_dir, symbol = None, None
     home_dir = os.environ['HOME']   # get system default setting home folder, for windows
     get_login_user = os.getlogin()  # get login user name to build user home directory, for linux
     # linux
     if os.name == 'posix':
-        work_dir, symbol = '/home/' + get_login_user + '/Pictures/Crawler/', '/'
-        file_manager = 'nautilus'
+        if get_login_user != 'root':
+            work_dir = '/home/' + get_login_user + '/Pictures/Crawler/'
+        else:
+            work_dir = '/root/Pictures/Crawler/'
+        symbol = '/'
     # windows
     elif os.name == 'nt':
         work_dir, symbol = home_dir + '\\PictureDatabase\\Crawler\\', '\\'
-        file_manager = 'explorer'
     else:
         pass
 
-    return work_dir, symbol, file_manager
+    return work_dir, symbol
 # for filesystem operation entity
 fs_operation = platform_setting()
 
@@ -123,6 +129,8 @@ HTTP_OK_CODE_200 = 200
 HTTP_REQUESTFAILED_CODE_403 = 403
 HTTP_NOTFOUND_CODE_404 = 404
 # login headers info dict
+# here is an example of two different operating systems for headers
+# but in fact, the crawler can pretend to be the headers of any operating system
 _USERAGENT_LINUX = ("Mozilla/5.0 (X11; Linux x86_64) " 
                    "AppleWebKit/537.36 (KHTML, like Gecko) " 
                    "Chrome/56.0.2924.87 Safari/537.36")
