@@ -725,7 +725,7 @@ class PixivAPILib:
                 else:
                     lock.release()
                 # build overwrite threading.Thread object
-                log_context = 'Create no.{:4d} download target object'
+                log_context = 'Created {:d} download target object(s)'
                 dataload.logtime_flush_display(log_context, i + 1)
                 sub_thread = self._MultiThreading(lock, thread_max_count, i, 
                     one_url, basepages, workdir, log_path)
@@ -734,7 +734,7 @@ class PixivAPILib:
                 # set true, quit one is quit all
                 sub_thread.setDaemon(True)            
                 sub_thread.create()
-            log_context = ', all threads have been created OK'
+            log_context = ', all threads have been loaded OK'
             self.logprowork(log_path, log_context, 'N')
 
             # parent thread wait all sub-thread end
@@ -747,7 +747,7 @@ class PixivAPILib:
                 if alive_thread_cnt != self.alivethread_counter:
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
-                    log_context = 'Currently remaining sub-thread(s):[{:4d}/{:4d}], completed:[{:4.1%}]'
+                    log_context = 'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})'
                     dataload.logtime_flush_display(log_context, \
                         alive_thread_cnt - 1, queueLength, \
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength))
@@ -755,7 +755,7 @@ class PixivAPILib:
             self.logprowork(log_path, log_context, 'N')
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
-            log_context = ', user interrupt thread, exit'
+            log_context = ', user interrupt a thread, exit all threads'
             self.logprowork(log_path, log_context, 'N')  
 
     def htmlpreview_build(self, workdir, html_path, log_path):
@@ -763,6 +763,8 @@ class PixivAPILib:
 
         @@API that allows external calls
         This function is not written by me, but I don't remember where it was copied
+        If you run this crawler in server, you can use python simple http server
+        and the html file built by this function to browse result
         :param self:        class self
         :param workdir:     work directory
         :param html_path:   html file save path

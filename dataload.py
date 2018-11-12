@@ -57,6 +57,8 @@ def platform_setting():
             work_dir = '/home/' + get_login_user + '/Pictures/Crawler/'
         else:
             work_dir = '/root/Pictures/Crawler/'
+        # if your run crawler program in Android Pydroid
+        # change here work_dir to /sdcard/Pictures/Crawler/
         symbol = '/'
     # windows
     elif os.name == 'nt':
