@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.2 LTE                                                                                      |
+    |       Version: 2.9.3 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -601,18 +601,15 @@ class PixivAPILib:
         # handle thread max limit
         queue_t = []
         event_t = threading.Event()     # use event let excess threads wait
+        lock_t = threading.Lock()       # thread lock
 
-        def __init__(self, lock, thmax, index, url, basepages, workdir, log_path):
+        def __init__(self, index, url, basepages, workdir, log_path):
             """Provide class arguments
 
-            :param lock:                            object lock
-            :param thmax:                           thread queue max count
             :param index, url, basepages, workdir:  function _save_oneimage param
             :param log_path:                        log save path
             """
             threading.Thread.__init__(self)     # callable class init
-            self.lock = lock
-            self.thmax = thmax
             self.index = index
             self.url = url
             self.basepages = basepages
@@ -633,23 +630,24 @@ class PixivAPILib:
                 PixivAPILib.logprowork(log_context, self.logpath)
 
             # thread queue adjust, lock it
-            self.lock.acquire()
-            if len(self.queue_t) == self.thmax - 1:
+            # remove end thread from list  
+            self.lock_t.acquire()
+            self.queue_t.remove(self)       
+            if len(self.queue_t) == dataload.SYSTEM_MAX_THREADS - 1:
                 self.event_t.set()
-                self.event_t.clear()
-            self.queue_t.remove(self)       # remove end thread from list       
-            self.lock.release()
+                self.event_t.clear()     
+            self.lock_t.release()
 
         def create(self):
             """Create a new thread
 
-            It can handle more over threads create
+            Use built-in queue to manage threads list
             :return:    none
             """
-            self.lock.acquire()
+            self.lock_t.acquire()
             self.queue_t.append(self)
-            self.lock.release()
-            self.start()        # finally call start() method 
+            self.lock_t.release()
+            self.start()        
 
     def timer_decorator(origin_func):
         """Timer decorator
@@ -703,39 +701,40 @@ class PixivAPILib:
         :param log_path:    log save path
         :return:            none
         """
-        # here init var alive thread count
+        thread_block_flag = False               # thread blocking flag
         alive_thread_cnt = queueLength = len(urls)
-        # first push N tasks to stack 
-        thread_max_count = queueLength if queueLength \
-            <= dataload.SYSTEM_MAX_THREADS \
-            else queueLength - dataload.SYSTEM_MAX_THREADS 
         log_context = 'Hit %d target(s), start download task' % queueLength
         self.logprowork(log_path, log_context)
 
         # the download process may fail
         # capture timeout and the user interrupt fault and exit the failed thread
         try:
-            lock = threading.Lock()
             for i, one_url in enumerate(urls):
-                lock.acquire()          # handle thread create max limit
-                # if now all of threads count less than limit, ok
-                if len(self._MultiThreading.queue_t) > thread_max_count:
-                    lock.release()
-                    self._MultiThreading.event_t.wait() # wait last threads work end
+                self._MultiThreading.lock_t.acquire()          
+                if len(self._MultiThreading.queue_t) > dataload.SYSTEM_MAX_THREADS :
+                    thread_block_flag = True
+                    self._MultiThreading.lock_t.release()
+                    # if the number of created threads reach max limit
+                    # program will stop here, wait all of threads have been created over
+                    # when one thread executed over, create next one
+                    self._MultiThreading.event_t.wait() 
                 else:
-                    lock.release()
+                    self._MultiThreading.lock_t.release()
                 # build overwrite threading.Thread object
-                log_context = 'Created {:d} download target object(s)'
-                dataload.logtime_flush_display(log_context, i + 1)
-                sub_thread = self._MultiThreading(lock, thread_max_count, i, 
-                    one_url, basepages, workdir, log_path)
+                sub_thread = self._MultiThreading(i, one_url, basepages, workdir, log_path)
                 # set every download sub-process daemon property
                 # set false, then if you exit one thread, others threads will not end
                 # set true, quit one is quit all
                 sub_thread.setDaemon(True)            
                 sub_thread.create()
+                if thread_block_flag == False:
+                    log_context = 'Created {:d} download target object(s)'
+                else:
+                    log_context = 'Created {:d} download target object(s), thread creation is blocked, please wait'
+                dataload.logtime_flush_display(log_context, i + 1)
             log_context = ', all threads have been loaded OK'
             self.logprowork(log_path, log_context, 'N')
+            thread_block_flag = False
 
             # parent thread wait all sub-thread end
             # the count of all threads is 1 parent thread and n sub-thread(s)
@@ -747,6 +746,7 @@ class PixivAPILib:
                 if alive_thread_cnt != self.alivethread_counter:
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
+                    # its number wouldn't more than thread max count
                     log_context = 'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})'
                     dataload.logtime_flush_display(log_context, \
                         alive_thread_cnt - 1, queueLength, \
