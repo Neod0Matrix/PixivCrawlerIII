@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.3 LTE                                                                                      |
+    |       Version: 2.9.4 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -647,7 +647,15 @@ class PixivAPILib:
             self.lock_t.acquire()
             self.queue_t.append(self)
             self.lock_t.release()
-            self.start()        
+            # if the system has insufficient memory
+            # it will not be able to create more threads
+            # this step will fail
+            try:
+                self.start()        
+            except Exception as e:
+                log_context = "Error Type: " + str(e)
+                PixivAPILib.logprowork(log_context, self.logpath)
+                exit
 
     def timer_decorator(origin_func):
         """Timer decorator

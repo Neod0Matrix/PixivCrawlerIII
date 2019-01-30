@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.3'
+VERSION             = '2.9.4'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -39,7 +39,7 @@ def crawler_logo():
         ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
     logtime_print(log_context)
 
-SYSTEM_MAX_THREADS = 500                # setting system can contain max sub-threads
+SYSTEM_MAX_THREADS = 400                # setting system can contain max sub-threads
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
 
 def platform_setting():

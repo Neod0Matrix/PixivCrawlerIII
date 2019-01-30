@@ -15,7 +15,7 @@
 License
 ======
     
-    Copyright (c) 2018 @T.WKVER </MATRIX>
+    Copyright (c) 2019 @T.WKVER </MATRIX>
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
@@ -24,8 +24,8 @@ License
 Update
 ======
 
-    Version: 2.9.3
-    Last Update Time: 20181116pm2108
+    Version: 2.9.4
+    Last Update Time: 20190130pm1423
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -136,3 +136,10 @@ Problems that may arise
     You need to delete the original .aes_crypto_login.ini file, 
     uninstall the pycrypto module from the python environment, 
     and install the pycryptodome module.
+
+    If the system memory is very low, 
+    even the [SYSTEM_MAX_THREADS(setting in dataload.py L42)] threads of the basic settings 
+    can not be created, then the program will be stuck for a period of time 
+    and finally report an error.
+    In order to ensure the successful operation of the program, 
+    please be sure to leave more than 2G free memory.
