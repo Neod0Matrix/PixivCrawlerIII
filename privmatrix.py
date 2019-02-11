@@ -27,7 +27,7 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.4 LTE                                                                                      |
+    |       Version: 2.9.5 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |

@@ -235,8 +235,16 @@ class RepertoAll(object):
         # id list result may include some garbages, use number regex get pure result
         number_pattern = re.compile(dataload.NUMBER_REGEX, re.S)
         for index in ajax_idlist:
-            one_pure_id = re.findall(number_pattern, index)[0]
-            self.pure_idlist.append(one_pure_id)
+            one_pure_id = re.findall(number_pattern, index)
+            if one_pure_id:
+                self.pure_idlist.append(one_pure_id[0])
+            else:
+                # very rare error, only happening in this address:
+                # https://www.pixiv.net/member_illust.php?id=15115322
+                log_context = 'Get ajax page valid info failed, exit'
+                self.pvmx.logprowork(self.logpath, log_context)
+                exit(-1)
+
         # use quick-sort algorithm to handle id number
         # descending order sort
         pure_idlist_nbr = []

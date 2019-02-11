@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.4'
+VERSION             = '2.9.5'
 
 # logfile log real-time operation
 base_time = time.time()
