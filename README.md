@@ -24,8 +24,8 @@ License
 Update
 ======
 
-    Version: 2.9.5
-    Last Update Time: 20190211pm2246
+    Version: 2.9.6
+    Last Update Time: 20190502pm2014
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -70,6 +70,37 @@ Run
     to view the crawl results. 
     Click the generated html file on the server page to render 
     the crawl directly picture results in the browser. 
+
+- New server mode
+
+    Version V2.9.6 adds a server mode based on usage feedback provided by enthusiastic users.
+    The server mode is different from the interactive mode, 
+    that is, the user does not need to perform arguments determination 
+    according to the data obtained by the crawler according to the step, 
+    and the arguments is passed to the crawler by using the command line.
+
+    In this way, the user can deploy the crawler on the VPS 
+    and configure it with the Linux crontab or Windows task scheduler for timed crawling.
+    Or just don't have to look at the characters have been refreshed on the command line, 
+    it should be very convenient.
+
+    Notice:
+    If the crawler detects that the command line argument is empty, incomplete, or incorrect, 
+    the crawler will exit or enter interactive mode.
+    For security reasons, the user's Pixiv-ID and password cannot be passed 
+    in the form of command line parameters. 
+    You must enter the local key file in interactive mode before you can use the server mode.
+
+    > Arguments:\
+    -h/--help       Print usage page\
+    -m/--mode       Set mode, RTN(1)/IRA(2)\
+    -r/--R18        ordinary(1)/R18(2), only support Mode RTN\
+    -l/--list       Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN\
+    -i/--id         Illustrator ID, only support Mode IRA\
+    \
+    >Example:\
+    python3 pixivcrawleriii.py -m 1 -r 1 -l 1\
+    python3 pixivcrawleriii.py -m 2 -i 0000000
 
 Problems that may arise
 ======

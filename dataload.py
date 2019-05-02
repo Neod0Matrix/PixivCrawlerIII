@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.5'
+VERSION             = '2.9.6'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -56,9 +56,9 @@ def platform_setting():
         if get_login_user != 'root':
             work_dir = '/home/' + get_login_user + '/Pictures/Crawler/'
         else:
-            work_dir = '/root/Pictures/Crawler/'
-        # if your run crawler program in Android Pydroid
-        # change here work_dir to /sdcard/Pictures/Crawler/
+			# if your run crawler program in Android Pydroid 3
+			# change here work_dir to /sdcard/Pictures/Crawler/
+            work_dir = '/sdcard/Pictures/Crawler/'
         symbol = '/'
     # windows
     elif os.name == 'nt':

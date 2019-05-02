@@ -20,18 +20,24 @@ class RankingTop(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_path, html_path, pvmx):
+    def __init__(self, workdir, log_path, html_path, pvmx, ir_mode, rtn_r18_arg='', rtn_rank_type=''):
         """
-        :param workdir:     work directory
-        :param log_path:    log save path
-        :param html_path:   html save path
-        :param pvmx:        API library class instance    
+        :param workdir:         work directory
+        :param log_path:        log save path
+        :param html_path:       html save path
+        :param pvmx:            API library class instance    
+        :param ir_mode:         interactive mode or server mode
+        :param rtn_r18_arg:     RTN mode set R18 or not
+        :param rtn_rank_type:   RTN mode set ranking type
         """
         self.workdir = workdir
         self.logpath = log_path
         self.htmlpath = html_path
         self.pvmx = pvmx
+        self.ir_mode = ir_mode
         # class inside global variable
+        self.rtn_r18_arg = rtn_r18_arg
+        self.rtn_rank_type = rtn_rank_type
         self.target_urls = []
         self.basepages = []  
         
@@ -40,6 +46,7 @@ class RankingTop(object):
         """Get input image count
 
         If user input number more than whole number, set target count is whole number
+        Only intercative mode call this function
         :param ormode:      select ranktop ordinary or r18 mode
         :param whole_nbr:   whole ranking crawl count
         :return:            crawl images count
@@ -87,14 +94,23 @@ class RankingTop(object):
         """
 
         rank_word, req_url = None, None
-        log_context = 'Gather ranking list======>'
-        self.pvmx.logprowork(self.logpath, log_context)
 
-        ormode = dataload.logtime_input(
-            'Select ranking type, ordinary(o|1) or r18(r|2): ')
+        if self.ir_mode == 1:
+            log_context = 'Gather ranking list======>'
+            self.pvmx.logprowork(self.logpath, log_context)
+
+            ormode = dataload.logtime_input(
+                'Select ranking type, ordinary(o|1) or r18(r|2): ')
+        elif self.ir_mode == 2:
+            ormode = self.rtn_r18_arg
+
         if ormode == 'o' or ormode == '1':
-            dwm = dataload.logtime_input(
-                'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: ')
+            if self.ir_mode == 1:
+                dwm = dataload.logtime_input(
+                    'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: ')
+            elif self.ir_mode == 2:
+                dwm = self.rtn_rank_type
+
             if dwm == '1':
                 req_url = dataload.DAILY_RANKING_URL
                 rank_word = dataload.DAILY_WORD
@@ -108,8 +124,12 @@ class RankingTop(object):
                 dataload.logtime_print("Argument(s) error\n")
             log_context = 'Crawler set target to %s rank top' % rank_word
         elif ormode == 'r' or ormode == '2':
-            dwm = dataload.logtime_input(
-                'Select daily(1)/weekly(2) R18 ranking type: ')
+            if self.ir_mode == 1:
+                dwm = dataload.logtime_input(
+                    'Select daily(1)/weekly(2) R18 ranking type: ')
+            elif self.ir_mode == 2:
+                dwm = self.rtn_rank_type
+
             if dwm == '1':
                 req_url = dataload.DAILY_RANKING_R18_URL
                 rank_word = dataload.DAILY_WORD
@@ -150,7 +170,12 @@ class RankingTop(object):
 
         # cut need image count to be target list
         alive_targets = len(whole_urls)
-        img_nbr = self.gather_essential_info(option[1], alive_targets)
+        if self.ir_mode == 1:
+            img_nbr = self.gather_essential_info(option[1], alive_targets)
+        # server mode directly get all of alive targets
+        elif self.ir_mode == 2:
+            img_nbr = alive_targets
+            dataload.logtime_print('Server mode auto crawl all of alive targets')            
         self.target_urls = whole_urls[:img_nbr]
         log_context = 'Gather rankingtop ' + str(img_nbr) + ', target table:'
         self.pvmx.logprowork(self.logpath, log_context)
@@ -193,20 +218,26 @@ class RepertoAll(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_name, html_name, pvmx):
+    def __init__(self, workdir, log_name, html_name, pvmx, ir_mode, ext_id):
         """
         :param workdir:     work directory
         :param log_name:    log name
         :param html_name:   html name
         :param pvmx:        API library class instance
+        :param ir_mode:     interactive mode or server mode
+        :param ext_id:      external illustrator id
         """
-        target_id = dataload.logtime_input(
-                    'Target crawl illustrator pixiv-id: ')
+        if ir_mode == 1:
+            target_id = dataload.logtime_input(
+                        'Target crawl illustrator pixiv-id: ')
+        elif ir_mode == 2:
+            target_id = ext_id
         self.user_input_id = target_id
         self.workdir = workdir + 'illustrepo_' + self.user_input_id
         self.logpath = self.workdir + log_name
         self.htmlpath = self.workdir + html_name
         self.pvmx = pvmx
+        self.ir_mode = ir_mode
         # class inside call global variable
         self.author_name = None
         self.max_cnt = 0
@@ -397,24 +428,29 @@ class RepertoAll(object):
 
         # collection target count
         alive_targetcnt = len(repo_target_all_list)
-        require_img_str = dataload.logtime_input(
-            'Gather all repo %d, whole target(s): %d, enter you want count: '
-                       % (self.max_cnt, alive_targetcnt))
-        # if user input isn't number
-        while not require_img_str.isdigit():
-            dataload.logtime_print(
-                'Input error, your input content was not a decimal number')
+        require_img_nbr = 0
+        if self.ir_mode == 1:
             require_img_str = dataload.logtime_input(
-                'Enter again(max is %d): ' % alive_targetcnt)
-        # check input content is a number
-        # if user input number more than limit max, set it to max
-        require_img_nbr = int(require_img_str)
-        if require_img_nbr > alive_targetcnt:
+                'Gather all repo %d, whole target(s): %d, enter you want count: '
+                        % (self.max_cnt, alive_targetcnt))
+            # if user input isn't number
+            while not require_img_str.isdigit():
+                dataload.logtime_print(
+                    'Input error, your input content was not a decimal number')
+                require_img_str = dataload.logtime_input(
+                    'Enter again(max is %d): ' % alive_targetcnt)
+            require_img_nbr = int(require_img_str)
+            # if user input number more than limit max, set it to max
+            if require_img_nbr > alive_targetcnt:
+                require_img_nbr = alive_targetcnt
+            elif require_img_nbr <= 0:
+                dataload.logtime_print('What the f**k is wrong with you?')
+                exit(-1)
+        # server mode directly catch all of alive targets
+        elif self.ir_mode == 2:
             require_img_nbr = alive_targetcnt
-        elif require_img_nbr <= 0:
-            dataload.logtime_print('What the f**k is wrong with you?')
-            exit(-1)
-
+            dataload.logtime_print('Server mode auto crawl all of alive targets')
+        
         # download image number limit
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
             self.target_capture.append(i[2])    # put url into target capture list

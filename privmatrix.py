@@ -16,7 +16,7 @@ import time, random, re, os, getpass
 from functools import wraps         # decorator wrapper
 import dataload
 
-class PixivAPILib:
+class PixivAPILib(object):
     """
     =================================================================================================================
     |       ██████╗ ██╗██╗  ██╗██╗██╗   ██╗ ██████╗██████╗  █████╗ ██╗    ██╗██╗     ███████╗██████╗ ██╗██╗██╗      |
@@ -27,13 +27,24 @@ class PixivAPILib:
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.5 LTE                                                                                      |
+    |       Version: 2.9.6 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
     |       2.ira  ---     IllustRepoAll, crawl Pixiv any illustrator all repertory artworks                        |
     |       3.help ---     Print this help page                                                                     |
     |       4.exit ---     Exit crawler program                                                                     |
+    |                                                                                                               |
+    |       Server Mode Help Content                                                                                |
+    |       -h/--help      Print usage page                                                                         |
+    |       -m/--mode      Set mode, RTN(1)/IRA(2)                                                                  |
+    |       -r/--R18       ordinary(1)/R18(2), only support Mode RTN                                                |
+    |       -l/--list      Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN                                     |
+    |       -i/--id        Illustrator ID, only support Mode IRA                                                    |
+    |                                                                                                               |
+    |       Example:                                                                                                |
+    |       python3 pixivcrawleriii.py -m 1 -r 1 -l 1                                                               |
+    |       python3 pixivcrawleriii.py -m 2 -i 0000000                                                              |
     =================================================================================================================
     """
 
@@ -41,9 +52,10 @@ class PixivAPILib:
     # which must be declared as class attribute # variables for access
     _datastream_pool = 0 
 
-    def __init__(self):
+    def __init__(self, ir_mode):
         """Create a class public call webpage opener with cookie
 
+        :param ir_mode:     interactive mode or server mode
         From first login save cookie and continue call
         Call this global opener must write parameter name
         Cookie, cookiehandler, opener all can inherit and call
@@ -56,9 +68,9 @@ class PixivAPILib:
         self.login_bias = []
         self.proxy_hasrun_flag = False
         self.alivethread_counter = 0
+        self.ir_mode = ir_mode
 
-    @staticmethod
-    def _login_preload(aes_file_path):
+    def _login_preload(self, aes_file_path):
         """Get user input login info and storage into aes file
 
         If project directory has no file, you need hand-input login info,
@@ -89,40 +101,43 @@ class PixivAPILib:
             password_aes_decrypt_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, read_aes_iv_param_raw)
             passwd = str(password_aes_decrypt_cipher.decrypt(read_user_passwd_raw[AES.block_size:]), 'UTF-8')
 
-            # check username and password
-            check = dataload.logtime_input(
-                "Read user login information configuration ok, check this: \n"
-                "[-> Username] %s\n[-> Password] %s\n"
-                "Is that correct? (Y/N): " % (username, passwd))
+            # in intercative mode check username and password
+            if self.ir_mode == 1:
+                check = dataload.logtime_input(
+                    "Read user login information configuration ok, check this: \n"
+                    "[-> Username] %s\n[-> Password] %s\n"
+                    "Is that correct? (Y/N): " % (username, passwd))
 
-            # if user judge info are error, delete old AES file and record new info
-            if check == 'N' or check == 'n':
-                os.remove(aes_file_path)        # delete old AES file
-                # temporarily enter login information
-                dataload.logtime_print(
-                    "Well, you need hand-input your login data: ")
-                username = dataload.logtime_input(
-                    'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
-                passwd = getpass.getpass(
-                    dataload.realtime_logword(dataload.base_time)
-                    + 'Enter your account password: ').encode('utf-8')
+                # if user judge info are error, delete old AES file and record new info
+                if check == 'N' or check == 'n':
+                    os.remove(aes_file_path)        # delete old AES file
+                    # temporarily enter login information
+                    dataload.logtime_print(
+                        "Well, you need hand-input your login data: ")
+                    username = dataload.logtime_input(
+                        'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
+                    passwd = getpass.getpass(
+                        dataload.realtime_logword(dataload.base_time)
+                        + 'Enter your account password: ').encode('utf-8')
 
-                generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
-                username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-                username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
-                passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-                passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
-                
-                # create new aes file rewrite it
-                write_aes_file = open(aes_file_path, 'wb')
-                # write bin value to file with b'\n' to wrap
-                write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
-                write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
-                write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
-                write_aes_file.close()
-            # read info correct, jump out here
-            else:
-                pass
+                    generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
+                    username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+                    username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
+                    passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
+                    passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
+                    
+                    # create new aes file rewrite it
+                    write_aes_file = open(aes_file_path, 'wb')
+                    # write bin value to file with b'\n' to wrap
+                    write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
+                    write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
+                    write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
+                    write_aes_file.close()
+                # read info correct, jump out here
+                else:
+                    pass
+            elif self.ir_mode == 2:
+                dataload.logtime_print("Check server mode, jump user info confirm out")
 
         # if no AES file, then create new and write md5 value into it
         else:
@@ -623,7 +638,8 @@ class PixivAPILib:
             """
             try:
                 # package download one image thread
-                PixivAPILib()._save_oneimage(self.index, self.url, 
+                # default set server mode here(actually it doesn’t matter)
+                PixivAPILib(2)._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
                 log_context = "Error Type: " + str(e)
