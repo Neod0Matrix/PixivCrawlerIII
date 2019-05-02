@@ -218,7 +218,7 @@ class RepertoAll(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_name, html_name, pvmx, ir_mode, ext_id):
+    def __init__(self, workdir, log_name, html_name, pvmx, ir_mode, ext_id=''):
         """
         :param workdir:     work directory
         :param log_name:    log name
