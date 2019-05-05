@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['pixivcrawleriii.py'],
+a = Analysis(['pixivcrawleriii.py', 'dataload.py', 'privmatrix.py', 'modeoption.py'],
              pathex=['E:\\Python_Files\\Crawler\\PixivCrawlerIII'],
              binaries=[],
              datas=[],

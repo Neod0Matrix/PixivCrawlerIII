@@ -100,7 +100,7 @@ def main():
                 dataload.HTML_NAME, api_instance, mode_interactive_server, ira_illust_id)
             ira_instance.start()
         # help page
-        elif mode == 'help' or mode == '3':
+        elif catch_mode == 'help' or catch_mode == '3':
             print(PixivAPILib.__doc__)
 
 if __name__ == '__main__':
