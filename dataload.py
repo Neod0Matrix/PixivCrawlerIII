@@ -11,7 +11,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.6'
+VERSION             = '2.9.7'
 
 # logfile log real-time operation
 base_time = time.time()
@@ -110,10 +110,18 @@ R18_WORD = '_r18'
 DAILY_WORD = 'daily'
 WEEKLY_WORD = 'weekly'
 MONTHLY_WORD = 'monthly'
+MALE_WORD = 'male'
+FEMALE_WORD = 'female'
+MALE_R18_WORD = 'male_r18'
+FEMALE_R18_WORD = 'female_r18'
 DAILY_RANKING_URL = RANKING_URL + DAILY_WORD
+DAILY_MALE_RANKING_URL = RANKING_URL + MALE_WORD
+DAILY_FEMALE_RANKING_URL = RANKING_URL + FEMALE_WORD
 WEEKLY_RANKING_URL = RANKING_URL + WEEKLY_WORD
 MONTHLY_RANKING_URL = RANKING_URL + MONTHLY_WORD
 DAILY_RANKING_R18_URL = DAILY_RANKING_URL + R18_WORD
+DAILY_MALE_RANKING_R18_URL = RANKING_URL + MALE_R18_WORD
+DAILY_FEMALE_RANKING_R18_URL = RANKING_URL + FEMALE_R18_WORD
 WEEKLY_RANKING_R18_URL = WEEKLY_RANKING_URL + R18_WORD
 BASEPAGE_URL = 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id='
 MEMBER_URL = 'http://www.pixiv.net/member.php?id='

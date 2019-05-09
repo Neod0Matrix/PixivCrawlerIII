@@ -27,7 +27,7 @@ class PixivAPILib(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c)2018 T.WKVER </MATRIX> Neod Anderjon(LeaderN)                                              |
-    |       Version: 2.9.6 LTE                                                                                      |
+    |       Version: 2.9.7 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -40,10 +40,11 @@ class PixivAPILib(object):
     |       -m/--mode      Set mode, RTN(1)/IRA(2)                                                                  |
     |       -r/--R18       ordinary(1)/R18(2), only support Mode RTN                                                |
     |       -l/--list      Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN                                     |
+    |       -s/--sex       Nomal(0), male(1) or female(2) favor, only support Mode RTN                              |
     |       -i/--id        Illustrator ID, only support Mode IRA                                                    |
     |                                                                                                               |
     |       Example:                                                                                                |
-    |       python3 pixivcrawleriii.py -m 1 -r 1 -l 1                                                               |
+    |       python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0                                                          |
     |       python3 pixivcrawleriii.py -m 2 -i 0000000                                                              |
     =================================================================================================================
     """

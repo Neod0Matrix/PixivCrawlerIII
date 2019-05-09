@@ -66,10 +66,11 @@ def main():
     else:
         mode_interactive_server = 2
         # argument pass to variable
-        opts, args = getopt.getopt(sys.argv[1:], "hm:r:l:i:", ["help", "mode", "R18", "list", "id"])
+        opts, args = getopt.getopt(sys.argv[1:], "hm:r:l:s:i:", ["help", "mode", "R18", "list", "sex", "id"])
         catch_mode = '1'
         rtn_r18_opt = '1'
         rtn_list_type = '1'
+        rtn_mf_word = ''
         ira_illust_id = ''
         for opt, value in opts:
             if opt in ("-m", "--mode"):
@@ -78,6 +79,8 @@ def main():
                 rtn_r18_opt = value
             elif opt in ("-l", "--list"):
                 rtn_list_type = value
+            elif opt in ("-s", "--sex"):
+                rtn_mf_word = value
             elif opt in ("-i", "--id"):
                 ira_illust_id = value
             elif opt in ("-h", "--help"):
@@ -91,7 +94,7 @@ def main():
             dataload.logtime_print('Mode: [Ranking Top N]')
             rtn_instance = rtn(dataload.RANK_DIR, dataload.LOG_PATH, 
                 dataload.HTML_PATH, api_instance, mode_interactive_server, 
-                rtn_r18_opt, rtn_list_type)
+                rtn_r18_opt, rtn_list_type, rtn_mf_word)
             rtn_instance.start()
         # illustrator repositories all mode
         elif catch_mode == '2':

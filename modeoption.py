@@ -20,7 +20,7 @@ class RankingTop(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_path, html_path, pvmx, ir_mode, rtn_r18_arg='', rtn_rank_type=''):
+    def __init__(self, workdir, log_path, html_path, pvmx, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_mf_word='0'):
         """
         :param workdir:         work directory
         :param log_path:        log save path
@@ -29,6 +29,7 @@ class RankingTop(object):
         :param ir_mode:         interactive mode or server mode
         :param rtn_r18_arg:     RTN mode set R18 or not
         :param rtn_rank_type:   RTN mode set ranking type
+        :param rtn_mf_word:     RTN male or female favor setting
         """
         self.workdir = workdir
         self.logpath = log_path
@@ -38,6 +39,7 @@ class RankingTop(object):
         # class inside global variable
         self.rtn_r18_arg = rtn_r18_arg
         self.rtn_rank_type = rtn_rank_type
+        self.rtn_mf_word = rtn_mf_word
         self.target_urls = []
         self.basepages = []  
         
@@ -99,10 +101,14 @@ class RankingTop(object):
             log_context = 'Gather ranking list======>'
             self.pvmx.logprowork(self.logpath, log_context)
 
+            # select rank R18 or not
             ormode = dataload.logtime_input(
                 'Select ranking type, ordinary(o|1) or r18(r|2): ')
+            mf_word = dataload.logtime_input(
+                'Select sex favor, normal(n|0) or male(m|1) or female(f|2): ')
         elif self.ir_mode == 2:
             ormode = self.rtn_r18_arg
+            mf_word = self.rtn_mf_word
 
         if ormode == 'o' or ormode == '1':
             if self.ir_mode == 1:
@@ -112,8 +118,18 @@ class RankingTop(object):
                 dwm = self.rtn_rank_type
 
             if dwm == '1':
-                req_url = dataload.DAILY_RANKING_URL
-                rank_word = dataload.DAILY_WORD
+                if mf_word == '0' or mf_word == 'n':
+                    req_url = dataload.DAILY_RANKING_URL
+                    rank_word = dataload.DAILY_WORD
+                # choose the mail or female, rank type only can be set to daily
+                elif mf_word == '1' or mf_word == 'm':
+                    req_url = dataload.DAILY_MALE_RANKING_URL
+                    rank_word = dataload.MALE_WORD
+                elif mf_word == '2' or mf_word == 'f':
+                    req_url = dataload.DAILY_FEMALE_RANKING_URL
+                    rank_word = dataload.FEMALE_WORD
+                else:
+                    dataload.logtime_print("Argument(s) error\n")
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_URL
                 rank_word = dataload.WEEKLY_WORD
@@ -131,14 +147,23 @@ class RankingTop(object):
                 dwm = self.rtn_rank_type
 
             if dwm == '1':
-                req_url = dataload.DAILY_RANKING_R18_URL
-                rank_word = dataload.DAILY_WORD
+                if mf_word == '0' or mf_word == 'n':
+                    req_url = dataload.DAILY_RANKING_R18_URL
+                    rank_word = dataload.DAILY_WORD
+                # choose the mail or female, rank type only can be set to daily
+                elif mf_word == '1' or mf_word == 'm':
+                    req_url = dataload.DAILY_MALE_RANKING_R18_URL
+                    rank_word = dataload.MALE_WORD
+                elif mf_word == '2' or mf_word == 'f':
+                    req_url = dataload.DAILY_FEMALE_RANKING_R18_URL
+                    rank_word = dataload.FEMALE_WORD
+                else:
+                    dataload.logtime_print("Argument(s) error\n")
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_R18_URL
                 rank_word = dataload.WEEKLY_WORD
             else:
-                dataload.logtime_print(
-                    "Argument(s) error\n")
+                dataload.logtime_print("Argument(s) error\n")
             log_context = 'Crawler set target to %s r18 rank top' % rank_word
         else:
             dataload.logtime_print("Argument(s) error\n")

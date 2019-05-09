@@ -24,8 +24,8 @@ License
 Update
 ======
 
-    Version: 2.9.6
-    Last Update Time: 20190502pm2129
+    Version: 2.9.7
+    Last Update Time: 20190509pm1329
     
     This python crawler is built to crawl pixiv images
     It have two mode: RankTopN and illustRepoAll 
@@ -96,11 +96,17 @@ Run
     -m/--mode       Set mode, RTN(1)/IRA(2)\
     -r/--R18        ordinary(1)/R18(2), only support Mode RTN\
     -l/--list       Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN\
+    -s/--sex        Nomal(0), male(1) or female(2) favor, only support Mode RTN\
     -i/--id         Illustrator ID, only support Mode IRA\
     \
     >Example:\
-    python3 pixivcrawleriii.py -m 1 -r 1 -l 1\
+    python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
     python3 pixivcrawleriii.py -m 2 -i 0000000
+
+    Notice:
+    If the sex option selects male or female, then the list option only can be daily.
+    If you set the list type option to weekly or monthly and the sex option to either male or female,
+    then the list option overrides the sex option.(List type option has a higher priority)
 
 Problems that may arise
 ======
