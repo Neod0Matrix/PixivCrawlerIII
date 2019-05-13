@@ -758,7 +758,7 @@ class PixivAPILib(object):
                     log_context = 'Created {:d} download target object(s), thread creation is blocked, please wait'
                 dataload.logtime_flush_display(log_context, i + 1)
             log_context = ', all threads have been loaded OK'
-            self.logprowork(log_path, log_context, 'N')
+            print(log_context)
             thread_block_flag = False
 
             # parent thread wait all sub-thread end
@@ -777,11 +777,11 @@ class PixivAPILib(object):
                         alive_thread_cnt - 1, queueLength, \
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength))
             log_context = ', sub-threads execute finished'
-            self.logprowork(log_path, log_context, 'N')
+            print(log_context)
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
             log_context = ', user interrupt a thread, exit all threads'
-            self.logprowork(log_path, log_context, 'N')  
+            print(log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
