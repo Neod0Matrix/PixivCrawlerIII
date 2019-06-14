@@ -12,61 +12,51 @@
                                                                                                   
     ASCII artword from http://patorjk.com/software/taag/ font: ANSI Shadow
 
-License
-======
-    
+# License
+
     Copyright (c) 2019 @T.WKVER </MATRIX>
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
     If you want to help me improve this project, please submit an issue or fork
 
-Update
-======
+# Update
 
     Version: 2.9.7
-    Last Update Time: 20190513pm1917
-    
-    This python crawler is built to crawl pixiv images
-    It have two mode: RankTopN and illustRepoAll 
-    Call threading to add multi-thread download images
+    Last Update Time: 20190614pm1724
 
-Platform
-======
+# Platform
 
     Linux x86_64 and Windows NT(tested in Ubuntu 16.04 x64 and Windows 10 x64 1803)
     Python: 3.x(not support 2.x) suggest 3.4+
 
-## Requirements
+# Requirements
 
 * [retrying](https://github.com/rholder/retrying)
 * [Pillow](https://github.com/python-pillow/Pillow)
 * [prettytable](https://pypi.org/project/PrettyTable/)
 * [pycryptodome](https://github.com/Legrandin/pycryptodome)
 
-Run
-======
+# Run
 
   last python2 version: (very old version, maintenance has been discontinued)
     
 - [pixiv-crawler](https://github.com/Neod0Matrix/pixiv-crawler)
     
-    git clone https://github.com/Neod0Matrix/pixiv-crawler.git
+    >git clone https://github.com/Neod0Matrix/pixiv-crawler.git
     
   this python3 version:
 
 - [PixivCrawlerIII](https://github.com/Neod0Matrix/PixivCrawlerIII)
 
-    git clone https://github.com/Neod0Matrix/PixivCrawlerIII.git
-    
-    cd PixivCrawlerIII
-    
+    >git clone https://github.com/Neod0Matrix/PixivCrawlerIII.git
+    >cd PixivCrawlerIII
+
     First config your local folder in dataload.py, then run this:
-    
-    python3 pixivcrawleriii.py
+    >python3 pixivcrawleriii.py
 
     If your crawler is deployed on a remote server, 
-    you can use "python3 -m http.server <port number>" provided by python3 
+    you can use "python3 -m http.server \<port number>" provided by python3 
     to view the crawl results. 
     Click the generated html file on the server page to render 
     the crawl directly picture results in the browser. 
@@ -92,24 +82,23 @@ Run
     You must enter the local key file in interactive mode before you can use the server mode.
 
     > Arguments:\
-    -h/--help       Print usage page\
-    -m/--mode       Set mode, RTN(1)/IRA(2)\
-    -r/--R18        ordinary(1)/R18(2), only support Mode RTN\
-    -l/--list       Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN\
-    -s/--sex        Nomal(0), male(1) or female(2) favor, only support Mode RTN\
-    -i/--id         Illustrator ID, only support Mode IRA\
-    \
+    >-h/--help       Print usage page\
+    >-m/--mode       Set mode, RTN(1)/IRA(2)\
+    >-r/--R18        ordinary(1)/R18(2), only support Mode RTN\
+    >-l/--list       Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN\
+    >-s/--sex        Nomal(0), male(1) or female(2) favor, only >support Mode RTN\
+    >-i/--id         Illustrator ID, only support Mode IRA\
+    >\
     >Example:\
-    python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
-    python3 pixivcrawleriii.py -m 2 -i 0000000
+    >python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
+    >python3 pixivcrawleriii.py -m 2 -i 0000000
 
     Notice:
     If the sex option selects male or female, then the list option only can be daily.
     If you set the list type option to weekly or monthly and the sex option to either male or female,
     then the list option overrides the sex option.(List type option has a higher priority)
 
-Problems that may arise
-======
+# Problems that may arise
 
     May the good network status with you
 
