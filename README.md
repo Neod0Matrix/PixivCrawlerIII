@@ -23,7 +23,7 @@
 # Update
 
     Version: 2.9.7
-    Last Update Time: 20190622pm1452
+    Last Update Time: 20190622pm1507
 
 # Platform
 
@@ -49,7 +49,7 @@
 
 - ## [PixivCrawlerIII](https://github.com/Neod0Matrix/PixivCrawlerIII)
 
-    >git clone https://github.com/Neod0Matrix/PixivCrawlerIII.git
+    >git clone https://github.com/Neod0Matrix/PixivCrawlerIII.git\
     >cd PixivCrawlerIII
 
     First config your local folder in dataload.py, then run this:
