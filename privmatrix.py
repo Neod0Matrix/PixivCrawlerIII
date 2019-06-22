@@ -680,7 +680,7 @@ class PixivAPILib(object):
         @@API that allows external calls
         Using python decorator feature to design program runtime timer
         In this project this function only have used in internal call
-        But it also can be used in external call
+        But it also can be used in external call in only one place
         :param origin_func: decorated function
         :return:            wrapper function
         """
@@ -715,7 +715,7 @@ class PixivAPILib(object):
 
         return _wrapper
 
-    @timer_decorator            # add timig decorator
+    @timer_decorator            
     def download_alltarget(self, log_path, urls, basepages, workdir):
         """Multi-process download all image
 
@@ -788,6 +788,8 @@ class PixivAPILib(object):
 
         @@API that allows external calls
         This function is not written by me, but I don't remember where it was copied
+        If the original author sees this code, please be sure to submit an issue 
+            to contact me to add your copyright logo
         If you run this crawler in server, you can use python simple http server
         and the html file built by this function to browse result
         :param self:        class self
@@ -800,26 +802,30 @@ class PixivAPILib(object):
         # build html background page text
         # write a title
         html_file.writelines(
+            "<!Doctype html>\r\n"
             "<html>\r\n"
             "<head>\r\n"
-            "<title>%s ResultPage</title>\r\n"
+            "<title>%s ResultPage</title>\r\n"          # HTML page title
             "</head>\r\n"
             "<body>\r\n" % dataload.PROJECT_NAME)
         # put all crawl images into html source code
         html_file.writelines(
+            # here call javascript method to collect all of images
             "<script>window.onload = function(){"
                 "var imgs = document.getElementsByTagName('img');"
-                "for(var i = 0; i < imgs.length; i++){"
+                "for (var i = 0; i < imgs.length; i++) {"
+                    # function: click once any image, it will restore the original size
                     "imgs[i].onclick = function(){"
-                        "if(this.width == this.attributes['oriWidth'].value "
-                            "&& this.height == this.attributes['oriHeight'].value){"
+                        "if (this.width == this.attributes['oriWidth'].value "
+                            "&& this.height == this.attributes['oriHeight'].value) {"
                             "this.width = this.attributes['oriWidth'].value * 1.0 "
                             "/ this.attributes['oriHeight'].value * 200;"
                             "this.height = 200;"
-                        "}else{this.width = this.attributes['oriWidth'].value ;"
+                        "} else {this.width = this.attributes['oriWidth'].value ;"
                         "this.height = this.attributes['oriHeight'].value;}}}};"
             "</script>")
         for i in os.listdir(workdir):
+            # match image formats
             if i[-4:len(i)] in [".png", ".jpg", ".bmp"]:
                 width, height = Image.open(
                     workdir + dataload.fs_operation[1] + i).size
@@ -831,12 +837,12 @@ class PixivAPILib(object):
                     "oriWidth = %d oriHeight = %d />\r\n"
                     % ("./" + i, width * 1.0 / height * 200, 200, width, height))
                 ## html_file.writelines("</a>\r\n")
-        # end of htmlfile
+        # end of html file
         html_file.writelines(
             "</body>\r\n"
             "</html>")
         html_file.close()
-        log_context = 'Image browse html generate finished'
+        log_context = 'Image HTML browse page generate finished'
         self.logprowork(log_path, log_context)
 
 # =====================================================================
