@@ -14,7 +14,7 @@
 
 # License
 
-    Copyright (c) 2019 @T.WKVER </MATRIX>
+    Copyright (c) 2017-2019 T.WKVER </MATRIX>. All rights reserved.
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
@@ -23,7 +23,7 @@
 # Update
 
     Version: 2.9.7
-    Last Update Time: 20190622pm1507
+    Last Update Time: 20190624pm1331
 
 # Platform
 
