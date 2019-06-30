@@ -20,10 +20,18 @@
     Thanks to watch my project
     If you want to help me improve this project, please submit an issue or fork
 
+# Announcement
+
+    I am sorry to inform you that after the 1002 incident in 2018, 
+    the Pixiv website has once again upgraded the anti-crawling mechanism. 
+    Since the author is busy in the near future, 
+    there is no time to re-analyze the mechanism. Please be patient.
+    Thank you for your support.
+
 # Update
 
     Version: 2.9.7
-    Last Update Time: 20190624pm1331
+    Last Update Time: 20190630pm1838
 
 # Platform
 
@@ -170,3 +178,5 @@
     and finally report an error.
     In order to ensure the successful operation of the program, 
     please be sure to leave more than 2G free memory.
+
+

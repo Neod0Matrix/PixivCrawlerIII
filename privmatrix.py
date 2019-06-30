@@ -772,10 +772,11 @@ class PixivAPILib(object):
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
                     # its number wouldn't more than thread max count
-                    log_context = 'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})'
+                    log_context = 'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)'
                     dataload.logtime_flush_display(log_context, \
                         alive_thread_cnt - 1, queueLength, \
-                        ((queueLength - (alive_thread_cnt - 1)) / queueLength))
+                        ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
+                        (float(PixivAPILib._datastream_pool / 1024)))
             log_context = ', sub-threads execute finished'
             print(log_context)
         # user press ctrl+c interrupt thread
