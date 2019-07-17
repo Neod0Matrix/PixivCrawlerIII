@@ -22,16 +22,17 @@
 
 # Announcement
 
-    I am sorry to inform you that after the 1002 incident in 2018, 
-    the Pixiv website has once again upgraded the anti-crawling mechanism. 
-    Since the author is busy in the near future, 
-    there is no time to re-analyze the mechanism. Please be patient.
-    Thank you for your support.
+    I am sorry to inform you that the announcement on June 30th 
+	stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
+	THIS INFORMATION IS FAKE. 
+	
+	The Pixiv website should be purely internal maintenance. 
+	After today's test(2019/7/17), THE PROJECT STILL WORKING FINE.
 
 # Update
 
     Version: 2.9.7
-    Last Update Time: 20190630pm1838
+    Last Update Time: 20190717pm2226
 
 # Platform
 
