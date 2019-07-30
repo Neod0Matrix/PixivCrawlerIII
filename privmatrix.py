@@ -27,7 +27,7 @@ class PixivAPILib(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2019 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 2.9.7 LTE                                                                                      |
+    |       Version: 2.9.8 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -104,22 +104,23 @@ class PixivAPILib(object):
 
             # in intercative mode check username and password
             if self.ir_mode == 1:
-                check = dataload.logtime_input(
+                check = dataload.logtime_input(dataload.set_pcode_yellow(
                     "Read user login information configuration ok, check this: \n"
                     "[-> Username] %s\n[-> Password] %s\n"
-                    "Is that correct? (Y/N): " % (username, passwd))
+                    "Is that correct? (Y/N): " % (username, passwd)))
 
                 # if user judge info are error, delete old AES file and record new info
                 if check == 'N' or check == 'n':
                     os.remove(aes_file_path)        # delete old AES file
                     # temporarily enter login information
-                    dataload.logtime_print(
-                        "Well, you need hand-input your login data: ")
-                    username = dataload.logtime_input(
-                        'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
+                    dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
+                        "Well, you need hand-input your login data: "))
+                    username = dataload.logtime_input(dataload.set_pcode_yellow(
+                        'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8'))
                     passwd = getpass.getpass(
                         dataload.realtime_logword(dataload.base_time)
-                        + 'Enter your account password: ').encode('utf-8')
+                        + dataload.set_pcode_yellow(\
+                            ('Enter your account password: ').encode('utf-8')))
 
                     generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
                     username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
@@ -138,17 +139,18 @@ class PixivAPILib(object):
                 else:
                     pass
             elif self.ir_mode == 2:
-                dataload.logtime_print("Check server mode, jump user info confirm out")
+                dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(\
+                    "Check server mode, jump user info confirm out"))
 
         # if no AES file, then create new and write md5 value into it
         else:
-            dataload.logtime_print(
-                "Create new AES encrypt file to storage your username and password: ")
-            username = dataload.logtime_input(
-                'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8')
+            dataload.logtime_print(dataload.set_pcode_yellow(\
+                "Create new AES encrypt file to storage your username and password: "))
+            username = dataload.logtime_input(dataload.set_pcode_yellow(
+                'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8'))
             passwd = getpass.getpass(
                 dataload.realtime_logword(dataload.base_time)
-                + 'Enter your account password: ').encode('utf-8')
+                + dataload.set_pcode_yellow(('Enter your account password: ').encode('utf-8')))
 
             generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
             username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
@@ -292,12 +294,14 @@ class PixivAPILib(object):
                 request,
                 timeout=30)
         except Exception as e:
-            log_context = "Error Type: " + str(e)
+            log_context = dataload.set_pback_red(\
+                "Error Type: " + str(e))
             self.logprowork(log_path, log_context)
             response = None
             # here don't exit, log error
         except KeyboardInterrupt:
-            log_context = 'User interrupt, exit'
+            log_context = dataload.set_pcode_blue_pback_yellow(\
+                'User interrupt, exit')
             self.logprowork(log_path, log_context)
             response = None
 
@@ -306,10 +310,11 @@ class PixivAPILib(object):
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = 'Crawl proxy successed'
             else:
-                log_context = 'Crawl proxy not ok, return code: %d' \
-                            % response.getcode()
+                log_context = dataload.set_pback_red(\
+                    'Crawl proxy not ok, return code: %d' % response.getcode())
         else:
-            log_context = 'Get proxy response failed, check network'
+            log_context = dataload.set_pback_red(\
+                'Get proxy response failed, check network')
         self.logprowork(log_path, log_context)
 
         web_src = response.read().decode("UTF-8", "ignore")
@@ -329,7 +334,7 @@ class PixivAPILib(object):
         # random choose a proxy ip with its port and build the dict format data
         proxy_choose = random.choice(proxy_iplist)
         proxyserver_d = {'http': proxy_choose}
-        log_context = 'Choose proxy server: ' + proxy_choose
+        log_context = dataload.set_pcode_blue_pback_yellow('Choose proxy server: ' + proxy_choose)
         self.logprowork(log_path, log_context)
 
         return proxyserver_d
@@ -354,13 +359,15 @@ class PixivAPILib(object):
                 data=post_data,
                 timeout=timeout)
         except Exception as e:
-            log_context = "Error Type: " + str(e)
+            log_context = dataload.set_pback_red(
+                "Error Type: " + str(e))
             if need_log == True:
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
         except KeyboardInterrupt:
-            log_context = 'User interrupt request, exit program'
+            log_context = dataload.set_pcode_blue_pback_yellow(
+                'User interrupt request, exit program')
             if need_log == True:
                 self.logprowork(log_path, log_context)
             exit()
@@ -370,14 +377,15 @@ class PixivAPILib(object):
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = target_page_word + ' response successed'
             else:
-                log_context = (target_page_word + 
+                log_context = dataload.set_pback_red(target_page_word + 
                     ' response not ok, return code %d' % response.getcode())
             if need_log == True:
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
         else:
-            log_context = target_page_word + ' response failed'
+            log_context = dataload.set_pback_red(
+                target_page_word + ' response failed')
             if need_log == True:
                 self.logprowork(log_path, log_context)
             else:
@@ -457,7 +465,8 @@ class PixivAPILib(object):
             encoding='utf-8')
         htmlfile.write(content)
         htmlfile.close()
-        log_context = 'Save test request html page ok'
+        log_context = dataload.set_pcode_blue_pback_yellow(
+            'Save test request html page ok')
         self.logprowork(log_path, log_context)
 
     @staticmethod
@@ -574,7 +583,8 @@ class PixivAPILib(object):
                     ## self.logprowork(logpath, log_context)
                     # not 404 change proxy, cause request server forbidden
                     if e.code != dataload.HTTP_NOTFOUND_CODE_404:
-                        log_context = "Add proxy server in request"
+                        log_context = dataload.set_pcode_blue_pback_yellow(
+                            "Add proxy server in request")
                         self.logprowork(log_path, log_context)
                         # preload a proxy handler, just run once
                         if self.proxy_hasrun_flag == False:
@@ -588,7 +598,8 @@ class PixivAPILib(object):
                         pass
             # if timeout, use proxy reset request
             else:
-                log_context = "Add proxy server in request"
+                log_context = dataload.set_pcode_blue_pback_yellow(
+                    "Add proxy server in request")
                 self.logprowork(log_path, log_context)
                 # with proxy request again
                 self.opener = urllib.request.build_opener(proxy_handler)
@@ -643,7 +654,7 @@ class PixivAPILib(object):
                 PixivAPILib(2)._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
-                log_context = "Error Type: " + str(e)
+                log_context = dataload.set_pback_red("Error Type: " + str(e))
                 PixivAPILib.logprowork(log_context, self.logpath)
 
             # thread queue adjust, lock it
@@ -670,7 +681,7 @@ class PixivAPILib(object):
             try:
                 self.start()        
             except Exception as e:
-                log_context = "Error Type: " + str(e)
+                log_context = dataload.set_pback_red("Error Type: " + str(e))
                 PixivAPILib.logprowork(log_context, self.logpath)
                 exit
 
@@ -706,10 +717,10 @@ class PixivAPILib(object):
             endtime = time.time()
             elapesd_time = endtime - starttime
             average_download_speed = float(PixivAPILib._datastream_pool / elapesd_time)
-            log_context = (
+            log_context = (dataload.set_pcode_blue_pback_yellow(
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed))
+                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed)))
             self.logprowork(log_path, log_context)
             PixivAPILib._datastream_pool = 0    # clear global data stream list
 
@@ -728,7 +739,8 @@ class PixivAPILib(object):
         """
         thread_block_flag = False               # thread blocking flag
         alive_thread_cnt = queueLength = len(urls)
-        log_context = 'Hit %d target(s), start download task' % queueLength
+        log_context = dataload.set_pcode_blue_pback_yellow(
+            'Hit %d target(s), start download task' % queueLength)
         self.logprowork(log_path, log_context)
 
         # the download process may fail
@@ -753,11 +765,13 @@ class PixivAPILib(object):
                 sub_thread.setDaemon(True)            
                 sub_thread.create()
                 if thread_block_flag == False:
-                    log_context = 'Created {:d} download target object(s)'
+                    log_context = dataload.set_pcode_blue_pback_yellow(
+                        'Created {:d} download target object(s)')
                 else:
-                    log_context = 'Created {:d} download target object(s), thread creation is blocked, please wait'
+                    log_context = dataload.set_pcode_blue_pback_yellow(
+                        'Created {:d} download target object(s), thread creation is blocked, please wait')
                 dataload.logtime_flush_display(log_context, i + 1)
-            log_context = ', all threads have been loaded OK'
+            log_context = dataload.set_pcode_blue_pback_yellow(', all threads have been loaded OK')
             print(log_context)
             thread_block_flag = False
 
@@ -772,16 +786,19 @@ class PixivAPILib(object):
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
                     # its number wouldn't more than thread max count
-                    log_context = 'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)'
+                    log_context = dataload.set_pcode_blue_pback_yellow(
+                        'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)')
                     dataload.logtime_flush_display(log_context, \
                         alive_thread_cnt - 1, queueLength, \
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
                         (float(PixivAPILib._datastream_pool / 1024)))
-            log_context = ', sub-threads execute finished'
+            log_context = dataload.set_pcode_blue_pback_yellow(
+                ', sub-threads execute finished')
             print(log_context)
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
-            log_context = ', user interrupt a thread, exit all threads'
+            log_context = dataload.set_pcode_blue_pback_yellow(
+                ', user interrupt a thread, exit all threads')
             print(log_context)
 
     def htmlpreview_build(self, workdir, html_path, log_path):

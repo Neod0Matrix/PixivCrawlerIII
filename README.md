@@ -31,8 +31,8 @@
 
 # UPDATE LOG
 
-    Version: 2.9.7
-    Last Update Time: 20190721pm2018
+    Version: 2.9.8
+    Last Update Time: 20190730pm2244
 
 # PLATFORM
 
@@ -107,6 +107,18 @@
     If the sex option selects male or female, then the list option only can be daily.
     If you set the list type option to weekly or monthly and the sex option to either male or female,
     then the list option overrides the sex option.(List type option has a higher priority)
+
+ - ### Color effect style
+    
+    Add color character display effects from version V2.9.8, 
+    and use colors to distinguish the attributes of the displayed information.
+
+    red code black background       -> logo
+    black code red background       -> error or failed
+    yellow code blue background     -> timestamp
+    blue code yellow background     -> important info
+    yellow code black background    -> request user input argument
+    white code black background     -> normal info
 
 # PROBLEMS THAT MAY ARISE
 

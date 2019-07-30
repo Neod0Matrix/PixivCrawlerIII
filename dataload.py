@@ -11,11 +11,23 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.7'
+VERSION             = '2.9.8'
+
+# color effects print code
+normal_print_effect = "\033[0m"
+# set print code red, use in logo
+set_pcode_red = lambda pcode: "\033[0;31;40m" + pcode + normal_print_effect 
+# set print background red, use in error or failed operate
+set_pback_red = lambda pcode: "\033[7;31m" + pcode + normal_print_effect    
+# set print code yellow, use in ask question
+set_pcode_yellow = lambda pcode: "\033[0;33;40m" + pcode + normal_print_effect      
+# set print code blue and background yellow, use in important info
+set_pcode_blue_pback_yellow = lambda pcode: "\033[7;33;44m" + pcode + normal_print_effect 
 
 # logfile log real-time operation
 base_time = time.time()
-realtime_logword = lambda bt: "[%02d:%02d:%02d] " \
+# set time color effect to yellow code and blue background
+realtime_logword = lambda bt: "\033[7;34;43m[%02d:%02d:%02d]\033[0m " \
                               % (int((time.time() - bt) / 3600),
                                 int((time.time() - bt) / 60),
                                 (time.time() - bt) % 60)
@@ -34,7 +46,7 @@ def crawler_logo():
 
     :return:            none
     """
-    log_context = (
+    log_context = set_pcode_red(
         LABORATORY + ' ' + ORGANIZATION + ' technology support |'                       
         ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
     logtime_print(log_context)

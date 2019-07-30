@@ -58,33 +58,35 @@ class RankingTop(object):
         # choose ordinary artwork images
         if ormode == 'o' or ormode == '1':
             # input a string for request image number
-            img_str = dataload.logtime_input(
+            img_str = dataload.logtime_input(dataload.set_pcode_yellow(
                 'Gather whole ordinary valid target %d, enter you want: '
-                % whole_nbr)
+                % whole_nbr))
         # choose R18 artwork images
         elif ormode == 'r' or ormode == '2':
             # input a string for request image number
-            img_str = dataload.logtime_input(
+            img_str = dataload.logtime_input(dataload.set_pcode_yellow(
                 'Gather whole R18 vaild target %d, enter you want: '
-                % whole_nbr)
+                % whole_nbr))
         # error input
         else:
-            dataload.logtime_print("Argument(s) error\n")
+            dataload.logtime_print(dataload.set_pback_red(
+                "Argument(s) error\n"))
             exit(-1)
 
         # if user input isn't number
         while not img_str.isdigit():
-            dataload.logtime_print(
-                'Input error, your input content was not a decimal number')
-            img_str = dataload.logtime_input(
-                'Enter again(max is %d): ' % whole_nbr)
+            dataload.logtime_print(dataload.set_pback_red(
+                'Input error, your input content was not a decimal number'))
+            img_str = dataload.logtime_input(dataload.set_pcode_yellow(
+                'Enter again(max is %d): ' % whole_nbr))
         # check input content is a number
         # if user input number more than limit max, set it to max
         img_cnt = int(img_str)
         if img_cnt > whole_nbr:
             img_cnt = whole_nbr
         elif img_cnt <= 0:
-            dataload.logtime_print('What the f**k is wrong with you?')
+            dataload.logtime_print(dataload.set_pback_red(
+                'What the f**k is wrong with you?'))
             exit(-1)
 
         return img_cnt
@@ -102,18 +104,18 @@ class RankingTop(object):
             self.pvmx.logprowork(self.logpath, log_context)
 
             # select rank R18 or not
-            ormode = dataload.logtime_input(
-                'Select ranking type, ordinary(o|1) or r18(r|2): ')
-            mf_word = dataload.logtime_input(
-                'Select sex favor, normal(n|0) or male(m|1) or female(f|2): ')
+            ormode = dataload.logtime_input(dataload.set_pcode_yellow(
+                'Select ranking type, ordinary(o|1) or r18(r|2): '))
+            mf_word = dataload.logtime_input(dataload.set_pcode_yellow(
+                'Select sex favor, normal(n|0) or male(m|1) or female(f|2): '))
         elif self.ir_mode == 2:
             ormode = self.rtn_r18_arg
             mf_word = self.rtn_mf_word
 
         if ormode == 'o' or ormode == '1':
             if self.ir_mode == 1:
-                dwm = dataload.logtime_input(
-                    'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: ')
+                dwm = dataload.logtime_input(dataload.set_pcode_yellow(
+                    'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: '))
             elif self.ir_mode == 2:
                 dwm = self.rtn_rank_type
 
@@ -129,7 +131,8 @@ class RankingTop(object):
                     req_url = dataload.DAILY_FEMALE_RANKING_URL
                     rank_word = dataload.FEMALE_WORD
                 else:
-                    dataload.logtime_print("Argument(s) error\n")
+                    dataload.logtime_print(dataload.set_pback_red(
+                        "Argument(s) error\n"))
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_URL
                 rank_word = dataload.WEEKLY_WORD
@@ -137,12 +140,13 @@ class RankingTop(object):
                 req_url = dataload.MONTHLY_RANKING_URL
                 rank_word = dataload.MONTHLY_WORD
             else:
-                dataload.logtime_print("Argument(s) error\n")
+                dataload.logtime_print(dataload.set_pback_red(
+                    "Argument(s) error\n"))
             log_context = 'Crawler set target to %s rank top' % rank_word
         elif ormode == 'r' or ormode == '2':
             if self.ir_mode == 1:
-                dwm = dataload.logtime_input(
-                    'Select daily(1)/weekly(2) R18 ranking type: ')
+                dwm = dataload.logtime_input(dataload.set_pcode_yellow(
+                    'Select daily(1)/weekly(2) R18 ranking type: '))
             elif self.ir_mode == 2:
                 dwm = self.rtn_rank_type
 
@@ -158,15 +162,19 @@ class RankingTop(object):
                     req_url = dataload.DAILY_FEMALE_RANKING_R18_URL
                     rank_word = dataload.FEMALE_WORD
                 else:
-                    dataload.logtime_print("Argument(s) error\n")
+                    dataload.logtime_print(dataload.set_pback_red(
+                        "Argument(s) error\n"))
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_R18_URL
                 rank_word = dataload.WEEKLY_WORD
             else:
-                dataload.logtime_print("Argument(s) error\n")
-            log_context = 'Crawler set target to %s r18 rank top' % rank_word
+                dataload.logtime_print(dataload.set_pback_red(
+                    "Argument(s) error\n"))
+            log_context = dataload.set_pcode_blue_pback_yellow(
+                'Crawler set target to %s r18 rank top' % rank_word)
         else:
-            dataload.logtime_print("Argument(s) error\n")
+            dataload.logtime_print(dataload.set_pback_red(
+                "Argument(s) error\n"))
             log_context = None
         self.pvmx.logprowork(self.logpath, log_context)
 
@@ -200,11 +208,14 @@ class RankingTop(object):
         # server mode directly get all of alive targets
         elif self.ir_mode == 2:
             img_nbr = alive_targets
-            dataload.logtime_print('Server mode auto crawl all of alive targets')            
+            dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
+                'Server mode auto crawl all of alive targets'))
         self.target_urls = whole_urls[:img_nbr]
-        log_context = 'Gather rankingtop ' + str(img_nbr) + ', target table:'
-        self.pvmx.logprowork(self.logpath, log_context)
-        # use prettytable package info list        
+
+        # use prettytable package info list  
+        log_context = dataload.set_pcode_blue_pback_yellow(
+            'Gather rankingtop ' + str(img_nbr) + ', target table:')
+        self.pvmx.logprowork(self.logpath, log_context)      
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
@@ -253,8 +264,8 @@ class RepertoAll(object):
         :param ext_id:      external illustrator id
         """
         if ir_mode == 1:
-            target_id = dataload.logtime_input(
-                        'Target crawl illustrator pixiv-id: ')
+            target_id = dataload.logtime_input(dataload.set_pcode_yellow(
+                'Target crawl illustrator pixiv-id: '))
         elif ir_mode == 2:
             target_id = ext_id
         self.user_input_id = target_id
@@ -297,7 +308,8 @@ class RepertoAll(object):
             else:
                 # very rare error, only happening in this address:
                 # https://www.pixiv.net/member_illust.php?id=15115322
-                log_context = 'Get ajax page valid info failed, exit'
+                log_context = dataload.set_pback_red(
+                    'Get ajax page valid info failed, exit')
                 self.pvmx.logprowork(self.logpath, log_context)
                 exit(-1)
 
@@ -328,7 +340,8 @@ class RepertoAll(object):
         author_info = re.findall(illust_name_pattern, web_src)
         # if login failed, regex parsing result will be a empty list
         if len(author_info) == 0:
-            dataload.logtime_print("Regex parsing result error, no author info, exit")
+            dataload.logtime_print(dataload.set_pback_red(
+                "Regex parsing result error, no author info, exit"))
             exit()
         else:
             self.author_name = author_info[0]
@@ -353,9 +366,11 @@ class RepertoAll(object):
         error_status = re.findall(error_status_pattern, web_src)[0]
         # page display error is "true" status
         if error_status == 'true':
-            log_context = 'Data group %d response failed' % index
+            log_context = dataload.set_pback_red(
+                'Data group %d response failed' % index)
             self.pvmx.logprowork(self.logpath, log_context)
             exit(-1)
+
         # crawl one page items info
         page_target_pattern = re.compile(dataload.PAGE_TARGET_INFO_REGEX, re.S)
         page_target_info_tuple = re.findall(page_target_pattern, web_src)
@@ -374,9 +389,11 @@ class RepertoAll(object):
             illust_type_sym = re.findall(illust_type_pattern, tmp_target_info_list[k][2])
             # regex process result error
             if len(illust_type_sym) == 0:
-                log_context = 'Illust type process error, exit!'
+                log_context = dataload.set_pback_red(
+                    'Illust type process error, exit!')
                 self.pvmx.logprowork(self.logpath, log_context)
                 exit(-1)
+
             # jump gif out
             if illust_type_sym[0] == '2':
                 continue
@@ -446,7 +463,8 @@ class RepertoAll(object):
                             tmp_receive_list[i][3]]
                         repo_target_all_list.append(insert_item)
             else:
-                log_context = 'Page count process error!'
+                log_context = dataload.set_pback_red(
+                    'Page count process error!')
                 self.pvmx.logprowork(self.logpath, log_context)
                 exit(-1)
         del tmp_receive_list                                    # clear cache
@@ -455,26 +473,29 @@ class RepertoAll(object):
         alive_targetcnt = len(repo_target_all_list)
         require_img_nbr = 0
         if self.ir_mode == 1:
-            require_img_str = dataload.logtime_input(
+            require_img_str = dataload.logtime_input(dataload.set_pcode_yellow(
                 'Gather all repo %d, whole target(s): %d, enter you want count: '
-                        % (self.max_cnt, alive_targetcnt))
+                        % (self.max_cnt, alive_targetcnt)))
             # if user input isn't number
             while not require_img_str.isdigit():
-                dataload.logtime_print(
-                    'Input error, your input content was not a decimal number')
-                require_img_str = dataload.logtime_input(
-                    'Enter again(max is %d): ' % alive_targetcnt)
+                dataload.logtime_print(dataload.set_pback_red(
+                    'Input error, your input content was not a decimal number'))
+                require_img_str = dataload.logtime_input(dataload.set_pcode_yellow(
+                    'Enter again(max is %d): ' % alive_targetcnt))
             require_img_nbr = int(require_img_str)
             # if user input number more than limit max, set it to max
             if require_img_nbr > alive_targetcnt:
                 require_img_nbr = alive_targetcnt
             elif require_img_nbr <= 0:
-                dataload.logtime_print('What the f**k is wrong with you?')
+                dataload.logtime_print(dataload.set_pback_red(
+                    'What the f**k is wrong with you?'))
                 exit(-1)
+
         # server mode directly catch all of alive targets
         elif self.ir_mode == 2:
             require_img_nbr = alive_targetcnt
-            dataload.logtime_print('Server mode auto crawl all of alive targets')
+            dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
+                'Server mode auto crawl all of alive targets'))
         
         # download image number limit
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
