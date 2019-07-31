@@ -189,7 +189,26 @@ class PixivAPILib(object):
         return emoji_pattern.sub(r'[EMOJI]', judge_str)
 
     @staticmethod
-    def logprowork(log_path, log_content, withtime='y'):
+    def remove_color_chars(string):
+        """Remove color effect style characters
+
+        @@API that allows external calls
+        After print to console, log may has color effect char '\033'('\x1b')
+        It needs to remove these characters before writing to the file
+        :param string:      wait for check has color chars or not string
+        :return:            string when process over
+        """
+        # '\033' -> '\x1b'
+        if string[0] == '\x1b':
+            m_word_index = string.index('m')        # get 'm' index number
+            string = string[(m_word_index + 1):]    # remove header
+            string = string[:-4]                    # remove tail
+        else:
+            pass
+
+        return string
+
+    def logprowork(self, log_path, log_content, withtime='y'):
         """Universal work log save
 
         @@API that allows external calls
@@ -206,12 +225,21 @@ class PixivAPILib(object):
 
         # select add real time word or not
         if withtime == 'y':
-            dataload.logtime_print(log_content)
+            # print to console
+            dataload.logtime_print(log_content)                     
+
+            # remove log color chars
+            log_content = self.remove_color_chars(log_content)
+            # remove timestamp log color chars
+            timestamp = dataload.realtime_logword(dataload.base_time)
+            timestamp = self.remove_color_chars(timestamp)
+            timestamp = timestamp[:-1] + ' '            # timestamp has a space in tail                
             # use variable-length argument write word to the log file
-            log_file_ptr.write(dataload.realtime_logword(dataload.base_time)
-                + log_content + '\n')
+            log_file_ptr.write(timestamp + log_content + '\n')
+        # no timestamp
         else:
             print(log_content)
+            log_content = self.remove_color_chars(log_content)
             log_file_ptr.write(log_content + '\n')
         log_file_ptr.close()
 
