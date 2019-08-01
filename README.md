@@ -32,7 +32,7 @@
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190802am0018
+    Last Update Time: 20190802am0032
 
 # PLATFORM
 
@@ -92,12 +92,12 @@
     You must enter the local key file in interactive mode before you can use the server mode.
 
     > Arguments:\
-    >-h/--help       Print usage page\
-    >-m/--mode       Set mode, RTN(1)/IRA(2)\
-    >-r/--R18        ordinary(1)/R18(2), only support Mode RTN\
-    >-l/--list       Daily(1)/Weekly(2)/Monthly(3), only support Mode RTN\
-    >-s/--sex        Nomal(0), male(1) or female(2) favor, only >support Mode RTN\
-    >-i/--id         Illustrator ID, only support Mode IRA\
+    >-h/--help       @Print usage page\
+    >-m/--mode       @Set mode, RTN(1) | IRA(2)\
+    >-r/--R18        @Ordinary(1) | R18(2), only support Mode RTN\
+    >-l/--list       @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN\
+    >-s/--sex        @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN\
+    >-i/--id         @Illustrator ID, only support Mode IRA\
     >\
     >Example:\
     >python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
