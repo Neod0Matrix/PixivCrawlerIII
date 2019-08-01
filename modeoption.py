@@ -51,7 +51,7 @@ class RankingTop(object):
         Only intercative mode call this function
         :param ormode:      select ranktop ordinary or r18 mode
         :param whole_nbr:   whole ranking crawl count
-        :return:            crawl images count
+        :return:            crawl images count, if operate failed, return False
         """
         # transfer ascii string to number
         img_cnt = 0
@@ -71,7 +71,7 @@ class RankingTop(object):
         else:
             dataload.logtime_print(dataload.set_pback_red(
                 "Argument(s) error\n"))
-            exit(-1)
+            return False
 
         # if user input isn't number
         while not img_str.isdigit():
@@ -87,7 +87,7 @@ class RankingTop(object):
         elif img_cnt <= 0:
             dataload.logtime_print(dataload.set_pback_red(
                 'What the f**k is wrong with you?'))
-            exit(-1)
+            return False
 
         return img_cnt
 
@@ -184,7 +184,7 @@ class RankingTop(object):
         """Crawl dailyRank list
 
         :param option:      user choose option
-        :return:            none
+        :return:            True is success, False is fail
         """
         response = self.pvmx.url_request_handler(
             target_url=option[0],
@@ -193,6 +193,9 @@ class RankingTop(object):
             target_page_word='Rankpage',
             need_log=True,
             log_path=self.logpath)
+        if response == False:
+            return False
+
         # size info in webpage source
         web_src = response.read().decode("UTF-8", "ignore")
         imgitem_pattern = re.compile(dataload.RANKING_SECTION_REGEX, re.S)
@@ -205,6 +208,10 @@ class RankingTop(object):
         alive_targets = len(whole_urls)
         if self.ir_mode == 1:
             img_nbr = self.gather_essential_info(option[1], alive_targets)
+            # call function return False flag, here return too
+            if img_nbr == False:
+                return False
+
         # server mode directly get all of alive targets
         elif self.ir_mode == 2:
             img_nbr = alive_targets
@@ -226,6 +233,8 @@ class RankingTop(object):
         # save table without time header word
         self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
 
+        return True
+
     def start(self):
         """Call method start()
 
@@ -236,7 +245,9 @@ class RankingTop(object):
         self.pvmx.mkworkdir(self.logpath, self.workdir)
 
         option = self.target_confirm()
-        self.gather_rankingdata(option)
+        # gather ranking data may fail(especially R18 page)
+        if self.gather_rankingdata(option) == False:
+            return False
 
         self.pvmx.download_alltarget(self.logpath, self.target_urls, 
             self.basepages, self.workdir)
@@ -285,7 +296,7 @@ class RepertoAll(object):
         """Crawler need to know how many images do you want
 
         This function will get author name base on author id
-        :return:            none
+        :return:            status code, True is success, False is fail
         """
         # request all of one illustrator's artworks
         response = self.pvmx.url_request_handler(
@@ -295,23 +306,34 @@ class RepertoAll(object):
             target_page_word='Ajaxpage',
             need_log=True,
             log_path=self.logpath)
+        if response == False:
+            return False
+
         # mate illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
         ajax_idlist_pattern = re.compile(dataload.AJAX_ALL_IDLIST_REGEX, re.S)
         ajax_idlist = re.findall(ajax_idlist_pattern, web_src)
+        # ajax id list may be empty
+        if not ajax_idlist:
+            log_context = dataload.set_pback_red(
+                'Regex get ajax id list fail, return')
+            self.pvmx.logprowork(self.logpath, log_context)
+            return False
+
         # id list result may include some garbages, use number regex get pure result
         number_pattern = re.compile(dataload.NUMBER_REGEX, re.S)
         for index in ajax_idlist:
             one_pure_id = re.findall(number_pattern, index)
+            # list empty process
             if one_pure_id:
                 self.pure_idlist.append(one_pure_id[0])
             else:
                 # very rare error, only happening in this address:
                 # https://www.pixiv.net/member_illust.php?id=15115322
                 log_context = dataload.set_pback_red(
-                    'Get ajax page valid info failed, exit')
+                    'Get ajax page valid info failed, return')
                 self.pvmx.logprowork(self.logpath, log_context)
-                exit(-1)
+                return False
 
         # use quick-sort algorithm to handle id number
         # descending order sort
@@ -334,24 +356,28 @@ class RepertoAll(object):
             target_page_word='Mainpage',
             need_log=True,
             log_path=self.logpath)
+        if response == False:
+            return False
+
         # mate illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
         author_info = re.findall(illust_name_pattern, web_src)
         # if login failed, regex parsing result will be a empty list
-        if len(author_info) == 0:
+        if not author_info:
             dataload.logtime_print(dataload.set_pback_red(
-                "Regex parsing result error, no author info, exit"))
-            exit()
+                "Regex parsing result error, no author info, return"))
+            return False
         else:
             self.author_name = author_info[0]
+        return True
         
     def crawl_onepage_data(self, index, index_url):
         """Crawl all target url about images
 
         :param index:       request page index
         :param index_url:   index group url
-        :return:            one page get info list(2-d)
+        :return:            one page get info list(2-d), if operate failed, return False
         """
         response = self.pvmx.url_request_handler(
             target_url=index_url,
@@ -360,20 +386,37 @@ class RepertoAll(object):
             target_page_word='Data group %d' % index,
             need_log=True,
             log_path=self.logpath)
+        if response == False:
+            return False
+
         # catch need info from web source
         web_src = response.read().decode("UTF-8", "ignore")
         error_status_pattern = re.compile(dataload.PAGE_REQUEST_SYM_REGEX, re.S)
-        error_status = re.findall(error_status_pattern, web_src)[0]
+        error_status_list = re.findall(error_status_pattern, web_src)
+        # check error status list is empty or not
+        if not error_status_list:
+            log_context = dataload.set_pback_red(
+                'Regex get error status failed, return')
+            self.pvmx.logprowork(self.logpath, log_context)
+            return False
+
+        error_status = error_status_list[0]
         # page display error is "true" status
         if error_status == 'true':
             log_context = dataload.set_pback_red(
-                'Data group %d response failed' % index)
+                'Data group %d response failed, return' % index)
             self.pvmx.logprowork(self.logpath, log_context)
-            exit(-1)
+            return False
 
         # crawl one page items info
         page_target_pattern = re.compile(dataload.PAGE_TARGET_INFO_REGEX, re.S)
         page_target_info_tuple = re.findall(page_target_pattern, web_src)
+        # check tuple result is empty or not
+        if not page_target_info_tuple:
+            log_context = dataload.set_pback_red(
+                'Regex get target page info failed, return')
+            return False
+
         # tuple transform to list
         tmp_target_info_list = []
         for i in range(len(page_target_info_tuple)):
@@ -383,31 +426,31 @@ class RepertoAll(object):
         # delete no use info items
         del page_target_info_tuple
         # judge illust type, if it's gif(type symbol: 2), delete this item
-        page_target_info_list = []
+        page_target_info_tuple = []
         illust_type_pattern = re.compile(dataload.ILLUST_TYPE_REGEX, re.S)
         for k in range(len(tmp_target_info_list)):
             illust_type_sym = re.findall(illust_type_pattern, tmp_target_info_list[k][2])
             # regex process result error
             if len(illust_type_sym) == 0:
                 log_context = dataload.set_pback_red(
-                    'Illust type process error, exit!')
+                    'Illust type process error, return')
                 self.pvmx.logprowork(self.logpath, log_context)
-                exit(-1)
+                return False
 
             # jump gif out
             if illust_type_sym[0] == '2':
                 continue
             del tmp_target_info_list[k][2]
             del tmp_target_info_list[k][-2]
-            page_target_info_list.append(tmp_target_info_list[k])
+            page_target_info_tuple.append(tmp_target_info_list[k])
         del tmp_target_info_list
 
-        return page_target_info_list 
+        return page_target_info_tuple 
 
     def crawl_allpage_target(self):
         """Package all gather urls
 
-        :return:            none
+        :return:            True is success, False is fail
         """
         # calcus nbr need request count
         # each page at most ONE_AUTHOR_MAINPAGE_IMGCOUNT(20181003:48) images
@@ -436,8 +479,16 @@ class RepertoAll(object):
         
         # gather all data from response xhr page into a temp list
         tmp_receive_list = []
+        tmp_ret = True
         for i in range(require_page_cnt):
-            tmp_receive_list += self.crawl_onepage_data(i + 1, page_url_array[i])
+            tmp_ret = self.crawl_onepage_data(i + 1, page_url_array[i])
+            # crawl one page opreate may fail
+            # one fail, all fail
+            if tmp_ret == False:
+                return False
+            else:
+                tmp_receive_list += tmp_ret
+
         # handle url string
         repo_target_all_list = []
         for i in range(len(tmp_receive_list)):
@@ -466,9 +517,9 @@ class RepertoAll(object):
                 log_context = dataload.set_pback_red(
                     'Page count process error!')
                 self.pvmx.logprowork(self.logpath, log_context)
-                exit(-1)
-        del tmp_receive_list                                    # clear cache
+                return False
 
+        del tmp_receive_list        # clear cache
         # collection target count
         alive_targetcnt = len(repo_target_all_list)
         require_img_nbr = 0
@@ -489,7 +540,7 @@ class RepertoAll(object):
             elif require_img_nbr <= 0:
                 dataload.logtime_print(dataload.set_pback_red(
                     'What the f**k is wrong with you?'))
-                exit(-1)
+                return False
 
         # server mode directly catch all of alive targets
         elif self.ir_mode == 2:
@@ -516,6 +567,8 @@ class RepertoAll(object):
         self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
         del repo_target_all_list            # clear cache 
 
+        return True
+
     def start(self):
         """Call method start()
 
@@ -525,8 +578,13 @@ class RepertoAll(object):
         """
         self.pvmx.mkworkdir(self.logpath, self.workdir)
 
-        self.gather_preloadinfo()
-        self.crawl_allpage_target()
+        # gather pre-load infomation may fail
+        if self.gather_preloadinfo() == False:
+            return False
+
+        # crawl all of pages may fail
+        if self.crawl_allpage_target() == False:
+            return False
 
         self.pvmx.download_alltarget(self.logpath, self.target_capture, 
             self.basepages, self.workdir)

@@ -31,8 +31,8 @@
 
 # UPDATE LOG
 
-    Version: 2.9.8
-    Last Update Time: 20190731pm2315
+    Version: 2.9.9
+    Last Update Time: 20190802am0018
 
 # PLATFORM
 

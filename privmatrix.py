@@ -27,7 +27,7 @@ class PixivAPILib(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2019 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 2.9.8 LTE                                                                                      |
+    |       Version: 2.9.9 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -378,7 +378,7 @@ class PixivAPILib(object):
         :param target_page_word:    target page symbol word
         :param need_log:            need log? True is need, then log_path is must
         :param log_path:            log save path
-        :return:                    request result response(raw)
+        :return:                    request result response(raw), if operate failed, return False
         """
         response = None
         try:
@@ -395,12 +395,12 @@ class PixivAPILib(object):
                 dataload.logtime_print(log_context)
         except KeyboardInterrupt:
             log_context = dataload.set_pcode_blue_pback_yellow(
-                'User interrupt request, exit program')
+                'User interrupt request, return')
             if need_log == True:
                 self.logprowork(log_path, log_context)
-            exit()
+            return False
 
-        # if response failed, crawler will exit with error code -1
+        # if response failed, crawler will return False
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = target_page_word + ' response successed'
@@ -418,7 +418,7 @@ class PixivAPILib(object):
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
-            exit(-1)
+            return False
 
         return response
 
@@ -531,9 +531,15 @@ class PixivAPILib(object):
         # pixiv one repertory maybe have multi-images
         for item in img_whole_info:
             # get judge key word
-            thumbnail = re.findall(datasrc_pattern, item)[0]
-            judge_word = thumbnail[-18:]
+            tmp_thumbnail = re.findall(datasrc_pattern, item)
+            # regex get empty list result, return False
+            if not tmp_thumbnail:
+                dataload.logtime_print(dataload.set_pback_red(
+                    'Span sizer regex cannot get valid info, return'))
+                return False;
 
+            thumbnail = tmp_thumbnail[0]
+            judge_word = thumbnail[-18:]
             # check jpg/png or gif
             if judge_word == dataload.JUDGE_NOGIF_WORD:
                 span_word = re.findall(span_pattern, item)
@@ -559,7 +565,7 @@ class PixivAPILib(object):
                     target_url = dataload.ORIGINAL_IMAGE_HEAD + vaild_word \
                                  + dataload.ORIGINAL_IMAGE_TAIL(0)
                     gather_url.append(target_url)  
-            # give up gif format
+            # give up gif format, or list is empty
             else:
                 pass
 
@@ -698,7 +704,7 @@ class PixivAPILib(object):
             """Create a new thread
 
             Use built-in queue to manage threads list
-            :return:    none
+            :return:    status flag, True is success, False is fail
             """
             self.lock_t.acquire()
             self.queue_t.append(self)
@@ -711,7 +717,8 @@ class PixivAPILib(object):
             except Exception as e:
                 log_context = dataload.set_pback_red("Error Type: " + str(e))
                 PixivAPILib.logprowork(log_context, self.logpath)
-                exit
+                return False
+            return True
 
     def timer_decorator(origin_func):
         """Timer decorator
@@ -737,10 +744,10 @@ class PixivAPILib(object):
 
             log_context = "Launch timer decorator, start download threads timer"
             self.logprowork(log_path, log_context)
-            starttime = time.time()    
+            starttime = time.time()
 
             # packaged original function 
-            origin_func(self, log_path, *args, **kwargs)       
+            origin_func(self, log_path, *args, **kwargs)
 
             endtime = time.time()
             elapesd_time = endtime - starttime
@@ -754,7 +761,7 @@ class PixivAPILib(object):
 
         return _wrapper
 
-    @timer_decorator            
+    @timer_decorator
     def download_alltarget(self, log_path, urls, basepages, workdir):
         """Multi-process download all image
 
@@ -790,8 +797,14 @@ class PixivAPILib(object):
                 # set every download sub-process daemon property
                 # set false, then if you exit one thread, others threads will not end
                 # set true, quit one is quit all
-                sub_thread.setDaemon(True)            
-                sub_thread.create()
+                sub_thread.setDaemon(True)
+                # if create this sub-thread failed, return from function
+                if sub_thread.create() == False:
+                    log_context = dataload.set_pback_red(
+                        'Create a new sub-thread failed, return')
+                    print(log_context)
+                    return False
+
                 if thread_block_flag == False:
                     log_context = dataload.set_pcode_blue_pback_yellow(
                         'Created {:d} download target object(s)')
