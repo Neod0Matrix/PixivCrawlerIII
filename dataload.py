@@ -34,12 +34,19 @@ realtime_logword = lambda bt: "\033[7;34;43m[%02d:%02d:%02d]\033[0m " \
 
 SHELL_BASHHEAD = PROJECT_NAME + '@' + ORGANIZATION + ':~$ '
 # input param method with time log
-logtime_input = lambda str_: input(realtime_logword(base_time) + str_)  
+logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
 # print string method with time log
-logtime_print = lambda str_: print(realtime_logword(base_time) + str_)  
+logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
 # flush simple line method with time log
 logtime_flush_display = lambda str_, *args_, **kwargs_: print(('\r' + \
     realtime_logword(base_time) + str_).format(*args_, **kwargs_), end="") 
+
+def nolog_raise_arguerr():
+    """Call logtime_print lambda to raise an argument(s) error info
+
+    :return:            none
+    """
+    logtime_print(set_pback_red('Argument(s) error'))
 
 def crawler_logo():
     """Print crawler logo

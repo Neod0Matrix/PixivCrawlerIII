@@ -69,8 +69,7 @@ class RankingTop(object):
                 % whole_nbr))
         # error input
         else:
-            dataload.logtime_print(dataload.set_pback_red(
-                "Argument(s) error\n"))
+            dataload.nolog_raise_arguerr()
             return False
 
         # if user input isn't number
@@ -94,7 +93,7 @@ class RankingTop(object):
     def target_confirm(self):
         """Input option and confirm target
 
-        :return:            request mainpage url, mode
+        :return:            request mainpage url and catch mode, if operate failed, return False
         """
 
         rank_word, req_url = None, None
@@ -111,6 +110,9 @@ class RankingTop(object):
         elif self.ir_mode == 2:
             ormode = self.rtn_r18_arg
             mf_word = self.rtn_mf_word
+        else:
+            dataload.nolog_raise_arguerr()
+            return False
 
         if ormode == 'o' or ormode == '1':
             if self.ir_mode == 1:
@@ -118,6 +120,9 @@ class RankingTop(object):
                     'Select daily(1) | weekly(2) | monthly(3) ordinary ranking type: '))
             elif self.ir_mode == 2:
                 dwm = self.rtn_rank_type
+            else:
+                dataload.nolog_raise_arguerr()
+                return False
 
             if dwm == '1':
                 if mf_word == '0' or mf_word == 'n':
@@ -131,8 +136,9 @@ class RankingTop(object):
                     req_url = dataload.DAILY_FEMALE_RANKING_URL
                     rank_word = dataload.FEMALE_WORD
                 else:
-                    dataload.logtime_print(dataload.set_pback_red(
-                        "Argument(s) error\n"))
+                    dataload.nolog_raise_arguerr()
+                    return False
+
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_URL
                 rank_word = dataload.WEEKLY_WORD
@@ -140,8 +146,10 @@ class RankingTop(object):
                 req_url = dataload.MONTHLY_RANKING_URL
                 rank_word = dataload.MONTHLY_WORD
             else:
-                dataload.logtime_print(dataload.set_pback_red(
-                    "Argument(s) error\n"))
+                dataload.nolog_raise_arguerr()
+                return False
+
+            # get the valid target info
             log_context = 'Crawler set target to %s rank top' % rank_word
         elif ormode == 'r' or ormode == '2':
             if self.ir_mode == 1:
@@ -149,6 +157,9 @@ class RankingTop(object):
                     'Select daily(1)/weekly(2) R18 ranking type: '))
             elif self.ir_mode == 2:
                 dwm = self.rtn_rank_type
+            else:
+                dataload.nolog_raise_arguerr()
+                return False
 
             if dwm == '1':
                 if mf_word == '0' or mf_word == 'n':
@@ -162,20 +173,23 @@ class RankingTop(object):
                     req_url = dataload.DAILY_FEMALE_RANKING_R18_URL
                     rank_word = dataload.FEMALE_WORD
                 else:
-                    dataload.logtime_print(dataload.set_pback_red(
-                        "Argument(s) error\n"))
+                    dataload.nolog_raise_arguerr()
+                    return False
+
             elif dwm == '2':
                 req_url = dataload.WEEKLY_RANKING_R18_URL
                 rank_word = dataload.WEEKLY_WORD
             else:
-                dataload.logtime_print(dataload.set_pback_red(
-                    "Argument(s) error\n"))
+                dataload.nolog_raise_arguerr()
+                return False
+
+            # get the valid target info
             log_context = dataload.set_pcode_blue_pback_yellow(
                 'Crawler set target to %s r18 rank top' % rank_word)
         else:
-            dataload.logtime_print(dataload.set_pback_red(
-                "Argument(s) error\n"))
-            log_context = None
+            dataload.nolog_raise_arguerr()
+            return False
+
         self.pvmx.logprowork(self.logpath, log_context)
 
         return req_url, ormode
@@ -244,7 +258,11 @@ class RankingTop(object):
         """
         self.pvmx.mkworkdir(self.logpath, self.workdir)
 
+        # get target infomation may fail
         option = self.target_confirm()
+        if option == False:
+            return False
+
         # gather ranking data may fail(especially R18 page)
         if self.gather_rankingdata(option) == False:
             return False

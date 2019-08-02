@@ -72,8 +72,7 @@ def main():
                 exit(0)
             # input parameter error, into next circle
             else:
-                dataload.logtime_print(dataload.set_pback_red(
-                    "Argument(s) error"))
+                dataload.nolog_raise_arguerr()
     else:
         mode_interactive_server = 2
         # argument pass to variable

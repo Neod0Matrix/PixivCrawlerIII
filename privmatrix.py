@@ -116,17 +116,16 @@ class PixivAPILib(object):
                     dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
                         "Well, you need hand-input your login data: "))
                     username = dataload.logtime_input(dataload.set_pcode_yellow(
-                        'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8'))
-                    passwd = getpass.getpass(
-                        dataload.realtime_logword(dataload.base_time)
-                        + dataload.set_pcode_yellow(\
-                            ('Enter your account password: ').encode('utf-8')))
+                        'Enter your pixiv id(mailbox), must be a R18: '))
+                    passwd = getpass.getpass(dataload.realtime_logword(dataload.base_time)
+                        + dataload.set_pcode_yellow(
+                            'Enter your account password: '))
 
                     generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
                     username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-                    username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
+                    username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username.encode('utf-8'))
                     passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-                    passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
+                    passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd.encode('utf-8'))
                     
                     # create new aes file rewrite it
                     write_aes_file = open(aes_file_path, 'wb')
@@ -147,16 +146,16 @@ class PixivAPILib(object):
             dataload.logtime_print(dataload.set_pcode_yellow(\
                 "Create new AES encrypt file to storage your username and password: "))
             username = dataload.logtime_input(dataload.set_pcode_yellow(
-                'Enter your pixiv id(mailbox), must be a R18: ').encode('utf-8'))
-            passwd = getpass.getpass(
-                dataload.realtime_logword(dataload.base_time)
-                + dataload.set_pcode_yellow(('Enter your account password: ').encode('utf-8')))
+                'Enter your pixiv id(mailbox), must be a R18: '))
+            passwd = getpass.getpass(dataload.realtime_logword(dataload.base_time)
+                + dataload.set_pcode_yellow(
+                    'Enter your account password: '))
 
             generate_aes_iv_param = Random.new().read(AES.block_size)   # generate random aes iv param
             username_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-            username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username)
+            username_encrypto = generate_aes_iv_param + username_cipher.encrypt(username.encode('utf-8'))
             passwd_cipher = AES.new(dataload.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
-            passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd)
+            passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd.encode('utf-8'))
             
             # create new AES file, set write bin bytes mode
             write_aes_file = open(aes_file_path, 'wb')
@@ -226,7 +225,7 @@ class PixivAPILib(object):
         # select add real time word or not
         if withtime == 'y':
             # print to console
-            dataload.logtime_print(log_content)                     
+            dataload.logtime_print(log_content)
 
             # remove log color chars
             log_content = self.remove_color_chars(log_content)
