@@ -20,24 +20,31 @@
     Thanks to watch my project
     If you want to help me improve this project, please submit an issue or fork
 
-# ANNOUNCEMENT
-
-    I am sorry to inform you that the announcement on June 30th 
-	stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
-	THIS INFORMATION IS FAKE. 
-	
-	The Pixiv website should be purely internal maintenance. 
-	After today's test(2019/7/17), THE PROJECT STILL WORKING FINE.
-
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190802pm2204
+    Last Update Time: 20190802pm2354
+
+# ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/08/02
+    After many tests, the crawler seems to have returned to the state at the end of June, 
+    that is, unable to crawl the R18 page and the artist's personal work page.
+    Based on the status quo and the past events (0717 incident), 
+    I decided not to modify the crawler core business logic for the time being, 
+    and wait for 5~6 days before testing.
+
+    2019/07/17
+    I am sorry to inform you that the announcement on June 30th 
+	stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
+	THIS INFORMATION IS FAKE. 
+	The Pixiv website should be purely internal maintenance. 
+	After today's test, THE PROJECT STILL WORKING FINE.
 
 # PLATFORM
 
     Linux x86_64 and Windows NT(tested in Ubuntu 16.04 x64 and Windows 10 x64 1803)
-    Python: 3.x(not support 2.x) suggest 3.4+
+    Python: 3.x(not support 2.x) suggest 3.6+
 
 # REQUIREMENTS
 
@@ -92,16 +99,16 @@
     You must enter the local key file in interactive mode before you can use the server mode.
 
     > Arguments:\
-    >-h/--help       @Print usage page\
-    >-m/--mode       @Set mode, RTN(1) | IRA(2)\
-    >-r/--R18        @Ordinary(1) | R18(2), only support Mode RTN\
-    >-l/--list       @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN\
-    >-s/--sex        @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN\
-    >-i/--id         @Illustrator ID, only support Mode IRA\
+    > -h/--help       @Print usage page\
+    > -m/--mode       @Set mode, RTN(1) | IRA(2)\
+    > -r/--R18        @Ordinary(1) | R18(2), only support Mode RTN\
+    > -l/--list       @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN\
+    > -s/--sex        @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN\
+    > -i/--id         @Illustrator ID, only support Mode IRA\
     >\
-    >Example:\
-    >python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
-    >python3 pixivcrawleriii.py -m 2 -i 0000000
+    > Example:\
+    > python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
+    > python3 pixivcrawleriii.py -m 2 -i 0000000
 
     Notice:
     If the sex option selects male or female, then the list option only can be daily.
@@ -113,12 +120,14 @@
     Add color character display effects from version V2.9.8, 
     and use colors to distinguish the attributes of the displayed information.
 
-    red code black background       -> logo
-    black code red background       -> error or failed
-    yellow code blue background     -> timestamp
-    blue code yellow background     -> important info
-    yellow code black background    -> request user input argument
-    white code black background     -> normal info
+    | Code | Background | Use |
+    | :----: | :----: | :----: |
+    | red | black | logo |
+    | black | red | error or failed |
+    | yellow | blue | timestamp |
+    | blue | yellow | important info |
+    | yellow | black | request user input argument |
+    | white | black | normal info |
 
 # PROBLEMS THAT MAY ARISE
 

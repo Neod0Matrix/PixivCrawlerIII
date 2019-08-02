@@ -312,7 +312,7 @@ class PixivAPILib(object):
         :return:        proxy server, add to opener
         """
         req_ps_url = dataload.PROXYSERVER_URL
-        ps_headers = dataload.uc_user_agent()
+        ps_headers = dataload.ua_headers_windows    # select Windows version user agent
         request = urllib.request.Request(
             url=req_ps_url,
             headers=ps_headers)
@@ -322,7 +322,7 @@ class PixivAPILib(object):
                 timeout=30)
         except Exception as e:
             log_context = dataload.set_pback_red(\
-                "Error Type: " + str(e))
+                "Error type: " + str(e))
             self.logprowork(log_path, log_context)
             response = None
             # here don't exit, log error
@@ -387,7 +387,7 @@ class PixivAPILib(object):
                 timeout=timeout)
         except Exception as e:
             log_context = dataload.set_pback_red(
-                "Error Type: " + str(e))
+                "Error type: " + str(e))
             if need_log == True:
                 self.logprowork(log_path, log_context)
             else:
@@ -399,7 +399,7 @@ class PixivAPILib(object):
                 self.logprowork(log_path, log_context)
             return False
 
-        # if response failed, crawler will return False
+        # server return a response
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = target_page_word + ' response successed'
@@ -410,6 +410,7 @@ class PixivAPILib(object):
                 self.logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
+        # response is none, request failed
         else:
             log_context = dataload.set_pback_red(
                 target_page_word + ' response failed')
@@ -687,7 +688,7 @@ class PixivAPILib(object):
                 PixivAPILib(2)._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
-                log_context = dataload.set_pback_red("Error Type: " + str(e))
+                log_context = dataload.set_pback_red("Error type: " + str(e))
                 PixivAPILib.logprowork(log_context, self.logpath)
 
             # thread queue adjust, lock it
@@ -714,7 +715,7 @@ class PixivAPILib(object):
             try:
                 self.start()        
             except Exception as e:
-                log_context = dataload.set_pback_red("Error Type: " + str(e))
+                log_context = dataload.set_pback_red("Error type: " + str(e))
                 PixivAPILib.logprowork(log_context, self.logpath)
                 return False
             return True

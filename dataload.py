@@ -133,6 +133,7 @@ MALE_WORD = 'male'
 FEMALE_WORD = 'female'
 MALE_R18_WORD = 'male_r18'
 FEMALE_R18_WORD = 'female_r18'
+R18_REF_WORD = '&ref=rn-h-r18-3'                # debug use, browser tool has catched it
 DAILY_RANKING_URL = RANKING_URL + DAILY_WORD
 DAILY_MALE_RANKING_URL = RANKING_URL + MALE_WORD
 DAILY_FEMALE_RANKING_URL = RANKING_URL + FEMALE_WORD
@@ -161,11 +162,11 @@ HTTP_NOTFOUND_CODE_404 = 404
 # here is an example of two different operating systems for headers
 # but in fact, the crawler can pretend to be the headers of any operating system
 _USERAGENT_LINUX = ("Mozilla/5.0 (X11; Linux x86_64) " 
-                   "AppleWebKit/537.36 (KHTML, like Gecko) " 
-                   "Chrome/56.0.2924.87 Safari/537.36")
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " 
+                    "Chrome/56.0.2924.87 Safari/537.36")
 _USERAGENT_WIN = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) " 
-                    "Chrome/60.0.3112.90 Safari/537.36")
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/75.0.3770.142 Safari/537.36")
 _HEADERS_ACCEPT = "application/json, text/javascript, */*; q=0.01"
 _HEADERS_ACCEPT2 = ("text/html,application/xhtml+xml,application/xml;q=0.9,"
                     "image/webp,image/apng,*/*;q=0.8")
@@ -221,6 +222,8 @@ def dict_transto_list (input_dict):
 def uc_user_agent():
     """Choose platform user-agent headers
 
+    In fact, which agent can be selected
+    It is recommended to directly select the Windows version
     :return:    headers
     """
     # build dict word
