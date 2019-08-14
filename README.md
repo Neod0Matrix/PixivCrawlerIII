@@ -14,7 +14,7 @@
 
 # LICENSE
 
-    Copyright (c) 2017-2019 T.WKVER </MATRIX>. All rights reserved.
+    Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
@@ -23,9 +23,12 @@
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190802pm2354
+    Last Update Time: 20190814pm2317
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/08/14
+    Today refactor comment format and API lib class and function name standard.
 
     2019/08/02
     After many tests, the crawler seems to have returned to the state at the end of June, 
@@ -36,15 +39,15 @@
 
     2019/07/17
     I am sorry to inform you that the announcement on June 30th 
-	stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
-	THIS INFORMATION IS FAKE. 
-	The Pixiv website should be purely internal maintenance. 
-	After today's test, THE PROJECT STILL WORKING FINE.
+    stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
+    THIS INFORMATION IS FAKE. 
+    The Pixiv website should be purely internal maintenance. 
+    After today's test, THE PROJECT STILL WORKING FINE.
 
 # PLATFORM
 
     Linux x86_64 and Windows NT(tested in Ubuntu 16.04 x64 and Windows 10 x64 1803)
-    Python: 3.x(not support 2.x) suggest 3.6+
+    Python: 3.x(not support 2.x) suggest 3.5+(3.6 and 3.7 tested over)
 
 # REQUIREMENTS
 

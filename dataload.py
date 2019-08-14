@@ -1,8 +1,20 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
 # code by </MATRIX>@Neod Anderjon(LeaderN)
-# =====================================================================
-# list all constant data
+#
+# dataload.py
+# Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
+#
+# PixivCrawlerIII part
+# T.WKVER crawler data handler loader for PixivCrawlerIII project
+# List all constant data
+#
+# History
+# 
+# 2.9.9 LTE     Refactor names all of this project
+#               Complete comment stadard
 
 import time, os
 
@@ -285,6 +297,3 @@ def build_original_headers(referer):
     build_headers = dict(base_headers, **uc_user_agent())
 
     return build_headers
-
-# =====================================================================
-# code by </MATRIX>@Neod Anderjon(LeaderN)

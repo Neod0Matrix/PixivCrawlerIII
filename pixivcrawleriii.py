@@ -1,12 +1,24 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
 # code by </MATRIX>@Neod Anderjon(LeaderN)
-# =====================================================================
-# callable package class
+#
+# pixivcrawleriii.py
+# Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
+#
+# PixivCrawlerIII part
+# T.WKVER crawler main callable file for PixivCrawlerIII project
+# Callable package class
+#
+# History
+# 
+# 2.9.9 LTE     Refactor names all of this project
+#               Complete comment stadard
 
 import sys, getopt
 import dataload                                     # call data collections
-from privmatrix import PixivAPILib                  # call API library class
+from wkvcwapi import WkvCwApi                       # call API library class
 from modeoption import RankingTop as rtn            # call ranking top mode
 from modeoption import RepertoAll as ira            # call illustrator repo mode
 
@@ -18,7 +30,7 @@ def main():
     """
 
     print(dataload.set_pcode_red(
-        PixivAPILib.__doc__))
+        WkvCwApi.__doc__))
     mode_interactive_server = 1                     # intercative mode or server mode, default interavtive mode(1)
     # judge the count of command line argument
     # if no external arguments, into interactive mode
@@ -40,8 +52,8 @@ def main():
                 "No ID and password crawler cannot work, exit"))
             exit(-1)
         
-        api_instance = PixivAPILib(mode_interactive_server) # instance class to a object
-        api_instance.camouflage_login()                     # crawler simulated login
+        api_instance = WkvCwApi(mode_interactive_server) # instance class to a object
+        api_instance.wca_camouflage_login()                     # crawler simulated login
         # multiple task cycles
         while True:
             mode = dataload.logtime_input(dataload.set_pcode_yellow(
@@ -63,7 +75,7 @@ def main():
             # help page
             elif mode == 'help' or mode == '3':
                 print(dataload.set_pcode_red(
-                    PixivAPILib.__doc__))
+                    WkvCwApi.__doc__))
             # user normal exit program
             elif mode == 'exit' or mode == '4':
                 dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
@@ -96,11 +108,11 @@ def main():
                 ira_illust_id = value
             elif opt in ("-h", "--help"):
                 print(dataload.set_pcode_red(
-                    PixivAPILib.__doc__))
+                    WkvCwApi.__doc__))
                 exit(0)
     
-        api_instance = PixivAPILib(mode_interactive_server) # instance class to a object
-        api_instance.camouflage_login()                     # crawler simulated login
+        api_instance = WkvCwApi(mode_interactive_server) # instance class to a object
+        api_instance.wca_camouflage_login()                     # crawler simulated login
 
         if catch_mode == '1':
             dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
@@ -119,10 +131,7 @@ def main():
         # help page
         elif catch_mode == 'help' or catch_mode == '3':
             print(dataload.set_pcode_red(
-                PixivAPILib.__doc__))
+                WkvCwApi.__doc__))
 
 if __name__ == '__main__':
     main()
-
-# =====================================================================
-# code by </MATRIX>@Neod Anderjon(LeaderN)

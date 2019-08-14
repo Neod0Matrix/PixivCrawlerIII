@@ -1,8 +1,20 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
 # code by </MATRIX>@Neod Anderjon(LeaderN)
-# =====================================================================
-# write all universal function into a class and package them
+#
+# wkvcwapi.py
+# Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
+#
+# PixivCrawlerIII part
+# T.WKVER crawler API library for PixivCrawlerIII project
+# Write all universal function into a class and package them
+#
+# History
+# 
+# 2.9.9 LTE     Refactor names all of this project
+#               Complete comment stadard
 
 from __future__ import print_function
 import urllib.request, urllib.parse, urllib.error, http.cookiejar   # crawler main modules
@@ -16,7 +28,7 @@ import time, random, re, os, getpass
 from functools import wraps         # decorator wrapper
 import dataload
 
-class PixivAPILib(object):
+class WkvCwApi(object):
     """
     =================================================================================================================
     |       ██████╗ ██╗██╗  ██╗██╗██╗   ██╗ ██████╗██████╗  █████╗ ██╗    ██╗██╗     ███████╗██████╗ ██╗██╗██╗      |
@@ -172,7 +184,7 @@ class PixivAPILib(object):
         return username, passwd, getway_data                        # return login use 3 elements
 
     @staticmethod
-    def replace_emoji(judge_str):
+    def wca_replace_emoji(judge_str):
         """Replace emoji symbol to a replaced string
 
         @@API that allows external calls
@@ -188,7 +200,7 @@ class PixivAPILib(object):
         return emoji_pattern.sub(r'[EMOJI]', judge_str)
 
     @staticmethod
-    def remove_color_chars(string):
+    def wca_remove_color_chars(string):
         """Remove color effect style characters
 
         @@API that allows external calls
@@ -207,7 +219,7 @@ class PixivAPILib(object):
 
         return string
 
-    def logprowork(self, log_path, log_content, withtime='y'):
+    def wca_logprowork(self, log_path, log_content, withtime='y'):
         """Universal work log save
 
         @@API that allows external calls
@@ -228,21 +240,21 @@ class PixivAPILib(object):
             dataload.logtime_print(log_content)
 
             # remove log color chars
-            log_content = self.remove_color_chars(log_content)
+            log_content = self.wca_remove_color_chars(log_content)
             # remove timestamp log color chars
             timestamp = dataload.realtime_logword(dataload.base_time)
-            timestamp = self.remove_color_chars(timestamp)
+            timestamp = self.wca_remove_color_chars(timestamp)
             timestamp = timestamp[:-1] + ' '            # timestamp has a space in tail                
             # use variable-length argument write word to the log file
             log_file_ptr.write(timestamp + log_content + '\n')
         # no timestamp
         else:
             print(log_content)
-            log_content = self.remove_color_chars(log_content)
+            log_content = self.wca_remove_color_chars(log_content)
             log_file_ptr.write(log_content + '\n')
         log_file_ptr.close()
 
-    def mkworkdir(self, log_path, folder):
+    def wca_mkworkdir(self, log_path, folder):
         """Create a crawler work directory
 
         @@API that allows external calls
@@ -263,7 +275,7 @@ class PixivAPILib(object):
         if os.path.exists(log_path):
             os.remove(log_path)
         # this step will create a new log file and write the first line
-        self.logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_context)
 
     @staticmethod
     def _partition(array, l, r):
@@ -285,7 +297,7 @@ class PixivAPILib(object):
 
         return i + 1
 
-    def quick_sort(self, array, l, r):
+    def wca_quick_sort(self, array, l, r):
         """Quick sort algorithm
 
         @@API that allows external calls
@@ -299,8 +311,8 @@ class PixivAPILib(object):
         """
         if l < r:
             q = self._partition(array, l, r)
-            self.quick_sort(array, l, q - 1)
-            self.quick_sort(array, q + 1, r)
+            self.wca_quick_sort(array, l, q - 1)
+            self.wca_quick_sort(array, q + 1, r)
 
     def _getproxyserver(self, log_path):
         """Catch a proxy server
@@ -323,13 +335,13 @@ class PixivAPILib(object):
         except Exception as e:
             log_context = dataload.set_pback_red(\
                 "Error type: " + str(e))
-            self.logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_context)
             response = None
             # here don't exit, log error
         except KeyboardInterrupt:
             log_context = dataload.set_pcode_blue_pback_yellow(\
                 'User interrupt, exit')
-            self.logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_context)
             response = None
 
         # proxy error but don't exit, ignore this
@@ -342,7 +354,7 @@ class PixivAPILib(object):
         else:
             log_context = dataload.set_pback_red(\
                 'Get proxy response failed, check network')
-        self.logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_context)
 
         web_src = response.read().decode("UTF-8", "ignore")
         proxy_pattern = re.compile(dataload.PROXYIP_REGEX, re.S)
@@ -362,11 +374,11 @@ class PixivAPILib(object):
         proxy_choose = random.choice(proxy_iplist)
         proxyserver_d = {'http': proxy_choose}
         log_context = dataload.set_pcode_blue_pback_yellow('Choose proxy server: ' + proxy_choose)
-        self.logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_context)
 
         return proxyserver_d
 
-    def url_request_handler(self, target_url, post_data, timeout, 
+    def wca_url_request_handler(self, target_url, post_data, timeout, 
         target_page_word, need_log, log_path):
         """Universal URL request format handler
 
@@ -389,14 +401,14 @@ class PixivAPILib(object):
             log_context = dataload.set_pback_red(
                 "Error type: " + str(e))
             if need_log == True:
-                self.logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
         except KeyboardInterrupt:
             log_context = dataload.set_pcode_blue_pback_yellow(
                 'User interrupt request, return')
             if need_log == True:
-                self.logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_context)
             return False
 
         # server return a response
@@ -407,7 +419,7 @@ class PixivAPILib(object):
                 log_context = dataload.set_pback_red(target_page_word + 
                     ' response not ok, return code %d' % response.getcode())
             if need_log == True:
-                self.logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
         # response is none, request failed
@@ -415,7 +427,7 @@ class PixivAPILib(object):
             log_context = dataload.set_pback_red(
                 target_page_word + ' response failed')
             if need_log == True:
-                self.logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_context)
             else:
                 dataload.logtime_print(log_context)
             return False
@@ -430,7 +442,7 @@ class PixivAPILib(object):
 
         # call gather login data function
         self.login_bias = self._login_preload(dataload.LOGIN_AES_INI_PATH)
-        response = self.url_request_handler(
+        response = self.wca_url_request_handler(
             target_url=dataload.LOGIN_POSTKEY_URL, 
             post_data=None,                 # cannot set data when get post key
             timeout=30, 
@@ -464,7 +476,7 @@ class PixivAPILib(object):
 
         return postway_data
 
-    def camouflage_login(self):
+    def wca_camouflage_login(self):
         """Camouflage browser to login
 
         @@API that allows external calls
@@ -472,7 +484,7 @@ class PixivAPILib(object):
         """
         # login init need to commit post data to Pixiv
         postway_data = self._gatherpostkey()
-        response = self.url_request_handler(
+        response = self.wca_url_request_handler(
             target_url=dataload.LOGIN_REQUEST_URL,
             post_data=postway_data, 
             timeout=30, 
@@ -480,7 +492,7 @@ class PixivAPILib(object):
             need_log=False,
             log_path='')
 
-    def save_test_html(self, workdir, content, log_path):
+    def wca_save_test_html(self, workdir, content, log_path):
         """Save request web source page in a html file, test use
 
         @@API that allows external calls
@@ -495,10 +507,10 @@ class PixivAPILib(object):
         htmlfile.close()
         log_context = dataload.set_pcode_blue_pback_yellow(
             'Save test request html page ok')
-        self.logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_context)
 
     @staticmethod
-    def unicode_escape(raw_str):
+    def wca_unicode_escape(raw_str):
         """Transform '\\uxxx' code to unicode
 
         @@API that allows external calls
@@ -512,7 +524,7 @@ class PixivAPILib(object):
         return raw_str.encode('utf-8').decode('unicode_escape')
 
     @staticmethod
-    def commit_spansizer(whole_pattern, info_pattern, web_src):
+    def wca_commit_spansizer(whole_pattern, info_pattern, web_src):
         """A sizer for all of images in once commit item
 
         @@API that allows external calls
@@ -604,7 +616,7 @@ class PixivAPILib(object):
         # first request fatal
         except urllib.error.HTTPError as e:
             ## log_context = "Error type: " + str(e)
-            ## self.logprowork(logpath, log_context)
+            ## self.wca_logprowork(logpath, log_context)
             # http error 404, change image type
             if e.code == dataload.HTTP_NOTFOUND_CODE_404:
                 img_datatype = 'jpg'                    # change data type
@@ -614,12 +626,12 @@ class PixivAPILib(object):
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
                 except urllib.error.HTTPError as e:
                     ## log_context = "Error type: " + str(e)
-                    ## self.logprowork(logpath, log_context)
+                    ## self.wca_logprowork(logpath, log_context)
                     # not 404 change proxy, cause request server forbidden
                     if e.code != dataload.HTTP_NOTFOUND_CODE_404:
                         log_context = dataload.set_pcode_blue_pback_yellow(
                             "Add proxy server in request")
-                        self.logprowork(log_path, log_context)
+                        self.wca_logprowork(log_path, log_context)
                         # preload a proxy handler, just run once
                         if self.proxy_hasrun_flag == False:
                             self.proxy_hasrun_flag = True
@@ -634,7 +646,7 @@ class PixivAPILib(object):
             else:
                 log_context = dataload.set_pcode_blue_pback_yellow(
                     "Add proxy server in request")
-                self.logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_context)
                 # with proxy request again
                 self.opener = urllib.request.build_opener(proxy_handler)
                 response = self.opener.open(fullurl=url, timeout=timeout)
@@ -645,7 +657,7 @@ class PixivAPILib(object):
             # calcus target source data stream size
             # multi-thread, no resource lock, it must use class name to call
             source_size = round(float(len(img_bindata) / 1024), 2)
-            PixivAPILib._datastream_pool += source_size
+            WkvCwApi._datastream_pool += source_size
             # save image bin data
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
@@ -685,11 +697,11 @@ class PixivAPILib(object):
             try:
                 # package download one image thread
                 # default set server mode here(actually it doesn’t matter)
-                PixivAPILib(2)._save_oneimage(self.index, self.url, 
+                WkvCwApi(2)._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
                 log_context = dataload.set_pback_red("Error type: " + str(e))
-                PixivAPILib.logprowork(log_context, self.logpath)
+                WkvCwApi.wca_logprowork(log_context, self.logpath)
 
             # thread queue adjust, lock it
             # remove end thread from list  
@@ -716,11 +728,11 @@ class PixivAPILib(object):
                 self.start()        
             except Exception as e:
                 log_context = dataload.set_pback_red("Error type: " + str(e))
-                PixivAPILib.logprowork(log_context, self.logpath)
+                WkvCwApi.wca_logprowork(log_context, self.logpath)
                 return False
             return True
 
-    def timer_decorator(origin_func):
+    def wca_timer_decorator(origin_func):
         """Timer decorator
 
         @@API that allows external calls
@@ -743,7 +755,7 @@ class PixivAPILib(object):
             """
 
             log_context = "Launch timer decorator, start download threads timer"
-            self.logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_context)
             starttime = time.time()
 
             # packaged original function 
@@ -751,18 +763,18 @@ class PixivAPILib(object):
 
             endtime = time.time()
             elapesd_time = endtime - starttime
-            average_download_speed = float(PixivAPILib._datastream_pool / elapesd_time)
+            average_download_speed = float(WkvCwApi._datastream_pool / elapesd_time)
             log_context = (dataload.set_pcode_blue_pback_yellow(
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
-                % (float(PixivAPILib._datastream_pool / 1024), average_download_speed)))
-            self.logprowork(log_path, log_context)
-            PixivAPILib._datastream_pool = 0    # clear global data stream list
+                % (float(WkvCwApi._datastream_pool / 1024), average_download_speed)))
+            self.wca_logprowork(log_path, log_context)
+            WkvCwApi._datastream_pool = 0    # clear global data stream list
 
         return _wrapper
 
-    @timer_decorator
-    def download_alltarget(self, log_path, urls, basepages, workdir):
+    @wca_timer_decorator
+    def wca_download_alltarget(self, log_path, urls, basepages, workdir):
         """Multi-process download all image
 
         @@API that allows external calls
@@ -776,7 +788,7 @@ class PixivAPILib(object):
         alive_thread_cnt = queueLength = len(urls)
         log_context = dataload.set_pcode_blue_pback_yellow(
             'Hit %d target(s), start download task' % queueLength)
-        self.logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_context)
 
         # the download process may fail
         # capture timeout and the user interrupt fault and exit the failed thread
@@ -832,7 +844,7 @@ class PixivAPILib(object):
                     dataload.logtime_flush_display(log_context, \
                         alive_thread_cnt - 1, queueLength, \
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
-                        (float(PixivAPILib._datastream_pool / 1024)))
+                        (float(WkvCwApi._datastream_pool / 1024)))
             log_context = dataload.set_pcode_blue_pback_yellow(
                 ', sub-threads execute finished')
             print(log_context)
@@ -842,7 +854,7 @@ class PixivAPILib(object):
                 ', user interrupt a thread, exit all threads')
             print(log_context)
 
-    def htmlpreview_build(self, workdir, html_path, log_path):
+    def wca_htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
 
         @@API that allows external calls
@@ -902,7 +914,4 @@ class PixivAPILib(object):
             "</html>")
         html_file.close()
         log_context = 'Image HTML browse page generate finished'
-        self.logprowork(log_path, log_context)
-
-# =====================================================================
-# code by </MATRIX>@Neod Anderjon(LeaderN)
+        self.wca_logprowork(log_path, log_context)

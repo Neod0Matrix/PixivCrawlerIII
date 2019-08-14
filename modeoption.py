@@ -1,8 +1,20 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
 # code by </MATRIX>@Neod Anderjon(LeaderN)
-# =====================================================================
-# provide modes setting target object
+#
+# modeoption.py
+# Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
+#
+# PixivCrawlerIII part
+# T.WKVER crawler functional modules for PixivCrawlerIII project
+# Provide modes setting target object
+#
+# History
+# 
+# 2.9.9 LTE     Refactor names all of this project
+#               Complete comment stadard
 
 import re
 from prettytable import PrettyTable     # info list package table module
@@ -20,12 +32,12 @@ class RankingTop(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_path, html_path, pvmx, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_mf_word='0'):
+    def __init__(self, workdir, log_path, html_path, wkv_cw_api, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_mf_word='0'):
         """
         :param workdir:         work directory
         :param log_path:        log save path
         :param html_path:       html save path
-        :param pvmx:            API library class instance    
+        :param wkv_cw_api:      API library class instance    
         :param ir_mode:         interactive mode or server mode
         :param rtn_r18_arg:     RTN mode set R18 or not
         :param rtn_rank_type:   RTN mode set ranking type
@@ -34,17 +46,17 @@ class RankingTop(object):
         self.workdir = workdir
         self.logpath = log_path
         self.htmlpath = html_path
-        self.pvmx = pvmx
+        self.wkv_cw_api = wkv_cw_api
         self.ir_mode = ir_mode
         # class inside global variable
         self.rtn_r18_arg = rtn_r18_arg
         self.rtn_rank_type = rtn_rank_type
         self.rtn_mf_word = rtn_mf_word
-        self.target_urls = []
-        self.basepages = []  
+        self.rtn_target_urls = []
+        self.rtn_basepages = []
         
     @staticmethod
-    def gather_essential_info(ormode, whole_nbr):
+    def rtn_gather_essential_info(ormode, whole_nbr):
         """Get input image count
 
         If user input number more than whole number, set target count is whole number
@@ -90,7 +102,7 @@ class RankingTop(object):
 
         return img_cnt
 
-    def target_confirm(self):
+    def rtn_target_confirm(self):
         """Input option and confirm target
 
         :return:            request mainpage url and catch mode, if operate failed, return False
@@ -100,7 +112,7 @@ class RankingTop(object):
 
         if self.ir_mode == 1:
             log_context = 'Gather ranking list======>'
-            self.pvmx.logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
 
             # select rank R18 or not
             ormode = dataload.logtime_input(dataload.set_pcode_yellow(
@@ -190,19 +202,19 @@ class RankingTop(object):
             dataload.nolog_raise_arguerr()
             return False
 
-        self.pvmx.logprowork(self.logpath, log_context)
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
 
         return req_url, ormode
 
-    def gather_rankingdata(self, option):
+    def rtn_gather_rankingdata(self, option):
         """Crawl dailyRank list
 
         :param option:      user choose option
         :return:            True is success, False is fail
         """
-        response = self.pvmx.url_request_handler(
+        response = self.wkv_cw_api.wca_url_request_handler(
             target_url=option[0],
-            post_data=self.pvmx.login_bias[2], 
+            post_data=self.wkv_cw_api.login_bias[2], 
             timeout=30, 
             target_page_word='Rankpage',
             need_log=True,
@@ -214,14 +226,14 @@ class RankingTop(object):
         web_src = response.read().decode("UTF-8", "ignore")
         imgitem_pattern = re.compile(dataload.RANKING_SECTION_REGEX, re.S)
         info_pattern = re.compile(dataload.RANKING_INFO_REGEX, re.S)
-        sizer_result = self.pvmx.commit_spansizer(imgitem_pattern, info_pattern, web_src)
+        sizer_result = self.wkv_cw_api.wca_commit_spansizer(imgitem_pattern, info_pattern, web_src)
         # whole data cache pool
         whole_urls, img_infos = sizer_result[0], sizer_result[1]
 
         # cut need image count to be target list
         alive_targets = len(whole_urls)
         if self.ir_mode == 1:
-            img_nbr = self.gather_essential_info(option[1], alive_targets)
+            img_nbr = self.rtn_gather_essential_info(option[1], alive_targets)
             # call function return False flag, here return too
             if img_nbr == False:
                 return False
@@ -231,21 +243,21 @@ class RankingTop(object):
             img_nbr = alive_targets
             dataload.logtime_print(dataload.set_pcode_blue_pback_yellow(
                 'Server mode auto crawl all of alive targets'))
-        self.target_urls = whole_urls[:img_nbr]
+        self.rtn_target_urls = whole_urls[:img_nbr]
 
         # use prettytable package info list  
         log_context = dataload.set_pcode_blue_pback_yellow(
             'Gather rankingtop ' + str(img_nbr) + ', target table:')
-        self.pvmx.logprowork(self.logpath, log_context)      
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)      
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
             # basepage will be a headers referer
-            self.basepages.append(dataload.BASEPAGE_URL + i[3])
+            self.rtn_basepages.append(dataload.BASEPAGE_URL + i[3])
             image_info_table.add_row([(k + 1), i[3], i[1], 
-                self.target_urls[k][57:-4], i[4], i[2]])
+                self.rtn_target_urls[k][57:-4], i[4], i[2]])
         # save table without time header word
-        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
+        self.wkv_cw_api.wca_logprowork(self.logpath, str(image_info_table), 'N')
 
         return True
 
@@ -256,20 +268,20 @@ class RankingTop(object):
         Then run build_task.start() to boot this mode
         :return:    none
         """
-        self.pvmx.mkworkdir(self.logpath, self.workdir)
+        self.wkv_cw_api.wca_mkworkdir(self.logpath, self.workdir)
 
         # get target infomation may fail
-        option = self.target_confirm()
+        option = self.rtn_target_confirm()
         if option == False:
             return False
 
         # gather ranking data may fail(especially R18 page)
-        if self.gather_rankingdata(option) == False:
+        if self.rtn_gather_rankingdata(option) == False:
             return False
 
-        self.pvmx.download_alltarget(self.logpath, self.target_urls, 
-            self.basepages, self.workdir)
-        self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
+        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.rtn_target_urls, 
+            self.rtn_basepages, self.workdir)
+        self.wkv_cw_api.wca_htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
 
 class RepertoAll(object):
     """Crawl any illustrator repertory all artworks
@@ -283,12 +295,12 @@ class RepertoAll(object):
         API lib class instance
     """
 
-    def __init__(self, workdir, log_name, html_name, pvmx, ir_mode, ext_id=''):
+    def __init__(self, workdir, log_name, html_name, wkv_cw_api, ir_mode, ext_id=''):
         """
         :param workdir:     work directory
         :param log_name:    log name
         :param html_name:   html name
-        :param pvmx:        API library class instance
+        :param wkv_cw_api:  API library class instance
         :param ir_mode:     interactive mode or server mode
         :param ext_id:      external illustrator id
         """
@@ -301,25 +313,25 @@ class RepertoAll(object):
         self.workdir = workdir + 'illustrepo_' + self.user_input_id
         self.logpath = self.workdir + log_name
         self.htmlpath = self.workdir + html_name
-        self.pvmx = pvmx
+        self.wkv_cw_api = wkv_cw_api
         self.ir_mode = ir_mode
         # class inside call global variable
-        self.author_name = None
-        self.max_cnt = 0
-        self.pure_idlist = []
-        self.target_capture = []
-        self.basepages = []
+        self.ira_author_name = None
+        self.ira_max_cnt = 0
+        self.ira_pure_idlist = []
+        self.ira_target_capture = []
+        self.ira_basepages = []
 
-    def gather_preloadinfo(self):
+    def ira_gather_preloadinfo(self):
         """Crawler need to know how many images do you want
 
         This function will get author name base on author id
         :return:            status code, True is success, False is fail
         """
         # request all of one illustrator's artworks
-        response = self.pvmx.url_request_handler(
+        response = self.wkv_cw_api.wca_url_request_handler(
             target_url=dataload.AJAX_ALL_URL(self.user_input_id),
-            post_data=self.pvmx.login_bias[2], 
+            post_data=self.wkv_cw_api.login_bias[2], 
             timeout=30, 
             target_page_word='Ajaxpage',
             need_log=True,
@@ -335,7 +347,7 @@ class RepertoAll(object):
         if not ajax_idlist:
             log_context = dataload.set_pback_red(
                 'Regex get ajax id list fail, return')
-            self.pvmx.logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
             return False
 
         # id list result may include some garbages, use number regex get pure result
@@ -344,32 +356,32 @@ class RepertoAll(object):
             one_pure_id = re.findall(number_pattern, index)
             # list empty process
             if one_pure_id:
-                self.pure_idlist.append(one_pure_id[0])
+                self.ira_pure_idlist.append(one_pure_id[0])
             else:
                 # very rare error, only happening in this address:
                 # https://www.pixiv.net/member_illust.php?id=15115322
                 log_context = dataload.set_pback_red(
                     'Get ajax page valid info failed, return')
-                self.pvmx.logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
                 return False
 
         # use quick-sort algorithm to handle id number
         # descending order sort
         pure_idlist_nbr = []
-        for index in self.pure_idlist:
+        for index in self.ira_pure_idlist:
             pure_idlist_nbr.append(int(index))      # string to integer number
-        self.pvmx.quick_sort(pure_idlist_nbr, 0, len(pure_idlist_nbr) - 1)
+        self.wkv_cw_api.wca_quick_sort(pure_idlist_nbr, 0, len(pure_idlist_nbr) - 1)
         pure_idlist_nbr.reverse()                   # reverse order
-        self.pure_idlist.clear()                         # clear origin list
+        self.ira_pure_idlist.clear()                         # clear origin list
         for index in pure_idlist_nbr:
-            self.pure_idlist.append(str(index))
+            self.ira_pure_idlist.append(str(index))
         del pure_idlist_nbr                         # clear number cache
-        self.max_cnt = len(self.pure_idlist)
+        self.ira_max_cnt = len(self.ira_pure_idlist)
         
         # get author name from member-main-page
-        response = self.pvmx.url_request_handler(
+        response = self.wkv_cw_api.wca_url_request_handler(
             target_url=dataload.MEMBER_ILLUST_URL + self.user_input_id,
-            post_data=self.pvmx.login_bias[2], 
+            post_data=self.wkv_cw_api.login_bias[2], 
             timeout=30, 
             target_page_word='Mainpage',
             need_log=True,
@@ -387,19 +399,19 @@ class RepertoAll(object):
                 "Regex parsing result error, no author info, return"))
             return False
         else:
-            self.author_name = author_info[0]
+            self.ira_author_name = author_info[0]
         return True
         
-    def crawl_onepage_data(self, index, index_url):
+    def ira_crawl_onepage_data(self, index, index_url):
         """Crawl all target url about images
 
         :param index:       request page index
         :param index_url:   index group url
         :return:            one page get info list(2-d), if operate failed, return False
         """
-        response = self.pvmx.url_request_handler(
+        response = self.wkv_cw_api.wca_url_request_handler(
             target_url=index_url,
-            post_data=self.pvmx.login_bias[2], 
+            post_data=self.wkv_cw_api.login_bias[2], 
             timeout=30, 
             target_page_word='Data group %d' % index,
             need_log=True,
@@ -415,7 +427,7 @@ class RepertoAll(object):
         if not error_status_list:
             log_context = dataload.set_pback_red(
                 'Regex get error status failed, return')
-            self.pvmx.logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
             return False
 
         error_status = error_status_list[0]
@@ -423,7 +435,7 @@ class RepertoAll(object):
         if error_status == 'true':
             log_context = dataload.set_pback_red(
                 'Data group %d response failed, return' % index)
-            self.pvmx.logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
             return False
 
         # crawl one page items info
@@ -452,7 +464,7 @@ class RepertoAll(object):
             if len(illust_type_sym) == 0:
                 log_context = dataload.set_pback_red(
                     'Illust type process error, return')
-                self.pvmx.logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
                 return False
 
             # jump gif out
@@ -465,7 +477,7 @@ class RepertoAll(object):
 
         return page_target_info_tuple 
 
-    def crawl_allpage_target(self):
+    def ira_crawl_allpage_target(self):
         """Package all gather urls
 
         :return:            True is success, False is fail
@@ -473,12 +485,12 @@ class RepertoAll(object):
         # calcus nbr need request count
         # each page at most ONE_AUTHOR_MAINPAGE_IMGCOUNT(20181003:48) images
         require_page_cnt = 0
-        if self.max_cnt <= dataload.ONE_PAGE_COMMIT:
+        if self.ira_max_cnt <= dataload.ONE_PAGE_COMMIT:
             require_page_cnt = 1
         else:
-            require_page_cnt = int(self.max_cnt / dataload.ONE_PAGE_COMMIT)
+            require_page_cnt = int(self.ira_max_cnt / dataload.ONE_PAGE_COMMIT)
             # remainder decision
-            if self.max_cnt % dataload.ONE_PAGE_COMMIT != 0:
+            if self.ira_max_cnt % dataload.ONE_PAGE_COMMIT != 0:
                 require_page_cnt += 1
 
         # build request url of one page 
@@ -487,9 +499,9 @@ class RepertoAll(object):
         for ix in range(require_page_cnt):
             # tail number limit
             tmp_tail_nbr = dataload.ONE_PAGE_COMMIT * (ix + 1)
-            if tmp_tail_nbr > self.max_cnt:
-                tmp_tail_nbr = self.max_cnt
-            for index in self.pure_idlist[(dataload.ONE_PAGE_COMMIT * ix):tmp_tail_nbr]:
+            if tmp_tail_nbr > self.ira_max_cnt:
+                tmp_tail_nbr = self.ira_max_cnt
+            for index in self.ira_pure_idlist[(dataload.ONE_PAGE_COMMIT * ix):tmp_tail_nbr]:
                 iid_string_tail += dataload.IDS_UNIT(index)
             one_page_request_url = dataload.ALLREPOINFO_URL(self.user_input_id, iid_string_tail)
             iid_string_tail = ''                                # clear last cache
@@ -499,7 +511,7 @@ class RepertoAll(object):
         tmp_receive_list = []
         tmp_ret = True
         for i in range(require_page_cnt):
-            tmp_ret = self.crawl_onepage_data(i + 1, page_url_array[i])
+            tmp_ret = self.ira_crawl_onepage_data(i + 1, page_url_array[i])
             # crawl one page opreate may fail
             # one fail, all fail
             if tmp_ret == False:
@@ -511,9 +523,9 @@ class RepertoAll(object):
         repo_target_all_list = []
         for i in range(len(tmp_receive_list)):
             # tasnform title '\\uxxx' to unicode
-            tmp_receive_list[i][1] = self.pvmx.unicode_escape(tmp_receive_list[i][1])
+            tmp_receive_list[i][1] = self.wkv_cw_api.wca_unicode_escape(tmp_receive_list[i][1])
             # replace emoji string
-            tmp_receive_list[i][1] = self.pvmx.replace_emoji(tmp_receive_list[i][1])
+            tmp_receive_list[i][1] = self.wkv_cw_api.wca_replace_emoji(tmp_receive_list[i][1])
             # build original url without image format
             tmp = tmp_receive_list[i][2]
             tmp = tmp.replace('\\', '')                         # delete character '\' 
@@ -534,7 +546,7 @@ class RepertoAll(object):
             else:
                 log_context = dataload.set_pback_red(
                     'Page count process error!')
-                self.pvmx.logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
                 return False
 
         del tmp_receive_list        # clear cache
@@ -544,7 +556,7 @@ class RepertoAll(object):
         if self.ir_mode == 1:
             require_img_str = dataload.logtime_input(dataload.set_pcode_yellow(
                 'Gather all repo %d, whole target(s): %d, enter you want count: '
-                        % (self.max_cnt, alive_targetcnt)))
+                        % (self.ira_max_cnt, alive_targetcnt)))
             # if user input isn't number
             while not require_img_str.isdigit():
                 dataload.logtime_print(dataload.set_pback_red(
@@ -568,21 +580,21 @@ class RepertoAll(object):
         
         # download image number limit
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
-            self.target_capture.append(i[2])    # put url into target capture list
-            self.basepages.append(dataload.BASEPAGE_URL + i[0]) # build basepage url
+            self.ira_target_capture.append(i[2])    # put url into target capture list
+            self.ira_basepages.append(dataload.BASEPAGE_URL + i[0]) # build basepage url
             
         # display author info
-        log_context = ('Illustrator: ' + self.author_name + ' id: '
+        log_context = ('Illustrator: ' + self.ira_author_name + ' id: '
             + self.user_input_id + ' require image(s): ' 
             + str(require_img_nbr) + ', target table:')
-        self.pvmx.logprowork(self.logpath, log_context)
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
         # use prettytable build a table save and print info list
         image_info_table = PrettyTable(
             ["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
             image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]]) 
         # save with str format and no time word
-        self.pvmx.logprowork(self.logpath, str(image_info_table), 'N')
+        self.wkv_cw_api.wca_logprowork(self.logpath, str(image_info_table), 'N')
         del repo_target_all_list            # clear cache 
 
         return True
@@ -594,19 +606,16 @@ class RepertoAll(object):
         Then run build_task.start() to boot this mode
         :return:    none
         """
-        self.pvmx.mkworkdir(self.logpath, self.workdir)
+        self.wkv_cw_api.wca_mkworkdir(self.logpath, self.workdir)
 
         # gather pre-load infomation may fail
-        if self.gather_preloadinfo() == False:
+        if self.ira_gather_preloadinfo() == False:
             return False
 
         # crawl all of pages may fail
-        if self.crawl_allpage_target() == False:
+        if self.ira_crawl_allpage_target() == False:
             return False
 
-        self.pvmx.download_alltarget(self.logpath, self.target_capture, 
-            self.basepages, self.workdir)
-        self.pvmx.htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
-
-# =====================================================================
-# code by </MATRIX>@Neod Anderjon(LeaderN)
+        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.ira_target_capture, 
+            self.ira_basepages, self.workdir)
+        self.wkv_cw_api.wca_htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
