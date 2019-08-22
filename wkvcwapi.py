@@ -13,7 +13,8 @@
 #
 # History
 # 
-# 2.9.9 LTE     Refactor names all of this project
+# 2.9.9 LTE     Neod Anderjon, 2019-08-15
+#               Refactor names all of this project
 #               Complete comment stadard
 
 from __future__ import print_function
@@ -61,9 +62,7 @@ class WkvCwApi(object):
     =================================================================================================================
     """
 
-    # this download data stream counter involves the simultaneous access of multi-threaded resources
-    # which must be declared as class attribute # variables for access
-    _datastream_pool = 0 
+    _datastream_pool = 0        # statistics data stream, must set as global variable
 
     def __init__(self, ir_mode):
         """Create a class public call webpage opener with cookie
@@ -415,6 +414,10 @@ class WkvCwApi(object):
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = target_page_word + ' response successed'
+                ## web_src = response.read().decode("UTF-8", "ignore")
+                # login test
+                ## self.wca_save_test_html('E:\\Workstation_Files\\PictureDatabase\\Crawler', web_src)
+                ## exit(0)
             else:
                 log_context = dataload.set_pback_red(target_page_word + 
                     ' response not ok, return code %d' % response.getcode())
@@ -463,14 +466,19 @@ class WkvCwApi(object):
 
         # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
-        post_orderdict['pixiv_id'] = self.login_bias[0]
-        post_orderdict['password'] = self.login_bias[1]
+        # here sort sequence will change once ina while
         post_orderdict['captcha'] = ""
         post_orderdict['g_recaptcha_response'] = ""
+        post_orderdict['password'] = self.login_bias[1]
+        post_orderdict['pixiv_id'] = self.login_bias[0]
         post_orderdict['post_key'] = postkey
-        post_orderdict['source'] = "pc"
-        post_orderdict['ref'] = dataload.LOGIN_POSTDATA_REF
+        ## post_orderdict['source'] = "pc"
+        post_orderdict['source'] = "accounts"
+        ## post_orderdict['ref'] = dataload.LOGIN_POSTDATA_REF
+        post_orderdict['ref'] = ""                  
         post_orderdict['return_to'] = dataload.HTTPS_HOST_URL
+        post_orderdict['recaptcha_v3_token'] = ""   # google recaptcha v3
+
         # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
@@ -492,13 +500,12 @@ class WkvCwApi(object):
             need_log=False,
             log_path='')
 
-    def wca_save_test_html(self, workdir, content, log_path):
+    def wca_save_test_html(self, workdir, content):
         """Save request web source page in a html file, test use
 
         @@API that allows external calls
         :param workdir:     work directory
         :param content:     save content(web source code)
-        :param log_path:    log save path
         :return:            none
         """
         htmlfile = open(workdir + dataload.fs_operation[1] + 'test.html', "w", 
@@ -507,7 +514,7 @@ class WkvCwApi(object):
         htmlfile.close()
         log_context = dataload.set_pcode_blue_pback_yellow(
             'Save test request html page ok')
-        self.wca_logprowork(log_path, log_context)
+        dataload.logtime_print(log_context)
 
     @staticmethod
     def wca_unicode_escape(raw_str):

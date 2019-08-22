@@ -23,9 +23,15 @@
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190814pm2317
+    Last Update Time: 20190822pm2333
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/08/22
+    Today after several tests, the root cause of the failure of 
+    the crawler RTN-R18 mode and IRA mode was found: the simulated login failed.
+    The login page responds successfully, but returning the accounts page waiting for the ID and password.
+    I will take the time to try to fix the problem this weekend.
 
     2019/08/14
     Today refactor comment format and API lib class and function name standard.

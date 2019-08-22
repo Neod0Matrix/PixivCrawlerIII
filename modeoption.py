@@ -13,7 +13,8 @@
 #
 # History
 # 
-# 2.9.9 LTE     Refactor names all of this project
+# 2.9.9 LTE     Neod Anderjon, 2019-08-15
+#               Refactor names all of this project
 #               Complete comment stadard
 
 import re
@@ -389,8 +390,8 @@ class RepertoAll(object):
         if response == False:
             return False
 
+        web_src = response.read().decode("UTF-8", "ignore")     # here fail means login failed
         # mate illustrator name
-        web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
         author_info = re.findall(illust_name_pattern, web_src)
         # if login failed, regex parsing result will be a empty list

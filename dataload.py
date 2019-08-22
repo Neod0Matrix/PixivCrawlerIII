@@ -13,7 +13,8 @@
 #
 # History
 # 
-# 2.9.9 LTE     Refactor names all of this project
+# 2.9.9 LTE     Neod Anderjon, 2019-08-15
+#               Refactor names all of this project
 #               Complete comment stadard
 
 import time, os
@@ -126,8 +127,9 @@ HTTPS_HOST_URL = 'https://www.pixiv.net/'
 ACCOUNTS_URL = "accounts.pixiv.net"
 LOGIN_POSTKEY_URL = 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index'
 LOGIN_POSTDATA_REF = 'wwwtop_accounts_index'
-LOGIN_REQUEST_URL = "https://accounts.pixiv.net/api/login?lang=en"
+LOGIN_REQUEST_URL = "https://accounts.pixiv.net/api/login?lang=zh"
 _LOGIN_REQUEST_URL = "https://accounts.pixiv.net"
+_LOGIN_REQUEST_REF_URL = "https://accounts.pixiv.net/login"
 # request universal original image constant words
 ORIGINAL_IMAGE_HEAD = 'https://i.pximg.net/img-original/img'
 ####NEW_WEBSITE_FORMAT
@@ -179,15 +181,16 @@ _USERAGENT_LINUX = ("Mozilla/5.0 (X11; Linux x86_64) "
 _USERAGENT_WIN = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) "
                     "Chrome/75.0.3770.142 Safari/537.36")
-_HEADERS_ACCEPT = "application/json, text/javascript, */*; q=0.01"
+_HEADERS_ACCEPT = "application/json"
 _HEADERS_ACCEPT2 = ("text/html,application/xhtml+xml,application/xml;q=0.9,"
                     "image/webp,image/apng,*/*;q=0.8")
 _HEADERS_ACCEPT_ENCODING = "gzip, deflate, br"
 _HEADERS_ACCEPT_ENCODING2 = "br"   # request speed slowly, but no error
-_HEADERS_ACCEPT_LANGUAGE = "en-US,en;q=0.8,zh-TW;q=0.6,zh;q=0.4,zh-CN;q=0.2"
+## _HEADERS_ACCEPT_LANGUAGE = "en-US,en;q=0.8,zh-TW;q=0.6,zh;q=0.4,zh-CN;q=0.2"
+_HEADERS_ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9"
 _HEADERS_CACHE_CONTROL = "no-cache"
 _HEADERS_CONNECTION = "keep-alive"
-_HEADERS_CONTENT_TYPE = "application/x-www-form-urlencoded; charset=UTF-8"
+_HEADERS_CONTENT_TYPE = "application/x-www-form-urlencoded"
 _HEADERS_XMLHTTPREQUEST = "XMLHttpRequest"
 
 # some regex words depend on website url or webpage source
@@ -260,19 +263,25 @@ def build_login_headers(cookie):
     """
     # this build headers key-word is referer and user-agent
     base_headers = {
-        'Accept': _HEADERS_ACCEPT,
-        'Accept-Encoding': _HEADERS_ACCEPT_ENCODING,
-        'Accept-Language': _HEADERS_ACCEPT_LANGUAGE,
-        'Cache-Control': _HEADERS_CACHE_CONTROL,
-        'Connection': _HEADERS_CONNECTION,
-        'Content-Length': "207",
-        'Content-Type': _HEADERS_CONTENT_TYPE,
-        'Cookie': cookie,
-        'DNT': "1",
-        'Host': ACCOUNTS_URL,
-        'Origin': _LOGIN_REQUEST_URL,
-        'Referer': LOGIN_POSTKEY_URL,
-        'X-Requested-With': _HEADERS_XMLHTTPREQUEST,
+        ':authority': ACCOUNTS_URL,
+        ':method': "POST",
+        ':path': "/api/login?lang=zh",
+        ':scheme': "https",
+        'accept': _HEADERS_ACCEPT,
+        'accept-encoding': _HEADERS_ACCEPT_ENCODING,
+        'accept-language': _HEADERS_ACCEPT_LANGUAGE,
+        'content-length': "546",
+        ## 'cache-control': _HEADERS_CACHE_CONTROL,
+        ## 'connection': _HEADERS_CONNECTION,
+        ## 'host': ACCOUNTS_URL,
+        ## 'X-Requested-With': _HEADERS_XMLHTTPREQUEST,
+        'content-type': _HEADERS_CONTENT_TYPE,
+        'cookie': cookie,
+        'dnt': "1",
+        'origin': _LOGIN_REQUEST_URL,
+        'referer': _LOGIN_REQUEST_REF_URL,
+        'sec-fetch-mode': "cors",
+        'sec-fetch-site': "same-origin"
     }
     # dict merge, longth-change argument
     build_headers = dict(base_headers, **uc_user_agent())
