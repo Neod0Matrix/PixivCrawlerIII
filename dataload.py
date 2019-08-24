@@ -72,10 +72,10 @@ def crawler_logo():
 
     :return:            none
     """
-    log_context = set_pcode_red(
+    log_content = set_pcode_red(
         LABORATORY + ' ' + ORGANIZATION + ' technology support |'                       
         ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
-    logtime_print(log_context)
+    logtime_print(log_content)
 
 SYSTEM_MAX_THREADS = 400                # setting system can contain max sub-threads
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google

@@ -112,8 +112,8 @@ class RankingTop(object):
         rank_word, req_url = None, None
 
         if self.ir_mode == 1:
-            log_context = 'Gather ranking list======>'
-            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+            log_content = 'Gather ranking list======>'
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
 
             # select rank R18 or not
             ormode = dataload.logtime_input(dataload.set_pcode_yellow(
@@ -163,7 +163,7 @@ class RankingTop(object):
                 return False
 
             # get the valid target info
-            log_context = 'Crawler set target to %s rank top' % rank_word
+            log_content = 'Crawler set target to %s rank top' % rank_word
         elif ormode == 'r' or ormode == '2':
             if self.ir_mode == 1:
                 dwm = dataload.logtime_input(dataload.set_pcode_yellow(
@@ -197,13 +197,13 @@ class RankingTop(object):
                 return False
 
             # get the valid target info
-            log_context = dataload.set_pcode_blue_pback_yellow(
+            log_content = dataload.set_pcode_blue_pback_yellow(
                 'Crawler set target to %s r18 rank top' % rank_word)
         else:
             dataload.nolog_raise_arguerr()
             return False
 
-        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
 
         return req_url, ormode
 
@@ -247,9 +247,9 @@ class RankingTop(object):
         self.rtn_target_urls = whole_urls[:img_nbr]
 
         # use prettytable package info list  
-        log_context = dataload.set_pcode_blue_pback_yellow(
+        log_content = dataload.set_pcode_blue_pback_yellow(
             'Gather rankingtop ' + str(img_nbr) + ', target table:')
-        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)      
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_content)      
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", 
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_infos[:img_nbr]):
@@ -346,9 +346,9 @@ class RepertoAll(object):
         ajax_idlist = re.findall(ajax_idlist_pattern, web_src)
         # ajax id list may be empty
         if not ajax_idlist:
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 'Regex get ajax id list fail, return')
-            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return False
 
         # id list result may include some garbages, use number regex get pure result
@@ -361,9 +361,9 @@ class RepertoAll(object):
             else:
                 # very rare error, only happening in this address:
                 # https://www.pixiv.net/member_illust.php?id=15115322
-                log_context = dataload.set_pback_red(
+                log_content = dataload.set_pback_red(
                     'Get ajax page valid info failed, return')
-                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return False
 
         # use quick-sort algorithm to handle id number
@@ -426,17 +426,17 @@ class RepertoAll(object):
         error_status_list = re.findall(error_status_pattern, web_src)
         # check error status list is empty or not
         if not error_status_list:
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 'Regex get error status failed, return')
-            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return False
 
         error_status = error_status_list[0]
         # page display error is "true" status
         if error_status == 'true':
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 'Data group %d response failed, return' % index)
-            self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+            self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return False
 
         # crawl one page items info
@@ -444,7 +444,7 @@ class RepertoAll(object):
         page_target_info_tuple = re.findall(page_target_pattern, web_src)
         # check tuple result is empty or not
         if not page_target_info_tuple:
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 'Regex get target page info failed, return')
             return False
 
@@ -463,9 +463,9 @@ class RepertoAll(object):
             illust_type_sym = re.findall(illust_type_pattern, tmp_target_info_list[k][2])
             # regex process result error
             if len(illust_type_sym) == 0:
-                log_context = dataload.set_pback_red(
+                log_content = dataload.set_pback_red(
                     'Illust type process error, return')
-                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return False
 
             # jump gif out
@@ -545,9 +545,9 @@ class RepertoAll(object):
                             tmp_receive_list[i][3]]
                         repo_target_all_list.append(insert_item)
             else:
-                log_context = dataload.set_pback_red(
+                log_content = dataload.set_pback_red(
                     'Page count process error!')
-                self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+                self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return False
 
         del tmp_receive_list        # clear cache
@@ -585,10 +585,10 @@ class RepertoAll(object):
             self.ira_basepages.append(dataload.BASEPAGE_URL + i[0]) # build basepage url
             
         # display author info
-        log_context = ('Illustrator: ' + self.ira_author_name + ' id: '
+        log_content = ('Illustrator: ' + self.ira_author_name + ' id: '
             + self.user_input_id + ' require image(s): ' 
             + str(require_img_nbr) + ', target table:')
-        self.wkv_cw_api.wca_logprowork(self.logpath, log_context)
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
         # use prettytable build a table save and print info list
         image_info_table = PrettyTable(
             ["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])

@@ -15,6 +15,7 @@
 # 
 # 2.9.9 LTE     Neod Anderjon, 2019-08-24
 #               test login function, check reCAPTCHA method
+#               refactor something
 #
 # 2.9.9 LTE     Neod Anderjon, 2019-08-22
 #               update post key request dict
@@ -274,14 +275,14 @@ class WkvCwApi(object):
         is_folder_existed = os.path.exists(folder)
         if not is_folder_existed:
             os.makedirs(folder)
-            log_context = 'Create a new work folder'
+            log_content = 'Create a new work folder'
         else:
-            log_context = 'Target folder has already existed'
+            log_content = 'Target folder has already existed'
         # remove old log file
         if os.path.exists(log_path):
             os.remove(log_path)
         # this step will create a new log file and write the first line
-        self.wca_logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_content)
 
     @staticmethod
     def _partition(array, l, r):
@@ -339,28 +340,28 @@ class WkvCwApi(object):
                 request,
                 timeout=30)
         except Exception as e:
-            log_context = dataload.set_pback_red(\
+            log_content = dataload.set_pback_red(\
                 "Error type: " + str(e))
-            self.wca_logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_content)
             response = None
             # here don't exit, log error
         except KeyboardInterrupt:
-            log_context = dataload.set_pcode_blue_pback_yellow(\
+            log_content = dataload.set_pcode_blue_pback_yellow(\
                 'User interrupt, exit')
-            self.wca_logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_content)
             response = None
 
         # proxy error but don't exit, ignore this
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = 'Crawl proxy successed'
+                log_content = 'Crawl proxy successed'
             else:
-                log_context = dataload.set_pback_red(\
+                log_content = dataload.set_pback_red(\
                     'Crawl proxy not ok, return code: %d' % response.getcode())
         else:
-            log_context = dataload.set_pback_red(\
+            log_content = dataload.set_pback_red(\
                 'Get proxy response failed, check network')
-        self.wca_logprowork(log_path, log_context)
+        self.wca_logprowork(log_path, log_content)
 
         web_src = response.read().decode("UTF-8", "ignore")
         proxy_pattern = re.compile(dataload.PROXYIP_REGEX, re.S)
@@ -379,8 +380,8 @@ class WkvCwApi(object):
         # random choose a proxy ip with its port and build the dict format data
         proxy_choose = random.choice(proxy_iplist)
         proxyserver_d = {'http': proxy_choose}
-        log_context = dataload.set_pcode_blue_pback_yellow('Choose proxy server: ' + proxy_choose)
-        self.wca_logprowork(log_path, log_context)
+        log_content = dataload.set_pcode_blue_pback_yellow('Choose proxy server: ' + proxy_choose)
+        self.wca_logprowork(log_path, log_content)
 
         return proxyserver_d
 
@@ -404,38 +405,38 @@ class WkvCwApi(object):
                 data=post_data,
                 timeout=timeout)
         except Exception as e:
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 "Error type: " + str(e))
             if need_log == True:
-                self.wca_logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_content)
             else:
-                dataload.logtime_print(log_context)
+                dataload.logtime_print(log_content)
         except KeyboardInterrupt:
-            log_context = dataload.set_pcode_blue_pback_yellow(
+            log_content = dataload.set_pcode_blue_pback_yellow(
                 'User interrupt request, return')
             if need_log == True:
-                self.wca_logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_content)
             return False
 
         # server return a response
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
-                log_context = target_page_word + ' response successed'
+                log_content = target_page_word + ' response successed'
             else:
-                log_context = dataload.set_pback_red(target_page_word + 
+                log_content = dataload.set_pback_red(target_page_word + 
                     ' response not ok, return code %d' % response.getcode())
             if need_log == True:
-                self.wca_logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_content)
             else:
-                dataload.logtime_print(log_context)
+                dataload.logtime_print(log_content)
         # response is none, request failed
         else:
-            log_context = dataload.set_pback_red(
+            log_content = dataload.set_pback_red(
                 target_page_word + ' response failed')
             if need_log == True:
-                self.wca_logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_content)
             else:
-                dataload.logtime_print(log_context)
+                dataload.logtime_print(log_content)
             return False
 
         return response
@@ -460,15 +461,15 @@ class WkvCwApi(object):
 
         # cookie check
         for item in self.cookie:
-            log_context = 'Cookie: [name:' + item.name + '-value:' + item.value + ']'
-            dataload.logtime_print(log_context)
+            log_content = 'Cookie: [name:' + item.name + ' | value:' + item.value + ']'
+            dataload.logtime_print(log_content)
 
         # mate post key
         web_src = response.read().decode("UTF-8", "ignore")
         post_pattern = re.compile(dataload.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
-        log_context = 'Get post-key: ' + postkey
-        dataload.logtime_print(log_context)
+        log_content = 'Get post-key: ' + postkey
+        dataload.logtime_print(log_content)
 
         # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
@@ -479,11 +480,12 @@ class WkvCwApi(object):
         post_orderdict['pixiv_id'] = self.login_bias[0]
         post_orderdict['post_key'] = postkey
         post_orderdict['source'] = "accounts"
-        post_orderdict['ref'] = ""                  
+        post_orderdict['ref'] = ""
         post_orderdict['return_to'] = dataload.HTTPS_HOST_URL
-        post_orderdict['recaptcha_v3_token'] = "03AOLTBLQPZl8RQArHreuxMxRhl8zBK2Kj3xvhO3d4TZnlHoQBKmjB8Is-Jf0bXW0HXUa5QCJ_oMUkAutXIW-kBQXLhpo4v4uDTXBSe1Ro8CiTgYPPX2aUC85VLQJKSWw9iWjNljdU3bA3ywHZBHggsBMnaHr4IKf2LpCb3umlS1udczMC2-89VMNjoWmP2rj2MAVwTyHv2EB0LSIizwrYseefwyQx4xZ4Bi9jpXhW7RKxDwq1tQM-cX_wU-dGd5Fghh1eCJo0CpmXMsARwu_fzazkgBTRKywpDEy91FYEA1UFOjz61TrKG2tRMpxAJcrEGFFLrMDWGnAQ"   # google recaptcha v3
+        # google recaptcha v3
+        # add or not add, there is no difference
+        post_orderdict['recaptcha_v3_token'] = ""
 
-        # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
         return postway_data
@@ -551,9 +553,9 @@ class WkvCwApi(object):
             encoding='utf-8')
         htmlfile.write(content)
         htmlfile.close()
-        log_context = dataload.set_pcode_blue_pback_yellow(
+        log_content = dataload.set_pcode_blue_pback_yellow(
             'Save test request html page ok')
-        dataload.logtime_print(log_context)
+        dataload.logtime_print(log_content)
 
     @staticmethod
     def wca_unicode_escape(raw_str):
@@ -661,8 +663,8 @@ class WkvCwApi(object):
             response = self.opener.open(fullurl=url, timeout=timeout)
         # first request fatal
         except urllib.error.HTTPError as e:
-            ## log_context = "Error type: " + str(e)
-            ## self.wca_logprowork(logpath, log_context)
+            ## log_content = "Error type: " + str(e)
+            ## self.wca_logprowork(logpath, log_content)
             # http error 404, change image type
             if e.code == dataload.HTTP_NOTFOUND_CODE_404:
                 img_datatype = 'jpg'                    # change data type
@@ -671,13 +673,13 @@ class WkvCwApi(object):
                 try:
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
                 except urllib.error.HTTPError as e:
-                    ## log_context = "Error type: " + str(e)
-                    ## self.wca_logprowork(logpath, log_context)
+                    ## log_content = "Error type: " + str(e)
+                    ## self.wca_logprowork(logpath, log_content)
                     # not 404 change proxy, cause request server forbidden
                     if e.code != dataload.HTTP_NOTFOUND_CODE_404:
-                        log_context = dataload.set_pcode_blue_pback_yellow(
+                        log_content = dataload.set_pcode_blue_pback_yellow(
                             "Add proxy server in request")
-                        self.wca_logprowork(log_path, log_context)
+                        self.wca_logprowork(log_path, log_content)
                         # preload a proxy handler, just run once
                         if self.proxy_hasrun_flag == False:
                             self.proxy_hasrun_flag = True
@@ -690,9 +692,9 @@ class WkvCwApi(object):
                         pass
             # if timeout, use proxy reset request
             else:
-                log_context = dataload.set_pcode_blue_pback_yellow(
+                log_content = dataload.set_pcode_blue_pback_yellow(
                     "Add proxy server in request")
-                self.wca_logprowork(log_path, log_context)
+                self.wca_logprowork(log_path, log_content)
                 # with proxy request again
                 self.opener = urllib.request.build_opener(proxy_handler)
                 response = self.opener.open(fullurl=url, timeout=timeout)
@@ -746,8 +748,8 @@ class WkvCwApi(object):
                 WkvCwApi(2)._save_oneimage(self.index, self.url, 
                     self.basepages, self.workdir, self.logpath)
             except Exception as e:
-                log_context = dataload.set_pback_red("Error type: " + str(e))
-                WkvCwApi.wca_logprowork(log_context, self.logpath)
+                log_content = dataload.set_pback_red("Error type: " + str(e))
+                WkvCwApi.wca_logprowork(log_content, self.logpath)
 
             # thread queue adjust, lock it
             # remove end thread from list  
@@ -773,8 +775,8 @@ class WkvCwApi(object):
             try:
                 self.start()        
             except Exception as e:
-                log_context = dataload.set_pback_red("Error type: " + str(e))
-                WkvCwApi.wca_logprowork(log_context, self.logpath)
+                log_content = dataload.set_pback_red("Error type: " + str(e))
+                WkvCwApi.wca_logprowork(log_content, self.logpath)
                 return False
             return True
 
@@ -800,8 +802,8 @@ class WkvCwApi(object):
             :return:            none
             """
 
-            log_context = "Launch timer decorator, start download threads timer"
-            self.wca_logprowork(log_path, log_context)
+            log_content = "Launch timer decorator, start download threads timer"
+            self.wca_logprowork(log_path, log_content)
             starttime = time.time()
 
             # packaged original function 
@@ -810,11 +812,11 @@ class WkvCwApi(object):
             endtime = time.time()
             elapesd_time = endtime - starttime
             average_download_speed = float(WkvCwApi._datastream_pool / elapesd_time)
-            log_context = (dataload.set_pcode_blue_pback_yellow(
+            log_content = (dataload.set_pcode_blue_pback_yellow(
                 "All of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
                 % (float(WkvCwApi._datastream_pool / 1024), average_download_speed)))
-            self.wca_logprowork(log_path, log_context)
+            self.wca_logprowork(log_path, log_content)
             WkvCwApi._datastream_pool = 0    # clear global data stream list
 
         return _wrapper
@@ -832,9 +834,9 @@ class WkvCwApi(object):
         """
         thread_block_flag = False               # thread blocking flag
         alive_thread_cnt = queueLength = len(urls)
-        log_context = dataload.set_pcode_blue_pback_yellow(
-            'Hit %d target(s), start download task' % queueLength)
-        self.wca_logprowork(log_path, log_context)
+        log_content = dataload.set_pcode_blue_pback_yellow(
+            'Hit %d target(s), start download task(s)' % queueLength)
+        self.wca_logprowork(log_path, log_content)
 
         # the download process may fail
         # capture timeout and the user interrupt fault and exit the failed thread
@@ -858,20 +860,20 @@ class WkvCwApi(object):
                 sub_thread.setDaemon(True)
                 # if create this sub-thread failed, return from function
                 if sub_thread.create() == False:
-                    log_context = dataload.set_pback_red(
+                    log_content = dataload.set_pback_red(
                         'Create a new sub-thread failed, return')
-                    print(log_context)
+                    print(log_content)
                     return False
 
                 if thread_block_flag == False:
-                    log_context = dataload.set_pcode_blue_pback_yellow(
+                    log_content = dataload.set_pcode_blue_pback_yellow(
                         'Created {:d} download target object(s)')
                 else:
-                    log_context = dataload.set_pcode_blue_pback_yellow(
+                    log_content = dataload.set_pcode_blue_pback_yellow(
                         'Created {:d} download target object(s), thread creation is blocked, please wait')
-                dataload.logtime_flush_display(log_context, i + 1)
-            log_context = dataload.set_pcode_blue_pback_yellow(', all threads have been loaded OK')
-            print(log_context)
+                dataload.logtime_flush_display(log_content, i + 1)
+            log_content = dataload.set_pcode_blue_pback_yellow(', all threads have been loaded OK')
+            print(log_content)
             thread_block_flag = False
 
             # parent thread wait all sub-thread end
@@ -885,20 +887,20 @@ class WkvCwApi(object):
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
                     # its number wouldn't more than thread max count
-                    log_context = dataload.set_pcode_blue_pback_yellow(
+                    log_content = dataload.set_pcode_blue_pback_yellow(
                         'Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)')
-                    dataload.logtime_flush_display(log_context, \
+                    dataload.logtime_flush_display(log_content, \
                         alive_thread_cnt - 1, queueLength, \
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
                         (float(WkvCwApi._datastream_pool / 1024)))
-            log_context = dataload.set_pcode_blue_pback_yellow(
+            log_content = dataload.set_pcode_blue_pback_yellow(
                 ', sub-threads execute finished')
-            print(log_context)
+            print(log_content)
         # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
-            log_context = dataload.set_pcode_blue_pback_yellow(
+            log_content = dataload.set_pcode_blue_pback_yellow(
                 ', user interrupt a thread, exit all threads')
-            print(log_context)
+            print(log_content)
 
     def wca_htmlpreview_build(self, workdir, html_path, log_path):
         """Build a html file to browse image
@@ -959,5 +961,5 @@ class WkvCwApi(object):
             "</body>\r\n"
             "</html>")
         html_file.close()
-        log_context = 'Image HTML browse page generate finished'
-        self.wca_logprowork(log_path, log_context)
+        log_content = 'Image HTML browse page generate finished'
+        self.wca_logprowork(log_path, log_content)
