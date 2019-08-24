@@ -13,6 +13,9 @@
 #
 # History
 # 
+# 2.9.9 LTE     Neod Anderjon, 2019-08-24
+#               refactor some word names
+#
 # 2.9.9 LTE     Neod Anderjon, 2019-08-22
 #               update request header content
 #
@@ -130,16 +133,20 @@ HTTPS_HOST_URL = 'https://www.pixiv.net/'
 ACCOUNTS_URL = "accounts.pixiv.net"
 LOGIN_POSTKEY_URL = 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index'
 LOGIN_POSTDATA_REF = 'wwwtop_accounts_index'
-LOGIN_REQUEST_URL = "https://accounts.pixiv.net/api/login?lang=zh"
+LOGIN_REQUEST_API_URL = "https://accounts.pixiv.net/api/login?lang=zh"
 _LOGIN_REQUEST_URL = "https://accounts.pixiv.net"
 _LOGIN_REQUEST_REF_URL = "https://accounts.pixiv.net/login"
+
 # request universal original image constant words
 ORIGINAL_IMAGE_HEAD = 'https://i.pximg.net/img-original/img'
-####NEW_WEBSITE_FORMAT
-ORIGINAL_IMAGE_PAGE = lambda iid, px: 'https://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=%s&page=%d' % (iid, px)
+# 1002 event update
+ORIGINAL_IMAGE_PAGE = lambda iid, px: \
+    'https://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=%s&page=%d' % (iid, px)
 ORIGINAL_IMAGE_TAIL = lambda px: '_p%d.png' % px
+
 # page request http proxy
 PROXYSERVER_URL = 'http://www.xicidaili.com/nn/'
+
 # ranking top url and word
 RANKING_URL = 'http://www.pixiv.net/ranking.php?mode='
 R18_WORD = '_r18'
@@ -191,10 +198,8 @@ _HEADERS_ACCEPT_ENCODING = "gzip, deflate, br"
 _HEADERS_ACCEPT_ENCODING2 = "br"   # request speed slowly, but no error
 ## _HEADERS_ACCEPT_LANGUAGE = "en-US,en;q=0.8,zh-TW;q=0.6,zh;q=0.4,zh-CN;q=0.2"
 _HEADERS_ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9"
-_HEADERS_CACHE_CONTROL = "no-cache"
-_HEADERS_CONNECTION = "keep-alive"
 _HEADERS_CONTENT_TYPE = "application/x-www-form-urlencoded"
-_HEADERS_XMLHTTPREQUEST = "XMLHttpRequest"
+_HEADERS_CONNECTION = 'keep-alive'
 
 # some regex words depend on website url or webpage source
 # if website update or change them, regex need to be updated 
@@ -203,7 +208,7 @@ POSTKEY_REGEX = 'key".*?"(.*?)"'
 RANKING_INFO_REGEX = (
     'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
     '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
-NUMBER_REGEX = '\d+\.?\d*'              # universal number match
+NUMBER_REGEX = '\d+\.?\d*'                      # general number match
 IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
 DATASRC_REGEX = 'data-src="(.*?)"'
 ILLUST_NAME_REGEX = '<title>「(.*?)」'
@@ -216,6 +221,7 @@ ILLUST_TYPE_REGEX = '"illustType":(.*?),'
 SPAN_REGEX = '<span>(.*?)</span>'
 RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
 PROXYIP_REGEX = '<td>(.*?)</td>'
+
 #### code by CSDN@orangleliu
 EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
     u"(\ud83c[\udf00-\uffff])|"                 # symbols & pictographs (1 of 2)
@@ -223,6 +229,7 @@ EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
     u"(\ud83d[\ude80-\udeff])|"                 # transport & map symbols
     u"(\ud83c[\udde0-\uddff])"                  # flags (iOS)
     "+")
+LOGIN_INFO_REGEX = 'error":(.*?),"message'
 
 def dict_transto_list (input_dict):
     """Change dict data-type to list
@@ -261,10 +268,12 @@ def uc_user_agent():
 def build_login_headers(cookie):
     """Build the first request login headers
 
+    Actually this function has not be called
+    If login function in API(wkvcwapi.wca_camouflage_login) call this function,
+    then response will get a boolean False
     :param cookie:  cookie
     :return:        login headers
     """
-    # this build headers key-word is referer and user-agent
     base_headers = {
         ':authority': ACCOUNTS_URL,
         ':method': "POST",
@@ -274,10 +283,6 @@ def build_login_headers(cookie):
         'accept-encoding': _HEADERS_ACCEPT_ENCODING,
         'accept-language': _HEADERS_ACCEPT_LANGUAGE,
         'content-length': "546",
-        ## 'cache-control': _HEADERS_CACHE_CONTROL,
-        ## 'connection': _HEADERS_CONNECTION,
-        ## 'host': ACCOUNTS_URL,
-        ## 'X-Requested-With': _HEADERS_XMLHTTPREQUEST,
         'content-type': _HEADERS_CONTENT_TYPE,
         'cookie': cookie,
         'dnt': "1",

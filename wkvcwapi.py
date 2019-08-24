@@ -13,6 +13,9 @@
 #
 # History
 # 
+# 2.9.9 LTE     Neod Anderjon, 2019-08-24
+#               test login function, check reCAPTCHA method
+#
 # 2.9.9 LTE     Neod Anderjon, 2019-08-22
 #               update post key request dict
 #               check rtn-r18 & ira fail root reason: login failure
@@ -418,10 +421,6 @@ class WkvCwApi(object):
         if response is not None:
             if response.getcode() == dataload.HTTP_OK_CODE_200:
                 log_context = target_page_word + ' response successed'
-                ## web_src = response.read().decode("UTF-8", "ignore")
-                # login test
-                ## self.wca_save_test_html('E:\\Workstation_Files\\PictureDatabase\\Crawler', web_src)
-                ## exit(0)
             else:
                 log_context = dataload.set_pback_red(target_page_word + 
                     ' response not ok, return code %d' % response.getcode())
@@ -444,6 +443,8 @@ class WkvCwApi(object):
     def _gatherpostkey(self):
         """POST way login need post-key
 
+        Pixiv website POST login address: (see dataload.LOGIN_POSTKEY_URL)
+        This operation will get cookie and post-key
         :return:            post way request data
         """
 
@@ -456,6 +457,7 @@ class WkvCwApi(object):
             target_page_word='POST-key',
             need_log=False,
             log_path='')
+
         # cookie check
         for item in self.cookie:
             log_context = 'Cookie: [name:' + item.name + '-value:' + item.value + ']'
@@ -476,12 +478,10 @@ class WkvCwApi(object):
         post_orderdict['password'] = self.login_bias[1]
         post_orderdict['pixiv_id'] = self.login_bias[0]
         post_orderdict['post_key'] = postkey
-        ## post_orderdict['source'] = "pc"
         post_orderdict['source'] = "accounts"
-        ## post_orderdict['ref'] = dataload.LOGIN_POSTDATA_REF
         post_orderdict['ref'] = ""                  
         post_orderdict['return_to'] = dataload.HTTPS_HOST_URL
-        post_orderdict['recaptcha_v3_token'] = ""   # google recaptcha v3
+        post_orderdict['recaptcha_v3_token'] = "03AOLTBLQPZl8RQArHreuxMxRhl8zBK2Kj3xvhO3d4TZnlHoQBKmjB8Is-Jf0bXW0HXUa5QCJ_oMUkAutXIW-kBQXLhpo4v4uDTXBSe1Ro8CiTgYPPX2aUC85VLQJKSWw9iWjNljdU3bA3ywHZBHggsBMnaHr4IKf2LpCb3umlS1udczMC2-89VMNjoWmP2rj2MAVwTyHv2EB0LSIizwrYseefwyQx4xZ4Bi9jpXhW7RKxDwq1tQM-cX_wU-dGd5Fghh1eCJo0CpmXMsARwu_fzazkgBTRKywpDEy91FYEA1UFOjz61TrKG2tRMpxAJcrEGFFLrMDWGnAQ"   # google recaptcha v3
 
         # transfer to json data format, the same way as GET way data
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
@@ -496,13 +496,48 @@ class WkvCwApi(object):
         """
         # login init need to commit post data to Pixiv
         postway_data = self._gatherpostkey()
+
+        # after add header response will get the error: [Invalid header name b':Authority']
+        ## headers = dataload.build_login_headers(self.cookie)
+        ## list_headers = dataload.dict_transto_list(headers)
+        ## self.opener.addheaders = list_headers
+        ## urllib.request.install_opener(self.opener)  # update install opener
+
         response = self.wca_url_request_handler(
-            target_url=dataload.LOGIN_REQUEST_URL,
+            target_url=dataload.LOGIN_REQUEST_API_URL,
             post_data=postway_data, 
             timeout=30, 
             target_page_word='Login',
             need_log=False,
             log_path='')
+        # if login failed, response will be the boolean type and its value is False
+        if isinstance(response, bool) and response == False:
+            log_content = dataload.set_pback_red(
+                'Login response return a boolean FALSE, exit')
+            dataload.logtime_print(log_content)
+            exit(-1)
+
+        # check server return response info
+        # sample: {"error":false,"message":"","body":{"validation_errors":{"captcha":"请进行reCAPTCHA验证"}}}
+        web_src = response.read().decode("UTF-8", "ignore")
+        print(web_src)
+        login_info_pattern = re.compile(dataload.LOGIN_INFO_REGEX, re.S)
+        response_info = re.findall(login_info_pattern, web_src)
+        if response_info:
+            # error false means no error
+            if response_info[0] != 'false':
+                log_content = dataload.set_pback_red(
+                    'Login confirm raise a error, exit')
+                dataload.logtime_print(log_content)
+                exit(-1)
+            else:
+                log_content = 'Login check response right'
+                dataload.logtime_print(log_content)
+        else:
+            log_content = dataload.set_pback_red(
+                'Login confirm response no error status')
+            dataload.logtime_print(log_content)
+            exit(-1)
 
     def wca_save_test_html(self, workdir, content):
         """Save request web source page in a html file, test use

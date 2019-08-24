@@ -23,9 +23,12 @@
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190822pm2342
+    Last Update Time: 20190824pm2038
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/08/24
+    Confirmed that the Pixiv website uses the reCAPTCHA method to intercept the crawler robot.
 
     2019/08/22
     Today after several tests, the root cause of the failure of 
