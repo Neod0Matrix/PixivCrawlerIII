@@ -23,9 +23,17 @@
 # UPDATE LOG
 
     Version: 2.9.9
-    Last Update Time: 20190824pm2212
+    Last Update Time: 20190914pm2023
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/09/14
+    After testing the pixiv website does use the recaptcha method to block the crawler, 
+    the logic is as follows: When you request the login page, the server will call 
+    recaptcha-javascript to dynamically generate a recpatcha code, you receive the code 
+    and then encapsulate it into the request header and pass it back to the server. 
+    If they are consistent, the login is successful.
+    Otherwise, you must perform recpatcha image verification.
 
     2019/08/24
     Confirmed that the Pixiv website uses the reCAPTCHA method to intercept the crawler robot.

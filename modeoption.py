@@ -7,7 +7,7 @@
 # modeoption.py
 # Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
 #
-# PixivCrawlerIII part
+# PixivCrawlerIII component
 # T.WKVER crawler functional modules for PixivCrawlerIII project
 # Provide modes setting target object
 #

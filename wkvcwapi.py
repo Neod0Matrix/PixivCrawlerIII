@@ -7,7 +7,7 @@
 # wkvcwapi.py
 # Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
 #
-# PixivCrawlerIII part
+# PixivCrawlerIII component
 # T.WKVER crawler API library for PixivCrawlerIII project
 # Write all universal function into a class and package them
 #
@@ -27,6 +27,7 @@
 
 from __future__ import print_function
 import urllib.request, urllib.parse, urllib.error, http.cookiejar   # crawler main modules
+import json
 from retrying import retry          # timeout auto retry decorator
 import threading                    # multi-thread
 from Crypto.Cipher import AES       # user info local crypto storage
@@ -466,6 +467,8 @@ class WkvCwApi(object):
 
         # mate post key
         web_src = response.read().decode("UTF-8", "ignore")
+        self.wca_save_test_html('E:\\OperationCache', web_src)
+
         post_pattern = re.compile(dataload.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
         log_content = 'Get post-key: ' + postkey
@@ -479,11 +482,14 @@ class WkvCwApi(object):
         post_orderdict['password'] = self.login_bias[1]
         post_orderdict['pixiv_id'] = self.login_bias[0]
         post_orderdict['post_key'] = postkey
-        post_orderdict['source'] = "accounts"
+        post_orderdict['source'] = "accounts"   # "pc"
         post_orderdict['ref'] = ""
         post_orderdict['return_to'] = dataload.HTTPS_HOST_URL
-        # google recaptcha v3
-        # add or not add, there is no difference
+
+        # google recaptcha v3 token
+        # bind a token every time login, if the wrong token is sent, 
+        # the website will request a human-machine verification(recpatcha-v3-token).
+        # see details in readme.md
         post_orderdict['recaptcha_v3_token'] = ""
 
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
@@ -520,9 +526,11 @@ class WkvCwApi(object):
             exit(-1)
 
         # check server return response info
-        # sample: {"error":false,"message":"","body":{"validation_errors":{"captcha":"请进行reCAPTCHA验证"}}}
         web_src = response.read().decode("UTF-8", "ignore")
-        print(web_src)
+        log_content = dataload.set_pcode_blue_pback_yellow(
+            'Response source: ' + web_src.encode("UTF-8").decode("unicode_escape"))
+        dataload.logtime_print(log_content)
+
         login_info_pattern = re.compile(dataload.LOGIN_INFO_REGEX, re.S)
         response_info = re.findall(login_info_pattern, web_src)
         if response_info:

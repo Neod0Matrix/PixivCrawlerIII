@@ -7,7 +7,7 @@
 # dataload.py
 # Original Author: Neod Anderjon(1054465075@qq.com/EnatsuManabu@gmail.com), 2018-3-10
 #
-# PixivCrawlerIII part
+# PixivCrawlerIII component
 # T.WKVER crawler data handler loader for PixivCrawlerIII project
 # List all constant data
 #
