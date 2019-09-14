@@ -37,6 +37,8 @@ from collections import OrderedDict # order dictory
 import time, random, re, os, getpass
 from functools import wraps         # decorator wrapper
 import dataload
+from selenium import webdriver
+from requests.cookies import RequestsCookieJar
 
 class WkvCwApi(object):
     """
@@ -49,7 +51,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2019 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 2.9.9 LTE                                                                                      |
+    |       Version: 3.0.0 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -85,6 +87,7 @@ class WkvCwApi(object):
         self.cookieHandler = urllib.request.HTTPCookieProcessor(self.cookie)
         self.opener = urllib.request.build_opener(self.cookieHandler)
         urllib.request.install_opener(self.opener)
+
         # class inside global variable
         self.login_bias = []
         self.proxy_hasrun_flag = False
@@ -467,7 +470,8 @@ class WkvCwApi(object):
 
         # mate post key
         web_src = response.read().decode("UTF-8", "ignore")
-        self.wca_save_test_html('E:\\OperationCache', web_src)
+        # debug recaptcha v3 token use
+        ## self.wca_save_test_html('post-key', 'E:\\OperationCache', web_src)
 
         post_pattern = re.compile(dataload.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
@@ -489,12 +493,66 @@ class WkvCwApi(object):
         # google recaptcha v3 token
         # bind a token every time login, if the wrong token is sent, 
         # the website will request a human-machine verification(recpatcha-v3-token).
-        # see details in readme.md
+        # see details in readme.md(2019/09/14)
         post_orderdict['recaptcha_v3_token'] = ""
 
         postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
         return postway_data
+
+    @staticmethod
+    def _get_chrome_cookie(cache_path, url):
+        '''Get chrome cookies with selenium
+        
+        @@API that allows external calls
+        Due to the recaptcha mechanism set by the website, 
+        it is impossible to obtain the token using the normal method, 
+        and it is forced to adopt the webdriver of selenium.
+        :param cache_path:  local cookie cache text path
+        :param url:         selenium webdriver request url
+        :return:            cookie jar
+        '''
+
+        cookie_jar = RequestsCookieJar()
+        # first judge local cookie text file exist
+        # if exists, just read it and return
+        if os.path.exists(cache_path):
+            dataload.logtime_print('Check local cookie file')
+            with open(cache_path, "r") as fp:
+                cookies = json.load(fp)
+            # package to jar type
+            for cookie in cookies:
+                cookie_jar.set(cookie['name'], cookie['value'])
+
+            return cookie_jar
+
+        dataload.logtime_print('Start selenium webdriver')
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')               # hide window
+        chrome_options.add_argument('--disable-extensions')     # disable chrome externsions
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--incognito')              # seamless mode
+        chrome_options.add_argument('--blink-settings=imagesEnabled=false') # do not load image
+        ## chrome_options.add_argument('--start-maximized')
+        chrome_options.add_argument('user-data-dir=' 
+            + os.path.abspath(dataload.chrome_user_data_dir))
+        driver = webdriver.Chrome(chrome_options=chrome_options)
+
+        # request website and get cookie
+        driver.get(url)
+        cookies = driver.get_cookies()
+        driver.close()
+        dataload.logtime_print('Stop selenium webdriver')
+
+        ## dataload.logtime_print('Get cookies:\n%s' % json.dumps(cookies, sort_keys=True, indent=4))
+        # save cookies to file
+        with open(cache_path, "w") as fp:
+            json.dump(cookies, fp)
+        # package to jar type
+        for cookie in cookies:
+            cookie_jar.set(cookie['name'], cookie['value'])
+
+        return cookie_jar
 
     def wca_camouflage_login(self):
         """Camouflage browser to login
@@ -502,18 +560,20 @@ class WkvCwApi(object):
         @@API that allows external calls
         :return:        none
         """
-        # login init need to commit post data to Pixiv
-        postway_data = self._gatherpostkey()
 
-        # after add header response will get the error: [Invalid header name b':Authority']
-        ## headers = dataload.build_login_headers(self.cookie)
-        ## list_headers = dataload.dict_transto_list(headers)
-        ## self.opener.addheaders = list_headers
-        ## urllib.request.install_opener(self.opener)  # update install opener
+        postway_data = self._gatherpostkey()        # get post data
+
+        # update cookie to login
+        cookie_jar = self._get_chrome_cookie(
+            dataload.local_cache_cookie_path, dataload.HTTPS_HOST_URL)
+        self.cookieHandler = urllib.request.HTTPCookieProcessor(cookie_jar)
+        self.opener = urllib.request.build_opener(self.cookieHandler)
+        urllib.request.install_opener(self.opener)
 
         response = self.wca_url_request_handler(
             target_url=dataload.LOGIN_REQUEST_API_URL,
-            post_data=postway_data, 
+            post_data=postway_data,
+            ##post_data={},
             timeout=30, 
             target_page_word='Login',
             need_log=False,
@@ -525,12 +585,11 @@ class WkvCwApi(object):
             dataload.logtime_print(log_content)
             exit(-1)
 
-        # check server return response info
         web_src = response.read().decode("UTF-8", "ignore")
-        log_content = dataload.set_pcode_blue_pback_yellow(
-            'Response source: ' + web_src.encode("UTF-8").decode("unicode_escape"))
-        dataload.logtime_print(log_content)
-
+        # check server return response info
+        ## log_content = dataload.set_pcode_blue_pback_yellow(
+        ##     'Response source: ' + web_src.encode("UTF-8").decode("unicode_escape"))
+        ## dataload.logtime_print(log_content)
         login_info_pattern = re.compile(dataload.LOGIN_INFO_REGEX, re.S)
         response_info = re.findall(login_info_pattern, web_src)
         if response_info:
@@ -549,15 +608,16 @@ class WkvCwApi(object):
             dataload.logtime_print(log_content)
             exit(-1)
 
-    def wca_save_test_html(self, workdir, content):
+    def wca_save_test_html(self, filename, workdir, content):
         """Save request web source page in a html file, test use
 
         @@API that allows external calls
+        :param filename:    save html file name
         :param workdir:     work directory
         :param content:     save content(web source code)
         :return:            none
         """
-        htmlfile = open(workdir + dataload.fs_operation[1] + 'test.html', "w", 
+        htmlfile = open(workdir + dataload.fs_operation[1] + filename + '.html', "w", 
             encoding='utf-8')
         htmlfile.write(content)
         htmlfile.close()
@@ -662,7 +722,7 @@ class WkvCwApi(object):
         proxy_handler = None
         response = None
         timeout = 30
-        list_headers = dataload.dict_transto_list(headers)
+        list_headers = dataload.dict2list(headers)
         self.opener.addheaders = list_headers
         urllib.request.install_opener(self.opener)  # update install opener
 

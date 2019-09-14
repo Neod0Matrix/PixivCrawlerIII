@@ -22,10 +22,21 @@
 
 # UPDATE LOG
 
-    Version: 2.9.9
-    Last Update Time: 20190914pm2023
+    Version: 3.0.0
+    Last Update Time: 20191117pm1831
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2019/11/17
+    Today, two months later, I was in a whim, using selenium according to the recommendations on the Internet.
+    To simulate landing, bypass the recaptcha problem.
+    R18 ranking page crawling has been restored.
+    The IRA mode can't find the author information when parsing the page,
+    it is estimated that the page layout of the website has been modified, That problem has not been solved yet.
+    Notice:
+    You need to configure your chrome user-data path yourself(dataload.py L130).
+    The first use will open webdriver to save the cookie to the local, 
+    and then read it as long as the .pixiv_cookies.txt file exists.
 
     2019/09/14
     After testing the pixiv website does use the recaptcha method to block the crawler, 
@@ -68,6 +79,7 @@
 
 # REQUIREMENTS
 
+* [selenium](https://github.com/SeleniumHQ/selenium)
 * [retrying](https://github.com/rholder/retrying)
 * [Pillow](https://github.com/python-pillow/Pillow)
 * [prettytable](https://pypi.org/project/PrettyTable/)

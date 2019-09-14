@@ -30,7 +30,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '2.9.9'
+VERSION             = '3.0.0'
 
 # color effects print code
 normal_print_effect = "\033[0m"
@@ -125,6 +125,10 @@ LOG_PATH = RANK_DIR + LOG_NAME
 HTML_PATH = RANK_DIR + HTML_NAME
 # illustrepo use path
 REPO_DIR = fs_operation[0]
+
+# selenium method use
+chrome_user_data_dir = r'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
+local_cache_cookie_path = os.getcwd() + fs_operation[1] + '.pixiv_cookies.txt'
 
 # login and request image https proxy
 # website may update or change some url address
@@ -231,7 +235,7 @@ EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
     "+")
 LOGIN_INFO_REGEX = 'error":(.*?),"message'
 
-def dict_transto_list (input_dict):
+def dict2list (input_dict):
     """Change dict data-type to list
 
     :param input_dict:      dict
