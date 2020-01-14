@@ -14,7 +14,7 @@
 
 # LICENSE
 
-    Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
+    Copyright(C) 2018-2020 T.WKVER | </MATRIX>. All rights reserved.
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
