@@ -390,11 +390,11 @@ class RepertoAll(object):
         if response == False:
             return False
 
-        web_src = response.read().decode("UTF-8", "ignore")     # here fail means login failed
-        # mate illustrator name
+        # match illustrator name
+        web_src = response.read().decode("UTF-8", "ignore")
         illust_name_pattern = re.compile(dataload.ILLUST_NAME_REGEX, re.S)
         author_info = re.findall(illust_name_pattern, web_src)
-        # if login failed, regex parsing result will be a empty list
+        # if login failed, catch illust man page failed
         if not author_info:
             dataload.logtime_print(dataload.set_pback_red(
                 "Regex parsing result error, no author info, return"))
@@ -402,7 +402,7 @@ class RepertoAll(object):
         else:
             self.ira_author_name = author_info[0]
         return True
-        
+
     def ira_crawl_onepage_data(self, index, index_url):
         """Crawl all target url about images
 
@@ -504,7 +504,10 @@ class RepertoAll(object):
                 tmp_tail_nbr = self.ira_max_cnt
             for index in self.ira_pure_idlist[(dataload.ONE_PAGE_COMMIT * ix):tmp_tail_nbr]:
                 iid_string_tail += dataload.IDS_UNIT(index)
-            one_page_request_url = dataload.ALLREPOINFO_URL(self.user_input_id, iid_string_tail)
+            if ix == 0:
+                one_page_request_url = dataload.ALLREPOINFO_URL(self.user_input_id, iid_string_tail, 1)
+            else:
+                one_page_request_url = dataload.ALLREPOINFO_URL(self.user_input_id, iid_string_tail, 0)
             iid_string_tail = ''                                # clear last cache
             page_url_array.append(one_page_request_url)
         

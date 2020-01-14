@@ -22,10 +22,13 @@
 
 # UPDATE LOG
 
-    Version: 3.0.0
-    Last Update Time: 20191117pm1831
+    Version: 3.0.1
+    Last Update Time: 20200114pm2140
 
 # ANNOUNCEMENT(YOU WILL WANT TO READ)
+
+    2020/01/14
+    IRA mode has been fixed.
 
     2019/11/17
     Today, two months later, I was in a whim, using selenium according to the recommendations on the Internet.
@@ -34,7 +37,8 @@
     The IRA mode can't find the author information when parsing the page,
     it is estimated that the page layout of the website has been modified, That problem has not been solved yet.
     Notice:
-    You need to configure your chrome user-data path yourself(dataload.py L130).
+    First you need to use the chrome browser to log in to the pixiv website so that the cookie is recorded.
+    Second configure your chrome user-data path yourself(dataload.py L130).
     The first use will open webdriver to save the cookie to the local, 
     and then read it as long as the .pixiv_cookies.txt file exists.
 

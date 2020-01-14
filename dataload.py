@@ -30,7 +30,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.0.0'
+VERSION             = '3.0.1'
 
 # color effects print code
 normal_print_effect = "\033[0m"
@@ -176,8 +176,8 @@ MEMBER_URL = 'http://www.pixiv.net/member.php?id='
 MEMBER_ILLUST_URL = 'http://www.pixiv.net/member_illust.php?id='
 AJAX_ALL_URL = lambda aid: 'http://www.pixiv.net/ajax/user/%s/profile/all' % aid
 IDS_UNIT = lambda iid: 'ids%%5B%%5D=%s&' % iid      # ids[]=
-ALLREPOINFO_URL = lambda aid, ids_sym: \
-    'http://www.pixiv.net/ajax/user/%s/profile/illusts?%sis_manga_top=0' % (aid, ids_sym)
+ALLREPOINFO_URL = lambda aid, ids_sym, is_first_page: \
+    'http://www.pixiv.net/ajax/user/%s/profile/illusts?%swork_category=illustManga&is_first_page=%d' % (aid, ids_sym, is_first_page)
 ONE_PAGE_COMMIT = 48
 JUDGE_NOGIF_WORD = '_p0_master1200.jpg'             # don't download gif format
 PROXYIP_STR_BUILD = lambda ix, list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
@@ -215,7 +215,7 @@ RANKING_INFO_REGEX = (
 NUMBER_REGEX = '\d+\.?\d*'                      # general number match
 IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
 DATASRC_REGEX = 'data-src="(.*?)"'
-ILLUST_NAME_REGEX = '<title>「(.*?)」'
+ILLUST_NAME_REGEX = '<title>(.*?) - pixiv</title>'
 AJAX_ALL_IDLIST_REGEX = '"(.*?)":null'
 AJAX_INFO_REGEX = 'ter(.*?)_p0_square1200'
 PAGE_REQUEST_SYM_REGEX = '"error":(.*?),'

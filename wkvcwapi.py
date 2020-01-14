@@ -587,9 +587,9 @@ class WkvCwApi(object):
 
         web_src = response.read().decode("UTF-8", "ignore")
         # check server return response info
-        ## log_content = dataload.set_pcode_blue_pback_yellow(
-        ##     'Response source: ' + web_src.encode("UTF-8").decode("unicode_escape"))
-        ## dataload.logtime_print(log_content)
+        # log_content = dataload.set_pcode_blue_pback_yellow(
+        #     'Response source: ' + web_src.encode("UTF-8").decode("unicode_escape"))
+        # dataload.logtime_print(log_content)
         login_info_pattern = re.compile(dataload.LOGIN_INFO_REGEX, re.S)
         response_info = re.findall(login_info_pattern, web_src)
         if response_info:
