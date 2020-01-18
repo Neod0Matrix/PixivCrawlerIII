@@ -14,20 +14,21 @@
 
 # LICENSE
 
-    Copyright(C) 2018-2020 T.WKVER | </MATRIX>. All rights reserved.
+    Copyright(C) 2017-2020 T.WKVER | </MATRIX>. All rights reserved.
     Code by </MATRIX>@Neod Anderjon(LeaderN)
     MIT license read in LICENSE
     Thanks to watch my project
     If you want to help me improve this project, please submit an issue or fork
 
-# UPDATE LOG
+# CHANGELOG
 
-    Version: 3.0.1
-    Last Update Time: 20200114pm2140
-
-# ANNOUNCEMENT(YOU WILL WANT TO READ)
+    2020/01/18
+    Version: 3.2.1
+    Total refactor.
+    Code structure optimize.
 
     2020/01/14
+    Version: 3.1.0
     IRA mode has been fixed.
 
     2019/11/17

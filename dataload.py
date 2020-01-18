@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright(C) 2018-2019 T.WKVER | </MATRIX>. All rights reserved.
+# Copyright(C) 2017-2020 T.WKVER | </MATRIX>. All rights reserved.
 # code by </MATRIX>@Neod Anderjon(LeaderN)
 #
 # dataload.py
@@ -10,38 +10,28 @@
 # PixivCrawlerIII component
 # T.WKVER crawler data handler loader for PixivCrawlerIII project
 # List all constant data
-#
-# History
-# 
-# 2.9.9 LTE     Neod Anderjon, 2019-08-24
-#               refactor some word names
-#
-# 2.9.9 LTE     Neod Anderjon, 2019-08-22
-#               update request header content
-#
-# 2.9.9 LTE     Neod Anderjon, 2019-08-15
-#               Refactor names all of this project
-#               Complete comment stadard
 
-import time, os
+import time, os, re
 
 # project info
 PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.0.1'
+VERSION             = '3.2.1'
 
-# color effects print code
-normal_print_effect = "\033[0m"
-# set print code red, use in logo
-set_pcode_red = lambda pcode: "\033[0;31;40m" + pcode + normal_print_effect 
-# set print background red, use in error or failed operate
-set_pback_red = lambda pcode: "\033[7;31m" + pcode + normal_print_effect    
-# set print code yellow, use in ask question
-set_pcode_yellow = lambda pcode: "\033[0;33;40m" + pcode + normal_print_effect      
-# set print code blue and background yellow, use in important info
-set_pcode_blue_pback_yellow = lambda pcode: "\033[7;33;44m" + pcode + normal_print_effect 
+# operation result code
+PUB_E_OK            = 0
+PUB_E_FAIL          = -1
+PUB_E_RESPONSE_FAIL = -2
+PUB_E_PARAM_FAIL    = -3
+PUB_E_REGEX_FAIL    = -4
+
+NORMAL = "\033[0m"
+HL_CR = lambda pcode: "\033[0;31;40m" + pcode + NORMAL      # code red, use in logo
+BR_CB = lambda pcode: "\033[7;31m" + pcode + NORMAL         # background red, use in error or failed operate
+HL_CY = lambda pcode: "\033[0;33;40m" + pcode + NORMAL      # code yellow, use in ask question
+BY_CB = lambda pcode: "\033[7;33;44m" + pcode + NORMAL      # code blue and background yellow, use in important info
 
 # logfile log real-time operation
 base_time = time.time()
@@ -51,31 +41,28 @@ realtime_logword = lambda bt: "\033[7;34;43m[%02d:%02d:%02d]\033[0m " \
                                 int((time.time() - bt) / 60),
                                 (time.time() - bt) % 60)
 
-SHELL_BASHHEAD = PROJECT_NAME + '@' + ORGANIZATION + ':~$ '
-# input param method with time log
-logtime_input = lambda str_: input(realtime_logword(base_time) + str_)
-# print string method with time log
-logtime_print = lambda str_: print(realtime_logword(base_time) + str_)
-# flush simple line method with time log
-logtime_flush_display = lambda str_, *args_, **kwargs_: print(('\r' + \
-    realtime_logword(base_time) + str_).format(*args_, **kwargs_), end="") 
+# log with time message operations
+LT_INPUT = lambda str_: input(realtime_logword(base_time) + str_)  # input param method with time log
+LT_PRINT = lambda str_: print(realtime_logword(base_time) + str_)  # print string method with time log
+LT_FLUSH = lambda str_, *args_, **kwargs_: print(('\r' + \
+    realtime_logword(base_time) + str_).format(*args_, **kwargs_), end="")  # flush simple line method with time log
 
 def nolog_raise_arguerr():
-    """Call logtime_print lambda to raise an argument(s) error info
+    """Argument(s) error info
 
     :return:            none
     """
-    logtime_print(set_pback_red('Argument(s) error'))
+    LT_PRINT(BR_CB('Argument(s) error'))
 
 def crawler_logo():
     """Print crawler logo
 
     :return:            none
     """
-    log_content = set_pcode_red(
+    log_content = HL_CR(
         LABORATORY + ' ' + ORGANIZATION + ' technology support |'                       
         ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
-    logtime_print(log_content)
+    LT_PRINT(log_content)
 
 SYSTEM_MAX_THREADS = 400                # setting system can contain max sub-threads
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
@@ -94,8 +81,8 @@ def platform_setting():
         if get_login_user != 'root':
             work_dir = '/home/' + get_login_user + '/Pictures/Crawler/'
         else:
-			# if your run crawler program in Android Pydroid 3
-			# change here work_dir to /sdcard/Pictures/Crawler/
+            # if your run crawler program in Android Pydroid 3
+            # change here work_dir to /sdcard/Pictures/Crawler/
             work_dir = '/sdcard/Pictures/Crawler/'
         symbol = '/'
     # windows
@@ -172,8 +159,7 @@ DAILY_MALE_RANKING_R18_URL = RANKING_URL + MALE_R18_WORD
 DAILY_FEMALE_RANKING_R18_URL = RANKING_URL + FEMALE_R18_WORD
 WEEKLY_RANKING_R18_URL = WEEKLY_RANKING_URL + R18_WORD
 BASEPAGE_URL = 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id='
-MEMBER_URL = 'http://www.pixiv.net/member.php?id='
-MEMBER_ILLUST_URL = 'http://www.pixiv.net/member_illust.php?id='
+USERS_ARTWORKS_URL = lambda iid: 'http://pixiv.net/users/%s/artworks' % iid
 AJAX_ALL_URL = lambda aid: 'http://www.pixiv.net/ajax/user/%s/profile/all' % aid
 IDS_UNIT = lambda iid: 'ids%%5B%%5D=%s&' % iid      # ids[]=
 ALLREPOINFO_URL = lambda aid, ids_sym, is_first_page: \
@@ -215,7 +201,7 @@ RANKING_INFO_REGEX = (
 NUMBER_REGEX = '\d+\.?\d*'                      # general number match
 IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
 DATASRC_REGEX = 'data-src="(.*?)"'
-ILLUST_NAME_REGEX = '<title>(.*?) - pixiv</title>'
+ILLUST_NAME_REGEX = lambda iid: '"userId":"%s","name":"(.*?)","image"' % iid
 AJAX_ALL_IDLIST_REGEX = '"(.*?)":null'
 AJAX_INFO_REGEX = 'ter(.*?)_p0_square1200'
 PAGE_REQUEST_SYM_REGEX = '"error":(.*?),'
@@ -234,6 +220,11 @@ EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
     u"(\ud83c[\udde0-\uddff])"                  # flags (iOS)
     "+")
 LOGIN_INFO_REGEX = 'error":(.*?),"message'
+
+emoji_pattern = re.compile(EMOJI_REGEX, re.S)
+REPL_EMOJI = lambda _str: emoji_pattern.sub(r'[EMOJI]', _str)
+
+UNICODE_ESCAPE = lambda _raw_str: _raw_str.encode('utf-8').decode('unicode_escape')
 
 def dict2list (input_dict):
     """Change dict data-type to list
