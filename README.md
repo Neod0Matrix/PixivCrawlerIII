@@ -23,7 +23,7 @@
 # CHANGELOG
 
     2020/01/18
-    Version: 3.2.1
+    Version: 3.2.2
     Total refactor.
     Code structure optimize.
 

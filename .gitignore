@@ -1,0 +1,13 @@
+﻿# code by </MATRIX>@Neod Anderjon
+# don't upload python compile cache and private info files		
+
+__pycache__/
+.dist/
+.idea/
+.git/
+.vscode/
+.aes_crypto_login.ini
+build/
+dist/
+[cmder_root]/
+.pixiv_cookies.txt

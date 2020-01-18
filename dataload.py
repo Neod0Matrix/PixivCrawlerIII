@@ -18,14 +18,38 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.2.1'
+VERSION             = '3.2.2'
 
-# operation result code
+# operation result status code
 PUB_E_OK            = 0
 PUB_E_FAIL          = -1
 PUB_E_RESPONSE_FAIL = -2
 PUB_E_PARAM_FAIL    = -3
 PUB_E_REGEX_FAIL    = -4
+
+# run mode
+MODE_INTERACTIVE    = '1'
+MODE_SERVER         = '2'
+
+# rtn or ira
+SELECT_RTN          = '1'
+SELECT_IRA          = '2'
+SELECT_HELP         = '3'
+SELECT_EXIT         = '4'
+
+# rtn daily | weekly | monthly
+RANK_DAILY          = '1'
+RANK_WEEKLY         = '2'
+RANK_MONTHLY        = '3'
+
+# ranking top page type
+PAGE_ORDINARY       = '1'
+PAGE_R18            = '2'
+
+# sex word
+SEX_NORMAL  = '0'
+SEX_MALE    = '1'
+SEX_FEMALE  = '2'
 
 NORMAL = "\033[0m"
 HL_CR = lambda pcode: "\033[0;31;40m" + pcode + NORMAL      # code red, use in logo
@@ -52,17 +76,14 @@ def nolog_raise_arguerr():
 
     :return:            none
     """
-    LT_PRINT(BR_CB('Argument(s) error'))
+    LT_PRINT(BR_CB('argument(s) error'))
 
 def crawler_logo():
     """Print crawler logo
 
     :return:            none
     """
-    log_content = HL_CR(
-        LABORATORY + ' ' + ORGANIZATION + ' technology support |'                       
-        ' Code by ' + ORGANIZATION + '@' + DEVELOPER)
-    LT_PRINT(log_content)
+    LT_PRINT(HL_CR(LABORATORY + ' ' + ORGANIZATION + ' technology support | Code by ' + ORGANIZATION + '@' + DEVELOPER))
 
 SYSTEM_MAX_THREADS = 400                # setting system can contain max sub-threads
 DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
@@ -70,10 +91,9 @@ DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
 def platform_setting():
     """Get OS platform to set folder format
 
-    Folder must with directory symbol '/' or '\\'
     :return:    platform work directory
     """
-    work_dir, symbol = None, None
+    work_dir = None
     home_dir = os.environ['HOME']   # get system default setting home folder, for windows
     get_login_user = os.getlogin()  # get login user name to build user home directory, for linux
     # linux
@@ -84,16 +104,15 @@ def platform_setting():
             # if your run crawler program in Android Pydroid 3
             # change here work_dir to /sdcard/Pictures/Crawler/
             work_dir = '/sdcard/Pictures/Crawler/'
-        symbol = '/'
     # windows
     elif os.name == 'nt':
-        work_dir, symbol = home_dir + '\\PictureDatabase\\Crawler\\', '\\'
+        work_dir = home_dir + '/PictureDatabase/Crawler/'
     else:
         pass
 
-    return work_dir, symbol
+    return work_dir
 # for filesystem operation entity
-fs_operation = platform_setting()
+g_dl_work_dir = platform_setting()
 
 # real time clock
 _rtc = time.localtime()
@@ -103,19 +122,17 @@ _ymd = '%d-%d-%d' % (_rtc[0], _rtc[1], _rtc[2])
 AES_SECRET_KEY = 'secretkeyfrommat'.encode('utf-8')     # 16 bytes secret key
 
 # universal path
-LOGIN_AES_INI_PATH = os.getcwd() + fs_operation[1] + '.aes_crypto_login.ini' # storage login info AES crypto file, default hide
-LOG_NAME = fs_operation[1] + 'CrawlerWork[%s].log' % _ymd
-HTML_NAME = fs_operation[1] + 'CrawlerWork[%s].html' % _ymd
-RANK_DIR = fs_operation[0] + 'rankingtop_%s%s' % (_ymd, fs_operation[1])
+LOGIN_AES_INI_PATH = os.getcwd() + '/.aes_crypto_login.ini' # storage login info AES crypto file, default hide
+LOG_NAME = '/CrawlerWork[%s].log' % _ymd
+HTML_NAME = '/CrawlerWork[%s].html' % _ymd
+RANK_DIR = g_dl_work_dir + 'rankingtop_%s/' % _ymd
 # rankingtop use path
 LOG_PATH = RANK_DIR + LOG_NAME
 HTML_PATH = RANK_DIR + HTML_NAME
-# illustrepo use path
-REPO_DIR = fs_operation[0]
 
 # selenium method use
-chrome_user_data_dir = r'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
-local_cache_cookie_path = os.getcwd() + fs_operation[1] + '.pixiv_cookies.txt'
+chrome_user_data_dir = 'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
+local_cache_cookie_path = os.getcwd() + '/.pixiv_cookies.txt'
 
 # login and request image https proxy
 # website may update or change some url address
@@ -123,16 +140,12 @@ WWW_HOST_URL = "www.pixiv.net"
 HTTPS_HOST_URL = 'https://www.pixiv.net/'
 ACCOUNTS_URL = "accounts.pixiv.net"
 LOGIN_POSTKEY_URL = 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index'
-LOGIN_POSTDATA_REF = 'wwwtop_accounts_index'
 LOGIN_REQUEST_API_URL = "https://accounts.pixiv.net/api/login?lang=zh"
 _LOGIN_REQUEST_URL = "https://accounts.pixiv.net"
 _LOGIN_REQUEST_REF_URL = "https://accounts.pixiv.net/login"
 
 # request universal original image constant words
 ORIGINAL_IMAGE_HEAD = 'https://i.pximg.net/img-original/img'
-# 1002 event update
-ORIGINAL_IMAGE_PAGE = lambda iid, px: \
-    'https://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=%s&page=%d' % (iid, px)
 ORIGINAL_IMAGE_TAIL = lambda px: '_p%d.png' % px
 
 # page request http proxy
@@ -199,14 +212,11 @@ RANKING_INFO_REGEX = (
     'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
     '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
 NUMBER_REGEX = '\d+\.?\d*'                      # general number match
-IMAGEITEM_REGEX = '<li class="image-item">(.*?)</li>'
 DATASRC_REGEX = 'data-src="(.*?)"'
 ILLUST_NAME_REGEX = lambda iid: '"userId":"%s","name":"(.*?)","image"' % iid
 AJAX_ALL_IDLIST_REGEX = '"(.*?)":null'
-AJAX_INFO_REGEX = 'ter(.*?)_p0_square1200'
 PAGE_REQUEST_SYM_REGEX = '"error":(.*?),'
-PAGE_TARGET_INFO_REGEX = \
-    '"id":"(.*?)","title":"(.*?)"(.*?)"url":"(.*?)_square1200.jpg"(.*?)"pageCount":(.*?),'
+PAGE_TARGET_INFO_REGEX = '"id":"(.*?)","title":"(.*?)"(.*?)"url":"(.*?)_square1200.jpg"(.*?)"pageCount":(.*?),'
 ILLUST_TYPE_REGEX = '"illustType":(.*?),'
 SPAN_REGEX = '<span>(.*?)</span>'
 RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
@@ -221,9 +231,9 @@ EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
     "+")
 LOGIN_INFO_REGEX = 'error":(.*?),"message'
 
+# strange encode
 emoji_pattern = re.compile(EMOJI_REGEX, re.S)
 REPL_EMOJI = lambda _str: emoji_pattern.sub(r'[EMOJI]', _str)
-
 UNICODE_ESCAPE = lambda _raw_str: _raw_str.encode('utf-8').decode('unicode_escape')
 
 def dict2list (input_dict):
@@ -270,21 +280,21 @@ def build_login_headers(cookie):
     :return:        login headers
     """
     base_headers = {
-        ':authority': ACCOUNTS_URL,
-        ':method': "POST",
-        ':path': "/api/login?lang=zh",
-        ':scheme': "https",
-        'accept': _HEADERS_ACCEPT,
-        'accept-encoding': _HEADERS_ACCEPT_ENCODING,
-        'accept-language': _HEADERS_ACCEPT_LANGUAGE,
-        'content-length': "546",
-        'content-type': _HEADERS_CONTENT_TYPE,
-        'cookie': cookie,
-        'dnt': "1",
-        'origin': _LOGIN_REQUEST_URL,
-        'referer': _LOGIN_REQUEST_REF_URL,
-        'sec-fetch-mode': "cors",
-        'sec-fetch-site': "same-origin"
+        ':authority':       ACCOUNTS_URL,
+        ':method':          "POST",
+        ':path':            "/api/login?lang=zh",
+        ':scheme':          "https",
+        'accept':           _HEADERS_ACCEPT,
+        'accept-encoding':  _HEADERS_ACCEPT_ENCODING,
+        'accept-language':  _HEADERS_ACCEPT_LANGUAGE,
+        'content-length':   "546",
+        'content-type':     _HEADERS_CONTENT_TYPE,
+        'cookie':           cookie,
+        'dnt':              "1",
+        'origin':           _LOGIN_REQUEST_URL,
+        'referer':          _LOGIN_REQUEST_REF_URL,
+        'sec-fetch-mode':   "cors",
+        'sec-fetch-site':   "same-origin"
     }
     # dict merge, longth-change argument
     build_headers = dict(base_headers, **uc_user_agent())
@@ -298,13 +308,13 @@ def build_original_headers(referer):
     :return:        build headers
     """
     base_headers = {
-        'Accept': "image/webp,image/*,*/*;q=0.8",
-        'Accept-Encoding': "gzip, deflate, sdch",
-        'Accept-Language': _HEADERS_ACCEPT_LANGUAGE,
-        'Connection': _HEADERS_CONNECTION,
+        'Accept':           "image/webp,image/*,*/*;q=0.8",
+        'Accept-Encoding':  "gzip, deflate, sdch",
+        'Accept-Language':  _HEADERS_ACCEPT_LANGUAGE,
+        'Connection':       _HEADERS_CONNECTION,
         # must add referer, or server will return a damn http error 403, 404
         # copy from javascript console network request headers of image
-        'Referer': referer,  # request basic page
+        'Referer':          referer,  # request basic page
     }
     build_headers = dict(base_headers, **uc_user_agent())
 

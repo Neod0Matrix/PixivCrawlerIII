@@ -25,93 +25,93 @@ def main():
     """
 
     print(dl.HL_CR(WkvCwApi.__doc__))
-    mode_interactive_server = 1                     # intercative mode or server mode, default interavtive mode(1)
-    # judge the count of command line argument
-    # if no external arguments, into interactive mode
+    mode_interactive_server = dl.MODE_INTERACTIVE   # default
+
     if len(sys.argv) == 1:
-        mode_interactive_server = 1
+        mode_interactive_server = dl.MODE_INTERACTIVE
         # program work continue ask
         ask_res = dl.LT_INPUT(dl.HL_CY('%s lanuch, continue? (Y/N): ' % dl.PROJECT_NAME))
         if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
             dl.LT_PRINT(dl.BY_CB("User exit program\n"))
-            exit(0)
+            exit(dl.PUB_E_OK)
 
         # website id and password require
-        ask_res = dl.LT_INPUT(dl.HL_CY('Crawler will use your Pixiv-ID and password to login to the website, agree? (Y/N): '))
+        ask_res = dl.LT_INPUT(dl.HL_CY('crawler will use your Pixiv-ID and password to login to the website, agree? (Y/N): '))
         if ask_res == 'N' or ask_res == 'No' or ask_res == 'n':
             dl.LT_PRINT(dl.BR_CB("No ID and password crawler cannot work, exit"))
-            exit(-1)
+            exit(dl.PUB_E_PARAM_FAIL)
 
         api_instance = WkvCwApi(mode_interactive_server)    # instance class to a object
         api_instance.wca_camouflage_login()                 # crawler simulated login
         # multiple task cycles
         while True:
-            mode = dl.LT_INPUT(dl.HL_CY('Login finished, select mode: '))
+            mode = dl.LT_INPUT(dl.HL_CY('login completed, select mode: '))
             # ranking top N mode
-            if mode == 'rtn' or mode == '1':
+            if mode == dl.SELECT_RTN:
                 dl.LT_PRINT(dl.BY_CB('Mode: [Ranking Top N]'))
                 rtn_instance = rtn(dl.RANK_DIR, dl.LOG_PATH, 
                     dl.HTML_PATH, api_instance, mode_interactive_server)
                 rtn_instance.start()
             # illustrator repositories all mode
-            elif mode == 'ira' or mode == '2':
+            elif mode == dl.SELECT_IRA:
                 dl.LT_PRINT(dl.BY_CB('Mode: [Illustrator Repository All]'))
-                ira_instance = ira(dl.REPO_DIR, dl.LOG_NAME, 
+                ira_instance = ira(dl.g_dl_work_dir, dl.LOG_NAME, 
                     dl.HTML_NAME, api_instance, mode_interactive_server)
                 ira_instance.start()
             # help page
-            elif mode == 'help' or mode == '3':
+            elif mode == dl.SELECT_HELP:
                 print(dl.HL_CR(WkvCwApi.__doc__))
             # user normal exit program
-            elif mode == 'exit' or mode == '4':
+            elif mode == dl.SELECT_EXIT:
                 dl.LT_PRINT(dl.BY_CB("User exit program"))
                 dl.crawler_logo()         # exit print logo
-                exit(0)
+                exit(dl.PUB_E_OK)
             # input parameter error, into next circle
             else:
                 dl.nolog_raise_arguerr()
     else:
-        mode_interactive_server = 2
+        mode_interactive_server = dl.MODE_SERVER
         # argument pass to variable
-        opts, args = getopt.getopt(sys.argv[1:], 
-                                "hm:r:l:s:i:", ["help", "mode", "R18", "list", "sex", "id"])
-        catch_mode = '1'
-        rtn_r18_opt = '1'
-        rtn_list_type = '1'
-        rtn_mf_word = ''
-        ira_illust_id = ''
+        opts, args = getopt.getopt(sys.argv[1:], "hm:r:l:s:i:", ["help", "mode", "R18", "list", "sex", "id"])
+        # default value
+        select_option   = dl.SELECT_RTN
+        rtn_page_opt    = dl.PAGE_ORDINARY
+        rtn_rank_opt    = dl.RANK_DAILY
+        rtn_sex_opt     = dl.SEX_NORMAL
+        ira_illust_id   = ''
+
         for opt, value in opts:
             if opt in ("-m", "--mode"):
-                catch_mode = value
+                select_option = value
             elif opt in ("-r", "--R18"):
-                rtn_r18_opt = value
+                rtn_page_opt = value
             elif opt in ("-l", "--list"):
-                rtn_list_type = value
+                rtn_rank_opt = value
             elif opt in ("-s", "--sex"):
-                rtn_mf_word = value
+                rtn_sex_opt = value
             elif opt in ("-i", "--id"):
                 ira_illust_id = value
             elif opt in ("-h", "--help"):
                 print(dl.HL_CR(WkvCwApi.__doc__))
-                exit(0)
+                exit(dl.PUB_E_OK)
 
         api_instance = WkvCwApi(mode_interactive_server)    # instance class to a object
         api_instance.wca_camouflage_login()                 # crawler simulated login
 
-        if catch_mode == '1':
+        if select_option == dl.SELECT_RTN:
             dl.LT_PRINT(dl.BY_CB('Mode: [Ranking Top N]'))
             rtn_instance = rtn(dl.RANK_DIR, dl.LOG_PATH, 
                 dl.HTML_PATH, api_instance, mode_interactive_server, 
-                rtn_r18_opt, rtn_list_type, rtn_mf_word)
+                rtn_page_opt, rtn_rank_opt, rtn_sex_opt)
             rtn_instance.start()
         # illustrator repositories all mode
-        elif catch_mode == '2':
+        elif select_option == dl.SELECT_IRA:
             dl.LT_PRINT(dl.BY_CB('Mode: [Illustrator Repository All]'))
-            ira_instance = ira(dl.REPO_DIR, dl.LOG_NAME, 
+            ira_instance = ira(dl.g_dl_work_dir, dl.LOG_NAME, 
                 dl.HTML_NAME, api_instance, mode_interactive_server, ira_illust_id)
             ira_instance.start()
         # help page
-        elif catch_mode == 'help' or catch_mode == '3':
+        elif select_option == dl.SELECT_HELP:
             print(dl.HL_CR(WkvCwApi.__doc__))
 
 if __name__ == '__main__':

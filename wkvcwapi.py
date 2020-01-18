@@ -37,7 +37,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2020 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 3.2.1 LTE                                                                                      |
+    |       Version: 3.2.2 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -130,9 +130,8 @@ class WkvCwApi(object):
             passwd = str(password_aes_decrypt_cipher.decrypt(aes_info['passwd'][AES.block_size:]), 'UTF-8')
 
             # in intercative mode check username and password
-            if self.ir_mode == 1:
-                check = dl.LT_INPUT(dl.HL_CY(
-                    "Read user login information configuration ok, check this: \n"
+            if self.ir_mode == dl.MODE_INTERACTIVE:
+                check = dl.LT_INPUT(dl.HL_CY("Read user login information configuration ok, check this: \n"
                     "[*Username] %s\n[*Password] %s\n"
                     "Is that correct? (Y/N): " % (username, passwd)))
 
@@ -141,24 +140,24 @@ class WkvCwApi(object):
                     os.remove(aes_file_path)        # delete old AES file
                     # temporarily enter login information
                     dl.LT_PRINT(dl.BY_CB("Well, you need hand-input your login data: "))
-                    username = dl.LT_INPUT(dl.HL_CY('Enter your pixiv id(mailbox), must be a R18: '))
+                    username = dl.LT_INPUT(dl.HL_CY('enter your pixiv id(mailbox), must be a R18: '))
                     passwd = getpass.getpass(dl.realtime_logword(dl.base_time)
-                        + dl.HL_CY('Enter your account password: '))
+                        + dl.HL_CY('enter your account password: '))
                     self._generate_aes_info(aes_file_path, username, passwd)
                 # read info correct, jump out here
                 else:
                     pass
-            elif self.ir_mode == 2:
-                dl.LT_PRINT(dl.BY_CB("Check server mode, jump user info confirm out"))
+            elif self.ir_mode == dl.MODE_SERVER:
+                dl.LT_PRINT(dl.BY_CB("check server mode, jump user info confirm out"))
             else:
                 pass
 
         # if no AES file, then create new and write md5 value into it
         else:
             dl.LT_PRINT(dl.HL_CY("Create new AES encrypt file to storage your username and password: "))
-            username = dl.LT_INPUT(dl.HL_CY('Enter your pixiv id(mailbox), must be a R18: '))
+            username = dl.LT_INPUT(dl.HL_CY('enter your pixiv id(mailbox), must be a R18: '))
             passwd = getpass.getpass(dl.realtime_logword(dl.base_time)
-                + dl.HL_CY('Enter your account password: '))
+                + dl.HL_CY('enter your account password: '))
             self._generate_aes_info(aes_file_path, username, passwd)
 
         # build data string
@@ -235,7 +234,7 @@ class WkvCwApi(object):
         :return:            folder create path
         """
         # create a folder to save picture
-        dl.LT_PRINT('Crawler work directory setting: ' + folder)
+        dl.LT_PRINT('crawler work directory setting: ' + folder)
         is_folder_existed = os.path.exists(folder)
         if not is_folder_existed:
             os.makedirs(folder)
@@ -301,14 +300,14 @@ class WkvCwApi(object):
         try:
             response = urllib.request.urlopen(request, timeout=30)
         except Exception as e:
-            log_content = dl.BR_CB('Get proxy response failed, error: %s' % str(e))
+            log_content = dl.BR_CB('get proxy response failed, error: %s' % str(e))
             self.wca_logprowork(log_path, log_content)
             return dl.PUB_E_RESPONSE_FAIL
 
         if response.getcode() == dl.HTTP_OK_CODE_200:
             log_content = 'Crawl proxy successed'
         else:
-            log_content = dl.BR_CB('Crawl proxy not ok, return code: %d' % response.getcode())
+            log_content = dl.BR_CB('crawl proxy not ok, return code: %d' % response.getcode())
         self.wca_logprowork(log_path, log_content)
 
         web_src = response.read().decode("UTF-8", "ignore")
@@ -328,7 +327,7 @@ class WkvCwApi(object):
         # random choose a proxy ip with its port and build the dict format data
         proxy_choose = random.choice(proxy_iplist)
         proxyserver_dict = {'http': proxy_choose}
-        log_content = dl.BY_CB('Choose proxy server: ' + proxy_choose)
+        log_content = dl.BY_CB('choose proxy server: ' + proxy_choose)
         self.wca_logprowork(log_path, log_content)
 
         return proxyserver_dict
@@ -379,16 +378,14 @@ class WkvCwApi(object):
                                                 target_page_word='POST-key',
                                                 log_path=None)
         for item in self.cookie:
-            log_content = 'Cookie: [name:' + item.name + ' | value:' + item.value + ']'
-            dl.LT_PRINT(log_content)
+            dl.LT_PRINT('Cookie: [name:' + item.name + ' | value:' + item.value + ']')
 
         web_src = response.read().decode("UTF-8", "ignore")
         # debug recaptcha v3 token use
         ## self.wca_save_test_html('post-key', 'E:\\OperationCache', web_src)
         post_pattern = re.compile(dl.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
-        log_content = 'Get post-key: ' + postkey
-        dl.LT_PRINT(log_content)
+        dl.LT_PRINT('get post-key: ' + postkey)
 
         # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
@@ -400,12 +397,7 @@ class WkvCwApi(object):
         post_orderdict['source']                = "accounts"
         post_orderdict['ref']                   = ""
         post_orderdict['return_to']             = dl.HTTPS_HOST_URL
-
-        # google recaptcha v3 token
-        # bind a token every time login, if the wrong token is sent, 
-        # the website will request a human-machine verification(recpatcha-v3-token).
-        # see details in readme.md(2019/09/14)
-        post_orderdict['recaptcha_v3_token'] = ""
+        post_orderdict['recaptcha_v3_token']    = ""    # google recaptcha v3 token
         self.postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
 
     @staticmethod
@@ -420,12 +412,11 @@ class WkvCwApi(object):
         :param url:         selenium webdriver request url
         :return:            cookie jar
         '''
-
         cookie_jar = RequestsCookieJar()
         # first judge local cookie text file exist
         # if exists, just read it and return
         if os.path.exists(cache_path):
-            dl.LT_PRINT('Check local cookie file')
+            dl.LT_PRINT('check local cookie file')
             with open(cache_path, "r") as fp:
                 cookies = json.load(fp)
             # package to jar type
@@ -434,7 +425,7 @@ class WkvCwApi(object):
 
             return cookie_jar
 
-        dl.LT_PRINT('Start selenium webdriver')
+        dl.LT_PRINT('start selenium webdriver')
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')               # hide window
         chrome_options.add_argument('--disable-extensions')     # disable chrome externsions
@@ -442,17 +433,16 @@ class WkvCwApi(object):
         chrome_options.add_argument('--incognito')              # seamless mode
         chrome_options.add_argument('--blink-settings=imagesEnabled=false') # do not load image
         ## chrome_options.add_argument('--start-maximized')
-        chrome_options.add_argument('user-data-dir=' 
-            + os.path.abspath(dl.chrome_user_data_dir))
+        chrome_options.add_argument('user-data-dir=' + os.path.abspath(dl.chrome_user_data_dir))
         driver = webdriver.Chrome(chrome_options=chrome_options)
 
         # request website and get cookie
         driver.get(url)
         cookies = driver.get_cookies()
         driver.close()
-        dl.LT_PRINT('Stop selenium webdriver')
+        dl.LT_PRINT('stop selenium webdriver')
 
-        ## dl.LT_PRINT('Get cookies:\n%s' % json.dumps(cookies, sort_keys=True, indent=4))
+        ## dl.LT_PRINT('get cookies:\n%s' % json.dumps(cookies, sort_keys=True, indent=4))
         # save cookies to file
         with open(cache_path, "w") as fp:
             json.dump(cookies, fp)
@@ -469,10 +459,7 @@ class WkvCwApi(object):
         @@API that allows external calls
         :return:        none
         """
-
         self._gatherpostkey()
-
-        # update cookie to login
         cookie_jar          = self._get_chrome_cookie(dl.local_cache_cookie_path, dl.HTTPS_HOST_URL)
         self.cookieHandler  = urllib.request.HTTPCookieProcessor(cookie_jar)
         self.opener         = urllib.request.build_opener(self.cookieHandler)
@@ -483,25 +470,25 @@ class WkvCwApi(object):
                                                 timeout=30, 
                                                 target_page_word='Login',
                                                 log_path=None)
-        if response == -1:
-            dl.LT_PRINT(dl.BR_CB('Login response return a boolean FALSE, exit'))
-            exit(-1)
+        if response == dl.PUB_E_RESPONSE_FAIL:
+            dl.LT_PRINT(dl.BR_CB('login response return a boolean FALSE, exit'))
+            exit(dl.PUB_E_RESPONSE_FAIL)
 
         web_src = response.read().decode("UTF-8", "ignore")
-        dl.LT_PRINT(dl.BY_CB('Response source: %s' % web_src.encode("UTF-8").decode("unicode_escape")))
+        dl.LT_PRINT(dl.BY_CB('response source: %s' % web_src.encode("UTF-8").decode("unicode_escape")))
 
         login_info_pattern = re.compile(dl.LOGIN_INFO_REGEX, re.S)
         response_info = re.findall(login_info_pattern, web_src)
         if response_info:
             if response_info[0] != 'false':
                 # error false means no error
-                dl.LT_PRINT(dl.BR_CB('Login confirm raise a error, exit'))
-                exit(-1)
+                dl.LT_PRINT(dl.BR_CB('login confirm raise a error, exit'))
+                exit(dl.PUB_E_RESPONSE_FAIL)
             else:
-                dl.LT_PRINT('Login check response right')
+                dl.LT_PRINT('login check response right')
         else:
-            dl.LT_PRINT('Login confirm response no error status')
-            exit(-1)
+            dl.LT_PRINT('login confirm response no error status')
+            exit(dl.PUB_E_RESPONSE_FAIL)
 
     def wca_save_test_html(self, filename, workdir, content):
         """Save request web source page in a html file, test use
@@ -512,11 +499,10 @@ class WkvCwApi(object):
         :param content:     save content(web source code)
         :return:            none
         """
-        htmlfile = open(workdir + dl.fs_operation[1] + filename + '.html', "w", encoding='utf-8')
+        htmlfile = open(workdir + '/' + filename + '.html', "w", encoding='utf-8')
         htmlfile.write(content)
         htmlfile.close()
-        log_content = dl.BY_CB('Save test request html page ok')
-        dl.LT_PRINT(log_content)
+        dl.LT_PRINT(dl.BY_CB('save test request html page ok'))
 
     @staticmethod
     def wca_commit_spansizer(whole_pattern, info_pattern, web_src):
@@ -542,7 +528,7 @@ class WkvCwApi(object):
         for item in img_whole_info:
             tmp_thumbnail = re.findall(datasrc_pattern, item)
             if not tmp_thumbnail:
-                dl.LT_PRINT(dl.BR_CB('Span sizer regex cannot get valid info, return'))
+                dl.LT_PRINT(dl.BR_CB('span sizer regex cannot get valid info, return'))
                 return dl.PUB_E_FAIL
 
             thumbnail = tmp_thumbnail[0]
@@ -588,7 +574,7 @@ class WkvCwApi(object):
         # setting image save info
         img_datatype = 'png'
         image_name = url[57:-4]     # name artwork_id + _px
-        img_save_path = img_savepath + dl.fs_operation[1] + image_name + '.' + img_datatype
+        img_save_path = img_savepath + '/' + image_name + '.' + img_datatype
 
         # use opener method
         headers                 = dl.build_original_headers(basepages[index])
@@ -765,7 +751,7 @@ class WkvCwApi(object):
         """
         thread_block_flag = False               # thread blocking flag
         alive_thread_cnt = queueLength = len(urls)
-        log_content = dl.BY_CB('Hit %d target(s), start download task(s)' % queueLength)
+        log_content = dl.BY_CB('hit %d target(s), start download task(s)' % queueLength)
         self.wca_logprowork(log_path, log_content)
 
         # the download process may fail
@@ -791,14 +777,14 @@ class WkvCwApi(object):
                 sub_thread.setDaemon(True)
                 # if create this sub-thread failed, return from function
                 if sub_thread.create() == dl.PUB_E_FAIL:
-                    log_content = dl.BR_CB('Create a new sub-thread failed, return')
+                    log_content = dl.BR_CB('create a new sub-thread failed, return')
                     print(log_content)
                     return dl.PUB_E_FAIL
 
                 if thread_block_flag == False:
-                    log_content = dl.BY_CB('Created {:d} download target object(s)')
+                    log_content = dl.BY_CB('created {:d} download target object(s)')
                 else:
-                    log_content = dl.BY_CB('Created {:d} download target object(s), thread creation is blocked, please wait')
+                    log_content = dl.BY_CB('created {:d} download target object(s), thread creation is blocked, please wait')
                 dl.LT_FLUSH(log_content, i + 1)
             print(dl.BY_CB(', all threads have been loaded OK'))
             thread_block_flag = False
@@ -814,7 +800,7 @@ class WkvCwApi(object):
                     alive_thread_cnt = self.alivethread_counter # update alive thread count
                     # display alive sub-thread count
                     # its number wouldn't more than thread max count
-                    log_content = dl.BY_CB('Currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)')
+                    log_content = dl.BY_CB('currently remaining sub-thread(s):({:4d}/{:4d}), completed:({:4.1%})|({:5.2f}MB)')
                     dl.LT_FLUSH(log_content, alive_thread_cnt - 1, queueLength, 
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
                         (float(WkvCwApi._datastream_pool / 1024)))
@@ -868,7 +854,7 @@ class WkvCwApi(object):
             # match image formats
             if i[-4:len(i)] in [".png", ".jpg", ".bmp"]:
                 width, height = Image.open(
-                    workdir + dl.fs_operation[1] + i).size
+                    workdir + '/' + i).size
                 i = i.replace("#", "%23")
                 ## html_file.writelines("<a href = \"%s\">"%("./" + filename))
                 # set image size
