@@ -18,7 +18,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.2.3'
+VERSION             = '3.2.4'
 
 # operation result status code
 PUB_E_OK            = 0
@@ -70,6 +70,8 @@ LT_INPUT = lambda str_: input(realtime_logword(base_time) + str_)  # input param
 LT_PRINT = lambda str_: print(realtime_logword(base_time) + str_)  # print string method with time log
 LT_FLUSH = lambda str_, *args_, **kwargs_: print(('\r' + \
     realtime_logword(base_time) + str_).format(*args_, **kwargs_), end="")  # flush simple line method with time log
+
+GIF_TYPE_LABEL  = '2'   # pixiv use number 2 express gif type
 
 def nolog_raise_arguerr():
     """Argument(s) error info

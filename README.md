@@ -23,8 +23,9 @@
 # CHANGELOG
 
     2020/01/20
-    Version: 3.2.3
+    Version: 3.2.4
     Fixed custom label bug.
+    Refactor mode option structure.
 
     2020/01/19
     Version: 3.2.3

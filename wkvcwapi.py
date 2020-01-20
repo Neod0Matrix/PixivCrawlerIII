@@ -37,7 +37,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2020 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 3.2.3 LTE                                                                                      |
+    |       Version: 3.2.4 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -326,7 +326,7 @@ class WkvCwApi(object):
         response = self.wca_url_request_handler(target_url=dl.LOGIN_POSTKEY_URL, 
                                                 post_data=None, # cannot set data when get post key
                                                 timeout=30, 
-                                                target_page_word='POST-key',
+                                                target_page_word='post-key',
                                                 log_path=None)
 
         web_src = response.read().decode("UTF-8", "ignore")
@@ -335,7 +335,6 @@ class WkvCwApi(object):
 
         post_pattern = re.compile(dl.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
-        dl.LT_PRINT('get post-key: ' + postkey)
 
         # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
@@ -418,7 +417,7 @@ class WkvCwApi(object):
         response = self.wca_url_request_handler(target_url=dl.LOGIN_REQUEST_API_URL,
                                                 post_data=self.postway_data,
                                                 timeout=30, 
-                                                target_page_word='Login',
+                                                target_page_word='login',
                                                 log_path=None)
         if response == dl.PUB_E_RESPONSE_FAIL:
             dl.LT_PRINT(dl.BR_CB('login response return a boolean FALSE, exit'))
