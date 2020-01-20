@@ -22,60 +22,19 @@
 
 # CHANGELOG
 
+    2020/01/20
+    Version: 3.2.3
+    Fixed custom label bug.
+
+    2020/01/19
+    Version: 3.2.3
+    Remove invalid proxy server website method.
+    Add emoji module to process unicode 'U+' emoji.
+
     2020/01/18
     Version: 3.2.2
     Total refactor.
     Code structure optimize.
-
-    2020/01/14
-    Version: 3.1.0
-    IRA mode has been fixed.
-
-    2019/11/17
-    Today, two months later, I was in a whim, using selenium according to the recommendations on the Internet.
-    To simulate landing, bypass the recaptcha problem.
-    R18 ranking page crawling has been restored.
-    The IRA mode can't find the author information when parsing the page,
-    it is estimated that the page layout of the website has been modified, That problem has not been solved yet.
-    Notice:
-    First you need to use the chrome browser to log in to the pixiv website so that the cookie is recorded.
-    Second configure your chrome user-data path yourself(dataload.py L130).
-    The first use will open webdriver to save the cookie to the local, 
-    and then read it as long as the .pixiv_cookies.txt file exists.
-
-    2019/09/14
-    After testing the pixiv website does use the recaptcha method to block the crawler, 
-    the logic is as follows: When you request the login page, the server will call 
-    recaptcha-javascript to dynamically generate a recpatcha code, you receive the code 
-    and then encapsulate it into the request header and pass it back to the server. 
-    If they are consistent, the login is successful.
-    Otherwise, you must perform recpatcha image verification.
-
-    2019/08/24
-    Confirmed that the Pixiv website uses the reCAPTCHA method to intercept the crawler robot.
-
-    2019/08/22
-    Today after several tests, the root cause of the failure of 
-    the crawler RTN-R18 mode and IRA mode was found: the simulated login failed.
-    The login page responds successfully, but returning the accounts page waiting for the ID and password.
-    I will take the time to try to fix the problem this weekend.
-
-    2019/08/14
-    Today refactor comment format and API lib class and function name standard.
-
-    2019/08/02
-    After many tests, the crawler seems to have returned to the state at the end of June, 
-    that is, unable to crawl the R18 page and the artist's personal work page.
-    Based on the status quo and the past events (0717 incident), 
-    I decided not to modify the crawler core business logic for the time being, 
-    and wait for 5~6 days before testing.
-
-    2019/07/17
-    I am sorry to inform you that the announcement on June 30th 
-    stated that the Pixiv website has adopted a new anti-crawl mechanism to counter this project. 
-    THIS INFORMATION IS FAKE. 
-    The Pixiv website should be purely internal maintenance. 
-    After today's test, THE PROJECT STILL WORKING FINE.
 
 # PLATFORM
 
@@ -87,7 +46,7 @@
 * [selenium](https://github.com/SeleniumHQ/selenium)
 * [retrying](https://github.com/rholder/retrying)
 * [Pillow](https://github.com/python-pillow/Pillow)
-* [prettytable](https://pypi.org/project/PrettyTable/)
+* [prettytable](https://pypi.org/project/PrettyTable)
 * [pycryptodome](https://github.com/Legrandin/pycryptodome)
 
 # RUN
@@ -180,11 +139,6 @@
     
     If your test network environment has been dns-polluted, I suggest you 
     fix your PC dns-server to a pure server or get a proxy server
-    
-    IRA mode you need input that illuster id, not image id
-    crawler log image will rename to array number + image id, 
-    you can use this id to find original image with URL:
-    https://www.pixiv.net/member_illust.php?mode=medium&illust_id=<your known id>
 
     Version 2.7.8 is the last batch download solution 
     that loads the main-page for the Pixiv website's old static HTML page.
@@ -197,10 +151,3 @@
 
     If you want to optimze CPU and memory usage, you can use cProfile tool to 
     analysis object usage and use module gc to collecte garbage.
-
-    If the system memory is very low, 
-    even the [SYSTEM_MAX_THREADS(setting in dataload.py L42)] threads of the basic settings 
-    can not be created, then the program will be stuck for a period of time 
-    and finally report an error.
-    In order to ensure the successful operation of the program, 
-    please be sure to leave more than 2G free memory.

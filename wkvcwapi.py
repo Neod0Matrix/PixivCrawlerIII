@@ -12,7 +12,7 @@
 # Write all universal function into a class and package them
 
 from __future__ import print_function
-import urllib.request, urllib.parse, urllib.error, http.cookiejar   # crawler main modules
+import urllib.request, urllib.parse, urllib.error, http.cookiejar
 import json
 from retrying import retry          # timeout auto retry decorator
 import threading                    # multi-thread
@@ -37,7 +37,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2020 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 3.2.2 LTE                                                                                      |
+    |       Version: 3.2.3 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -75,7 +75,6 @@ class WkvCwApi(object):
         urllib.request.install_opener(self.opener)
 
         # class inside global variable
-        self.proxy_hasrun_flag      = False
         self.alivethread_counter    = 0
         self.ir_mode                = ir_mode
 
@@ -95,12 +94,12 @@ class WkvCwApi(object):
         passwd_cipher = AES.new(dl.AES_SECRET_KEY, AES.MODE_CFB, generate_aes_iv_param)
         passwd_encrypto = generate_aes_iv_param + passwd_cipher.encrypt(passwd.encode('utf-8'))
 
-        write_aes_file = open(aes_file_path, 'wb')
+        aes_fd = open(aes_file_path, 'wb')
         # write bin value to file with b'\n' to wrap
-        write_aes_file.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
-        write_aes_file.write(username_encrypto + b'\n')         # row 2 is username
-        write_aes_file.write(passwd_encrypto + b'\n')           # row 3 is password
-        write_aes_file.close()
+        aes_fd.write(generate_aes_iv_param + b'\n')     # row 1 is iv param
+        aes_fd.write(username_encrypto + b'\n')         # row 2 is username
+        aes_fd.write(passwd_encrypto + b'\n')           # row 3 is password
+        aes_fd.close()
 
     def _login_preload(self, aes_file_path):
         """Get user input login info and storage into aes file
@@ -284,54 +283,6 @@ class WkvCwApi(object):
             self.wca_quick_sort(array, l, q - 1)
             self.wca_quick_sort(array, q + 1, r)
 
-    def _getproxyserver(self, log_path):
-        """Catch a proxy server
-
-        When crwaler crawl many times website forbidden host ip
-        If you use VPS as a proxy server, you can set the cost proxy port directly
-        Example: 127.0.0.1:1080
-        :param log_path: log save path
-        :return:        proxy server dict, add to opener
-        """
-        req_ps_url = dl.PROXYSERVER_URL
-        ps_headers = dl.ua_headers_windows    # select Windows version user agent
-        request = urllib.request.Request(url=req_ps_url,
-                                        headers=ps_headers)
-        try:
-            response = urllib.request.urlopen(request, timeout=30)
-        except Exception as e:
-            log_content = dl.BR_CB('get proxy response failed, error: %s' % str(e))
-            self.wca_logprowork(log_path, log_content)
-            return dl.PUB_E_RESPONSE_FAIL
-
-        if response.getcode() == dl.HTTP_OK_CODE_200:
-            log_content = 'Crawl proxy successed'
-        else:
-            log_content = dl.BR_CB('crawl proxy not ok, return code: %d' % response.getcode())
-        self.wca_logprowork(log_path, log_content)
-
-        web_src = response.read().decode("UTF-8", "ignore")
-        proxy_pattern = re.compile(dl.PROXYIP_REGEX, re.S)
-        proxy_rawwords = re.findall(proxy_pattern, web_src)
-
-        # catch key words in web source
-        proxy_iplist = []
-        for i in range(len(proxy_rawwords)):
-            # base on list content set this judge way
-            if i % 5 == 0 and proxy_rawwords[i].isdigit():
-                proxy_ip = dl.PROXYIP_STR_BUILD(i, proxy_rawwords)  # build proxy ip string
-                proxy_iplist.append(proxy_ip)
-            else:
-                pass
-
-        # random choose a proxy ip with its port and build the dict format data
-        proxy_choose = random.choice(proxy_iplist)
-        proxyserver_dict = {'http': proxy_choose}
-        log_content = dl.BY_CB('choose proxy server: ' + proxy_choose)
-        self.wca_logprowork(log_path, log_content)
-
-        return proxyserver_dict
-
     def wca_url_request_handler(self, target_url, post_data, timeout, 
                                 target_page_word, log_path):
         """Universal URL request format handler
@@ -354,7 +305,7 @@ class WkvCwApi(object):
             self.wca_logprowork(log_path, log_content)
             return dl.PUB_E_RESPONSE_FAIL
 
-        if response.getcode() == dl.HTTP_OK_CODE_200:
+        if response.getcode() == dl.HTTP_REP_OK_CODE:
             log_content = target_page_word + ' response ok'
         else:
             log_content = dl.BR_CB(target_page_word + ' return code %d' % response.getcode())
@@ -377,12 +328,11 @@ class WkvCwApi(object):
                                                 timeout=30, 
                                                 target_page_word='POST-key',
                                                 log_path=None)
-        for item in self.cookie:
-            dl.LT_PRINT('Cookie: [name:' + item.name + ' | value:' + item.value + ']')
 
         web_src = response.read().decode("UTF-8", "ignore")
         # debug recaptcha v3 token use
         ## self.wca_save_test_html('post-key', 'E:\\OperationCache', web_src)
+
         post_pattern = re.compile(dl.POSTKEY_REGEX, re.S)
         postkey = re.findall(post_pattern, web_src)[0]
         dl.LT_PRINT('get post-key: ' + postkey)
@@ -528,7 +478,7 @@ class WkvCwApi(object):
         for item in img_whole_info:
             tmp_thumbnail = re.findall(datasrc_pattern, item)
             if not tmp_thumbnail:
-                dl.LT_PRINT(dl.BR_CB('span sizer regex cannot get valid info, return'))
+                dl.LT_PRINT(dl.BR_CB('span sizer regex cannot get valid info'))
                 return dl.PUB_E_FAIL
 
             thumbnail = tmp_thumbnail[0]
@@ -592,38 +542,18 @@ class WkvCwApi(object):
             ## log_content = "Error type: " + str(e)
             ## self.wca_logprowork(logpath, log_content)
             # http error 404, change image type
-            if e.code == dl.HTTP_NOTFOUND_CODE_404:
+            if e.code == dl.HTTP_REP_404_CODE:
                 img_datatype = 'jpg'                    # change data type
                 jpg_img_url = url[0:-3] + img_datatype  # replace url content
                 try:
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
-                except urllib.error.HTTPError as e:
-                    ## log_content = "Error type: " + str(e)
-                    ## self.wca_logprowork(logpath, log_content)
-                    # not 404 change proxy, cause request server forbidden
-                    if e.code != dl.HTTP_NOTFOUND_CODE_404:
-                        log_content = dl.BY_CB("Add proxy server in request")
-                        self.wca_logprowork(log_path, log_content)
-                        # preload a proxy handler, just run once
-                        if self.proxy_hasrun_flag == False:
-                            self.proxy_hasrun_flag = True
-                            proxy = self._getproxyserver(log_path)
-                            proxy_handler = urllib.request.ProxyHandler(proxy)
-                        # with proxy request again
-                        self.opener = urllib.request.build_opener(proxy_handler)
-                        response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
-                    else:
-                        pass
-            # if timeout, use proxy reset request
+                except urllib.error.HTTPError:
+                    pass                                # might raise 404, don't mind
             else:
-                log_content = dl.BY_CB("Add proxy server in request")
-                self.wca_logprowork(log_path, log_content)
-                # with proxy request again
-                self.opener = urllib.request.build_opener(proxy_handler)
-                response = self.opener.open(fullurl=url, timeout=timeout)
+                pass
 
         # save image bin data to files
-        if response.getcode() == dl.HTTP_OK_CODE_200:
+        if response.getcode() == dl.HTTP_REP_OK_CODE:
             img_bindata = response.read()
             source_size = round(float(len(img_bindata) / 1024), 2)
             WkvCwApi._datastream_pool += source_size        # multi-thread, no resource lock, it must use class name to call
@@ -775,9 +705,9 @@ class WkvCwApi(object):
                 # set false, then if you exit one thread, others threads will not end
                 # set true, quit one is quit all
                 sub_thread.setDaemon(True)
-                # if create this sub-thread failed, return from function
+                # if create this sub-thread failed from function
                 if sub_thread.create() == dl.PUB_E_FAIL:
-                    log_content = dl.BR_CB('create a new sub-thread failed, return')
+                    log_content = dl.BR_CB('create a new sub-thread failed')
                     print(log_content)
                     return dl.PUB_E_FAIL
 

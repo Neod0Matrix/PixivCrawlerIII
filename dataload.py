@@ -18,7 +18,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.2.2'
+VERSION             = '3.2.3'
 
 # operation result status code
 PUB_E_OK            = 0
@@ -85,8 +85,8 @@ def crawler_logo():
     """
     LT_PRINT(HL_CR(LABORATORY + ' ' + ORGANIZATION + ' technology support | Code by ' + ORGANIZATION + '@' + DEVELOPER))
 
-SYSTEM_MAX_THREADS = 400                # setting system can contain max sub-threads
-DEFAULT_PURE_PROXYDNS = '8.8.8.8:53'    # default pure dns by Google
+SYSTEM_MAX_THREADS      = 400           # setting system can contain max sub-threads
+DEFAULT_PURE_PROXYDNS   = '8.8.8.8:53'  # default pure dns by Google
 
 def platform_setting():
     """Get OS platform to set folder format
@@ -122,119 +122,114 @@ _ymd = '%d-%d-%d' % (_rtc[0], _rtc[1], _rtc[2])
 AES_SECRET_KEY = 'secretkeyfrommat'.encode('utf-8')     # 16 bytes secret key
 
 # universal path
-LOGIN_AES_INI_PATH = os.getcwd() + '/.aes_crypto_login.ini' # storage login info AES crypto file, default hide
-LOG_NAME = '/CrawlerWork[%s].log' % _ymd
-HTML_NAME = '/CrawlerWork[%s].html' % _ymd
-RANK_DIR = g_dl_work_dir + 'rankingtop_%s/' % _ymd
-# rankingtop use path
-LOG_PATH = RANK_DIR + LOG_NAME
-HTML_PATH = RANK_DIR + HTML_NAME
+LOGIN_AES_INI_PATH  = os.getcwd() + '/.aes_crypto_login.ini'
+LOG_NAME            = '/CrawlerWork[%s].log' % _ymd
+HTML_NAME           = '/CrawlerWork[%s].html' % _ymd
+RANK_DIR            = g_dl_work_dir + 'rankingtop_%s/' % _ymd
+LOG_PATH            = RANK_DIR + LOG_NAME
+HTML_PATH           = RANK_DIR + HTML_NAME
 
 # selenium method use
-chrome_user_data_dir = 'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
+chrome_user_data_dir    = 'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
 local_cache_cookie_path = os.getcwd() + '/.pixiv_cookies.txt'
 
 # login and request image https proxy
-# website may update or change some url address
-WWW_HOST_URL = "www.pixiv.net"
-HTTPS_HOST_URL = 'https://www.pixiv.net/'
-ACCOUNTS_URL = "accounts.pixiv.net"
-LOGIN_POSTKEY_URL = 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index'
-LOGIN_REQUEST_API_URL = "https://accounts.pixiv.net/api/login?lang=zh"
-_LOGIN_REQUEST_URL = "https://accounts.pixiv.net"
-_LOGIN_REQUEST_REF_URL = "https://accounts.pixiv.net/login"
+WWW_HOST_URL            = "www.pixiv.net"
+HTTPS_HOST_URL          = 'https://www.pixiv.net/'
+ACCOUNTS_URL            = "accounts.pixiv.net"
+LOGIN_POSTKEY_URL       = 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index'
+LOGIN_REQUEST_API_URL   = "https://accounts.pixiv.net/api/login?lang=zh"
+_LOGIN_REQUEST_URL      = "https://accounts.pixiv.net"
+_LOGIN_REQUEST_REF_URL  = "https://accounts.pixiv.net/login"
 
 # request universal original image constant words
-ORIGINAL_IMAGE_HEAD = 'https://i.pximg.net/img-original/img'
-ORIGINAL_IMAGE_TAIL = lambda px: '_p%d.png' % px
+ORIGINAL_IMAGE_HEAD     = 'https://i.pximg.net/img-original/img'
+ORIGINAL_IMAGE_TAIL     = lambda px: '_p%d.png' % px
 
-# page request http proxy
-PROXYSERVER_URL = 'http://www.xicidaili.com/nn/'
+# ranking top mode url and word
+RANKING_URL             = 'http://www.pixiv.net/ranking.php?mode='
+R18_WORD                = '_r18'
+DAILY_WORD              = 'daily'
+WEEKLY_WORD             = 'weekly'
+MONTHLY_WORD            = 'monthly'
+MALE_WORD               = 'male'
+FEMALE_WORD             = 'female'
+MALE_R18_WORD           = 'male_r18'
+FEMALE_R18_WORD         = 'female_r18'
+R18_REF_WORD            = '&ref=rn-h-r18-3'                # debug use, browser tool has catched it
+RANK_DAILY_URL          = RANKING_URL + DAILY_WORD
+RANK_DAILY_MALE_URL     = RANKING_URL + MALE_WORD
+RANK_DAILY_FEMALE_URL   = RANKING_URL + FEMALE_WORD
+RANK_WEEKLY_URL         = RANKING_URL + WEEKLY_WORD
+RANK_MONTHLY_URL        = RANKING_URL + MONTHLY_WORD
+RANK_DAILY_R18_URL      = RANK_DAILY_URL + R18_WORD
+RANK_DAILY_MALE_R18_URL = RANKING_URL + MALE_R18_WORD
+RANK_DAILY_FEMALE_R18_URL = RANKING_URL + FEMALE_R18_WORD
+RANK_WEEKLY_R18_URL     = RANK_WEEKLY_URL + R18_WORD
 
-# ranking top url and word
-RANKING_URL = 'http://www.pixiv.net/ranking.php?mode='
-R18_WORD = '_r18'
-DAILY_WORD = 'daily'
-WEEKLY_WORD = 'weekly'
-MONTHLY_WORD = 'monthly'
-MALE_WORD = 'male'
-FEMALE_WORD = 'female'
-MALE_R18_WORD = 'male_r18'
-FEMALE_R18_WORD = 'female_r18'
-R18_REF_WORD = '&ref=rn-h-r18-3'                # debug use, browser tool has catched it
-DAILY_RANKING_URL = RANKING_URL + DAILY_WORD
-DAILY_MALE_RANKING_URL = RANKING_URL + MALE_WORD
-DAILY_FEMALE_RANKING_URL = RANKING_URL + FEMALE_WORD
-WEEKLY_RANKING_URL = RANKING_URL + WEEKLY_WORD
-MONTHLY_RANKING_URL = RANKING_URL + MONTHLY_WORD
-DAILY_RANKING_R18_URL = DAILY_RANKING_URL + R18_WORD
-DAILY_MALE_RANKING_R18_URL = RANKING_URL + MALE_R18_WORD
-DAILY_FEMALE_RANKING_R18_URL = RANKING_URL + FEMALE_R18_WORD
-WEEKLY_RANKING_R18_URL = WEEKLY_RANKING_URL + R18_WORD
-BASEPAGE_URL = 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id='
-USERS_ARTWORKS_URL = lambda iid: 'http://pixiv.net/users/%s/artworks' % iid
-AJAX_ALL_URL = lambda aid: 'http://www.pixiv.net/ajax/user/%s/profile/all' % aid
-IDS_UNIT = lambda iid: 'ids%%5B%%5D=%s&' % iid      # ids[]=
-ALLREPOINFO_URL = lambda aid, ids_sym, is_first_page: \
+# base artwork mainpage get origin image url
+BASEPAGE_URL            = lambda aid: 'http://pixiv.net/artworks/%s' % aid
+USERS_ARTWORKS_URL      = lambda iid: 'http://pixiv.net/users/%s/artworks' % iid
+AJAX_ALL_URL            = lambda aid: 'http://www.pixiv.net/ajax/user/%s/profile/all' % aid
+IDS_UNIT                = lambda iid: 'ids%%5B%%5D=%s&' % iid       # unsequence "ids[]="
+ALLREPOINFO_URL         = lambda aid, ids_sym, is_first_page: \
     'http://www.pixiv.net/ajax/user/%s/profile/illusts?%swork_category=illustManga&is_first_page=%d' % (aid, ids_sym, is_first_page)
-ONE_PAGE_COMMIT = 48
-JUDGE_NOGIF_WORD = '_p0_master1200.jpg'             # don't download gif format
-PROXYIP_STR_BUILD = lambda ix, list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
+
+ONE_PAGE_COMMIT         = 48
+JUDGE_NOGIF_WORD        = '_p0_master1200.jpg'              # ignore gif
+PROXYIP_STR_BUILD       = lambda ix, list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
 
 # http status code
-HTTP_OK_CODE_200 = 200
-HTTP_REQUESTFAILED_CODE_403 = 403
-HTTP_NOTFOUND_CODE_404 = 404
+HTTP_REP_OK_CODE        = 200
+HTTP_REP_403_CODE       = 403
+HTTP_REP_404_CODE       = 404
+
 # login headers info dict
 # here is an example of two different operating systems for headers
 # but in fact, the crawler can pretend to be the headers of any operating system
-_USERAGENT_LINUX = ("Mozilla/5.0 (X11; Linux x86_64) " 
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " 
-                    "Chrome/56.0.2924.87 Safari/537.36")
-_USERAGENT_WIN = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/75.0.3770.142 Safari/537.36")
-_HEADERS_ACCEPT = "application/json"
-_HEADERS_ACCEPT2 = ("text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    "image/webp,image/apng,*/*;q=0.8")
+_USERAGENT_LINUX        = ("Mozilla/5.0 (X11; Linux x86_64) " 
+                        "AppleWebKit/537.36 (KHTML, like Gecko) " 
+                        "Chrome/56.0.2924.87 Safari/537.36")
+_USERAGENT_WIN          = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/75.0.3770.142 Safari/537.36")
+_HEADERS_ACCEPT         = "application/json"
+_HEADERS_ACCEPT2        = ("text/html,application/xhtml+xml,application/xml;q=0.9,"
+                        "image/webp,image/apng,*/*;q=0.8")
 _HEADERS_ACCEPT_ENCODING = "gzip, deflate, br"
 _HEADERS_ACCEPT_ENCODING2 = "br"   # request speed slowly, but no error
 ## _HEADERS_ACCEPT_LANGUAGE = "en-US,en;q=0.8,zh-TW;q=0.6,zh;q=0.4,zh-CN;q=0.2"
 _HEADERS_ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9"
-_HEADERS_CONTENT_TYPE = "application/x-www-form-urlencoded"
-_HEADERS_CONNECTION = 'keep-alive'
+_HEADERS_CONTENT_TYPE   = "application/x-www-form-urlencoded"
+_HEADERS_CONNECTION     = 'keep-alive'
 
 # some regex words depend on website url or webpage source
 # if website update or change them, regex need to be updated 
-POSTKEY_REGEX = 'key".*?"(.*?)"'
+POSTKEY_REGEX           = 'key".*?"(.*?)"'
 # group match info
-RANKING_INFO_REGEX = (
-    'data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
-    '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
-NUMBER_REGEX = '\d+\.?\d*'                      # general number match
-DATASRC_REGEX = 'data-src="(.*?)"'
-ILLUST_NAME_REGEX = lambda iid: '"userId":"%s","name":"(.*?)","image"' % iid
-AJAX_ALL_IDLIST_REGEX = '"(.*?)":null'
-PAGE_REQUEST_SYM_REGEX = '"error":(.*?),'
-PAGE_TARGET_INFO_REGEX = '"id":"(.*?)","title":"(.*?)"(.*?)"url":"(.*?)_square1200.jpg"(.*?)"pageCount":(.*?),'
-ILLUST_TYPE_REGEX = '"illustType":(.*?),'
-SPAN_REGEX = '<span>(.*?)</span>'
-RANKING_SECTION_REGEX = '<section id=(.*?)</section>'
-PROXYIP_REGEX = '<td>(.*?)</td>'
-
+RANKING_INFO_REGEX      = ('data-rank-text="(.*?)" data-title="(.*?)" data-user-name="(.*?)"'
+                            '.*?data-id="(.*?)".*?data-user-id="(.*?)"')
+NUMBER_REGEX            = '\d+\.?\d*'                      # general number match
+DATASRC_REGEX           = 'data-src="(.*?)"'
+ILLUST_NAME_REGEX       = lambda iid: '"userId":"%s","name":"(.*?)","image"' % iid
+AJAX_ALL_IDLIST_REGEX   = '"(.*?)":null'
+PAGE_REQUEST_SYM_REGEX  = '"error":(.*?),'
+PAGE_TGT_INFO_SQUARE_REGEX = '"id":"(.*?)","title":"(.*?)"(.*?)"url":"(.*?)1200.jpg"(.*?)"pageCount":(.*?),'    # support square & custom label
+ILLUST_TYPE_REGEX       = '"illustType":(.*?),'
+SPAN_REGEX              = '<span>(.*?)</span>'
+RANKING_SECTION_REGEX   = '<section id=(.*?)</section>'
+LOGIN_INFO_REGEX        = 'error":(.*?),"message'
 #### code by CSDN@orangleliu
-EMOJI_REGEX = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
-    u"(\ud83c[\udf00-\uffff])|"                 # symbols & pictographs (1 of 2)
-    u"(\ud83d[\u0000-\uddff])|"                 # symbols & pictographs (2 of 2)
-    u"(\ud83d[\ude80-\udeff])|"                 # transport & map symbols
-    u"(\ud83c[\udde0-\uddff])"                  # flags (iOS)
-    "+")
-LOGIN_INFO_REGEX = 'error":(.*?),"message'
+EMOJI_REGEX             = (u"(\ud83d[\ude00-\ude4f])|"      # emoticons
+                        u"(\ud83c[\udf00-\uffff])|"         # symbols & pictographs (1 of 2)
+                        u"(\ud83d[\u0000-\uddff])|"         # symbols & pictographs (2 of 2)
+                        u"(\ud83d[\ude80-\udeff])|"         # transport & map symbols
+                        u"(\ud83c[\udde0-\uddff])"          # flags (iOS)
+                        "+")
 
-# strange encode
-emoji_pattern = re.compile(EMOJI_REGEX, re.S)
-REPL_EMOJI = lambda _str: emoji_pattern.sub(r'[EMOJI]', _str)
-UNICODE_ESCAPE = lambda _raw_str: _raw_str.encode('utf-8').decode('unicode_escape')
+emoji_pattern           = re.compile(EMOJI_REGEX, re.S)
+EMOJI_REPLACE           = lambda _str: emoji_pattern.sub('[EMOJI]', _str)
+UNICODE_ESCAPE          = lambda _raw_str: _raw_str.encode('utf-8').decode('unicode_escape')
 
 def dict2list (input_dict):
     """Change dict data-type to list

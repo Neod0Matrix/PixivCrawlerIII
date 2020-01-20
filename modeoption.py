@@ -12,7 +12,7 @@
 # Provide modes setting target object
 
 import re
-from prettytable import PrettyTable     # info list package table module
+from prettytable import PrettyTable
 import dataload as dl
 
 class RankingTop(object):
@@ -114,23 +114,23 @@ class RankingTop(object):
 
             if dwm_opt == dl.RANK_DAILY:
                 if sex_opt == dl.SEX_NORMAL:
-                    req_url = dl.DAILY_RANKING_URL
+                    req_url = dl.RANK_DAILY_URL
                     rank_word = dl.DAILY_WORD
                 elif sex_opt == dl.SEX_MALE:
-                    req_url = dl.DAILY_MALE_RANKING_URL
+                    req_url = dl.RANK_DAILY_MALE_URL
                     rank_word = dl.MALE_WORD
                 elif sex_opt == dl.SEX_FEMALE:
-                    req_url = dl.DAILY_FEMALE_RANKING_URL
+                    req_url = dl.RANK_DAILY_FEMALE_URL
                     rank_word = dl.FEMALE_WORD
                 else:
                     dl.nolog_raise_arguerr()
                     return dl.PUB_E_PARAM_FAIL
 
             elif dwm_opt == dl.RANK_WEEKLY:
-                req_url = dl.WEEKLY_RANKING_URL
+                req_url = dl.RANK_WEEKLY_URL
                 rank_word = dl.WEEKLY_WORD
             elif dwm_opt == dl.RANK_MONTHLY:
-                req_url = dl.MONTHLY_RANKING_URL
+                req_url = dl.RANK_MONTHLY_URL
                 rank_word = dl.MONTHLY_WORD
             else:
                 dl.nolog_raise_arguerr()
@@ -148,20 +148,20 @@ class RankingTop(object):
 
             if dwm_opt == dl.RANK_DAILY:
                 if sex_opt == dl.SEX_NORMAL:
-                    req_url = dl.DAILY_RANKING_R18_URL
+                    req_url = dl.RANK_DAILY_R18_URL
                     rank_word = dl.DAILY_WORD
                 elif sex_opt == dl.SEX_MALE:
-                    req_url = dl.DAILY_MALE_RANKING_R18_URL
+                    req_url = dl.RANK_DAILY_MALE_R18_URL
                     rank_word = dl.MALE_WORD
                 elif sex_opt == dl.SEX_FEMALE:
-                    req_url = dl.DAILY_FEMALE_RANKING_R18_URL
+                    req_url = dl.RANK_DAILY_FEMALE_R18_URL
                     rank_word = dl.FEMALE_WORD
                 else:
                     dl.nolog_raise_arguerr()
                     return dl.PUB_E_PARAM_FAIL
 
             elif dwm_opt == dl.RANK_WEEKLY:
-                req_url = dl.WEEKLY_RANKING_R18_URL
+                req_url = dl.RANK_WEEKLY_R18_URL
                 rank_word = dl.WEEKLY_WORD
             else:
                 dl.nolog_raise_arguerr()
@@ -220,11 +220,10 @@ class RankingTop(object):
             "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_info_lst[:img_nbr]):
             # basepage will be a headers referer
-            self.rtn_basepages.append(dl.BASEPAGE_URL + i[3])
+            self.rtn_basepages.append(dl.BASEPAGE_URL(i[3]))
             image_info_table.add_row([(k + 1), i[3], i[1], 
                 self.rtn_target_urls[k][57:-4], i[4], i[2]])
-        # save table without time header word
-        self.wkv_cw_api.wca_logprowork(self.logpath, str(image_info_table), 'N')
+        self.wkv_cw_api.wca_logprowork(self.logpath, str(image_info_table), 'N')    # table without timestamp
 
         return dl.PUB_E_OK
 
@@ -306,7 +305,7 @@ class RepertoAll(object):
         ajax_idlist = re.findall(ajax_idlist_pattern, web_src)
         # ajax id list may be empty
         if not ajax_idlist:
-            log_content = dl.BR_CB('regex get ajax id list fail, return')
+            log_content = dl.BR_CB('regex get ajax id list fail')
             self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return dl.PUB_E_REGEX_FAIL
 
@@ -318,7 +317,7 @@ class RepertoAll(object):
             if one_pure_id:
                 self.ira_pure_idlist.append(one_pure_id[0])
             else:
-                log_content = dl.BR_CB('get ajax page valid info failed, return')
+                log_content = dl.BR_CB('get ajax page valid info failed')
                 self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return dl.PUB_E_RESPONSE_FAIL
 
@@ -347,7 +346,7 @@ class RepertoAll(object):
         author_info = re.findall(illust_name_pattern, web_src)
         # if login failed, catch illust man page failed
         if not author_info:
-            dl.LT_PRINT(dl.BR_CB("Regex parsing result error, no author info, return"))
+            dl.LT_PRINT(dl.BR_CB("Regex parsing result error, no author info"))
             return dl.PUB_E_REGEX_FAIL
         else:
             self.ira_author_name = author_info[0]
@@ -369,67 +368,64 @@ class RepertoAll(object):
                                                         target_page_word='Data group %d' % index,
                                                         log_path=self.logpath)
 
-        # catch need info from web source
+        # 20181002 event effect: cannot get web source, this web_src is server return raw json data
         web_src = response.read().decode("UTF-8", "ignore")
+        ## self.wkv_cw_api.wca_save_test_html('all-repo', 'E:\\OperationCache', web_src)
+
         error_status_pattern = re.compile(dl.PAGE_REQUEST_SYM_REGEX, re.S)
         error_status_list = re.findall(error_status_pattern, web_src)
-        # check error status list is empty or not
         if not error_status_list:
-            log_content = dl.BR_CB('regex get error status failed, return')
+            log_content = dl.BR_CB('regex get error status failed')
             self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return dl.PUB_E_REGEX_FAIL
 
         error_status = error_status_list[0]
-        # page display error is "true" status
         if error_status == 'true':
-            log_content = dl.BR_CB('data group %d response failed, return' % index)
+            log_content = dl.BR_CB('data group %d response failed' % index)
             self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return dl.PUB_E_RESPONSE_FAIL
 
         # crawl one page items info
-        page_target_pattern = re.compile(dl.PAGE_TARGET_INFO_REGEX, re.S)
-        page_tgt_info_lst = re.findall(page_target_pattern, web_src)
-        # check tuple result is empty or not
-        if not page_tgt_info_lst:
-            log_content = dl.BR_CB('regex get target page info failed, return')
+        page_target_pattern = re.compile(dl.PAGE_TGT_INFO_SQUARE_REGEX, re.S)
+        page_tgt_info_tpe = re.findall(page_target_pattern, web_src)
+        if not page_tgt_info_tpe:
+            log_content = dl.BR_CB('regex get target page info failed')
             return dl.PUB_E_REGEX_FAIL
 
         # tuple transform to list
         tmp_target_info_list = []
-        for i in range(len(page_tgt_info_lst)):
+        for i in range(len(page_tgt_info_tpe)):
             tmp_target_info_list.append([])
-            for j in range(len(page_tgt_info_lst[i])):
-                tmp_target_info_list[i] = list(page_tgt_info_lst[i])
-        del page_tgt_info_lst
-        # judge illust type, if it's gif(type symbol: 2), delete this item
-        page_tgt_info_lst = []
+            for j in range(len(page_tgt_info_tpe[i])):
+                tmp_target_info_list[i] = list(page_tgt_info_tpe[i])
+        del page_tgt_info_tpe
+
+        tgt_info_comp_works = []
         illust_type_pattern = re.compile(dl.ILLUST_TYPE_REGEX, re.S)
         for k in range(len(tmp_target_info_list)):
             illust_type_sym = re.findall(illust_type_pattern, tmp_target_info_list[k][2])
-            # regex process result error
             if len(illust_type_sym) == 0:
-                log_content = dl.BR_CB('illust type process error, return')
+                log_content = dl.BR_CB('illust type process error')
                 self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return dl.PUB_E_FAIL
 
-            # jump gif out
             if illust_type_sym[0] == '2':
                 continue
+            # delete gif
             del tmp_target_info_list[k][2]
             del tmp_target_info_list[k][-2]
-            page_tgt_info_lst.append(tmp_target_info_list[k])
+            tgt_info_comp_works.append(tmp_target_info_list[k])
         del tmp_target_info_list
 
-        return page_tgt_info_lst
+        return tgt_info_comp_works
 
     def ira_crawl_allpage_target(self):
         """Package all gather urls
 
         :return:            status code
         """
-        # calcus nbr need request count
-        # each page at most ONE_AUTHOR_MAINPAGE_IMGCOUNT(20181003:48) images
         require_page_cnt = 0
+
         if self.ira_max_cnt <= dl.ONE_PAGE_COMMIT:
             require_page_cnt = 1
         else:
@@ -438,7 +434,7 @@ class RepertoAll(object):
             if self.ira_max_cnt % dl.ONE_PAGE_COMMIT != 0:
                 require_page_cnt += 1
 
-        # build request url of one page 
+        # build request url of one page
         iid_string_tail = ''
         page_url_array = []
         for ix in range(require_page_cnt):
@@ -466,34 +462,34 @@ class RepertoAll(object):
 
         repo_target_all_list = []
         for i in range(len(tmp_receive_list)):
-            tmp_receive_list[i][1] = dl.UNICODE_ESCAPE(tmp_receive_list[i][1])  # tasnform title '\\uxxx' to unicode
-            tmp_receive_list[i][1] = dl.REPL_EMOJI(tmp_receive_list[i][1])      # replace damn emoji
+            tmp_receive_list[i][1] = dl.UNICODE_ESCAPE(tmp_receive_list[i][1])
+            tmp_receive_list[i][1] = dl.EMOJI_REPLACE(tmp_receive_list[i][1])
             # build original url without image format
             tmp = tmp_receive_list[i][2]
-            tmp = tmp.replace('\\', '')                                         # delete character '\'
-            tmp_receive_list[i][2] = dl.ORIGINAL_IMAGE_HEAD + tmp[50:] + '.png'
-            repo_target_all_list.append(tmp_receive_list[i])                    # move original item to target list
-            # use page count number build total url
+            tmp = tmp.replace('\\', '')
+            tmp_receive_list[i][2] = dl.ORIGINAL_IMAGE_HEAD + tmp[-39:-7] + '.png'  # first original url
+            repo_target_all_list.append(tmp_receive_list[i])
+
+            # add other original image url by pageCount
             tmp_page_count_str = tmp_receive_list[i][3]
             if tmp_page_count_str.isdigit():
                 index_page_count = int(tmp_page_count_str)
                 if index_page_count != 1:
-                    # add others items into list
-                    for px in range(index_page_count - 1):
+                    for px in range(index_page_count):
                         insert_item = [tmp_receive_list[i][0], 
-                            tmp_receive_list[i][1], 
-                            tmp_receive_list[i][2][:-5] + str(px + 1) + '.png', 
-                            tmp_receive_list[i][3]]
+                                        tmp_receive_list[i][1], 
+                                        tmp_receive_list[i][2][:-5] + str(px) + '.png', 
+                                        tmp_receive_list[i][3]]
                         repo_target_all_list.append(insert_item)
             else:
-                log_content = dl.BR_CB('page count process error!')
+                log_content = dl.BR_CB('page count process error')
                 self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
                 return dl.PUB_E_FAIL
-
         del tmp_receive_list
-        # collection target count
+
         alive_targetcnt = len(repo_target_all_list)
         require_img_nbr = 0
+
         if self.ir_mode == dl.MODE_INTERACTIVE:
             require_img_str = dl.LT_INPUT(dl.HL_CY('crawl all repo %d, whole target(s): %d, enter you want count: '
                 % (self.ira_max_cnt, alive_targetcnt)))
@@ -512,14 +508,16 @@ class RepertoAll(object):
         elif self.ir_mode == dl.MODE_SERVER:
             require_img_nbr = alive_targetcnt
             dl.LT_PRINT(dl.BY_CB('server mode auto crawl all of alive targets'))
+        else:
+            pass
 
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
-            self.ira_target_capture.append(i[2])                # put url into target capture list
-            self.ira_basepages.append(dl.BASEPAGE_URL + i[0])   # build basepage url
+            self.ira_target_capture.append(i[2])
+            self.ira_basepages.append(dl.BASEPAGE_URL(i[0]))
 
         log_content = ('illustrator: ' + self.ira_author_name + ' id: '
-            + self.user_input_id + ' require image(s): ' 
-            + str(require_img_nbr) + ', target table:')
+                        + self.user_input_id + ' require image(s): ' 
+                        + str(require_img_nbr) + ', target table:')
         self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
 
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
