@@ -64,10 +64,10 @@ class WkvCwApi(object):
     def __init__(self, ir_mode):
         """Create a class public call webpage opener with cookie
 
-        :param ir_mode:     interactive mode or server mode
         From first login save cookie and continue call
         Call this global opener must write parameter name
         Cookie, cookiehandler, opener all can inherit and call
+        :param ir_mode:     interactive mode or server mode
         """
         self.cookie                 = http.cookiejar.LWPCookieJar()
         self.cookieHandler          = urllib.request.HTTPCookieProcessor(self.cookie)
@@ -318,7 +318,7 @@ class WkvCwApi(object):
 
         Pixiv website POST login address: (see dl.LOGIN_POSTKEY_URL)
         This operation will get cookie and post-key
-        :return:            none
+        :return:            status code
         """
 
         self._login_preload(dl.LOGIN_AES_INI_PATH)
@@ -333,8 +333,11 @@ class WkvCwApi(object):
         # debug recaptcha v3 token use
         ## self.wca_save_test_html('post-key', 'E:\\OperationCache', web_src)
 
-        post_pattern = re.compile(dl.POSTKEY_REGEX, re.S)
-        postkey = re.findall(post_pattern, web_src)[0]
+        post_pattern    = re.compile(dl.POSTKEY_REGEX, re.S)
+        postkey         = re.findall(post_pattern, web_src)
+        if not postkey:
+            dl.LT_PRINT('regex parse post key failed')
+            return dl.PUB_E_REGEX_FAIL
 
         # build post-way data with order dictory structure
         post_orderdict = OrderedDict()
@@ -342,12 +345,14 @@ class WkvCwApi(object):
         post_orderdict['g_recaptcha_response']  = ""
         post_orderdict['password']              = self.passwd
         post_orderdict['pixiv_id']              = self.username
-        post_orderdict['post_key']              = postkey
+        post_orderdict['post_key']              = postkey[0]
         post_orderdict['source']                = "accounts"
         post_orderdict['ref']                   = ""
         post_orderdict['return_to']             = dl.HTTPS_HOST_URL
         post_orderdict['recaptcha_v3_token']    = ""    # google recaptcha v3 token
         self.postway_data = urllib.parse.urlencode(post_orderdict).encode("UTF-8")
+
+        return dl.PUB_E_OK
 
     @staticmethod
     def _get_chrome_cookie(cache_path, url):
@@ -406,9 +411,11 @@ class WkvCwApi(object):
 
         If login failed, program will exit here
         @@API that allows external calls
-        :return:        none
+        :return:        status code
         """
-        self._gatherpostkey()
+        if self._gatherpostkey() != dl.PUB_E_OK:
+            exit(dl.PUB_E_RESPONSE_FAIL)
+
         cookie_jar          = self._get_chrome_cookie(dl.local_cache_cookie_path, dl.HTTPS_HOST_URL)
         self.cookieHandler  = urllib.request.HTTPCookieProcessor(cookie_jar)
         self.opener         = urllib.request.build_opener(self.cookieHandler)
@@ -501,7 +508,7 @@ class WkvCwApi(object):
                     img_info_lst.append(info)
                     # only _p0 page
                     target_url = dl.ORIGINAL_IMAGE_HEAD + vaild_word + dl.ORIGINAL_IMAGE_TAIL(0)
-                    tgt_url_lst.append(target_url)  
+                    tgt_url_lst.append(target_url)
             # give up gif format, or list is empty
             else:
                 pass
@@ -520,10 +527,9 @@ class WkvCwApi(object):
         :param log_path:        log save path
         :return:                none
         """
-        # setting image save info
-        img_datatype = 'png'
-        image_name = url[57:-4]     # name artwork_id + _px
-        img_save_path = img_savepath + '/' + image_name + '.' + img_datatype
+        img_datatype    = 'png'
+        image_name      = dl.FROM_URL_GET_IMG_NAME(url)
+        img_save_path   = img_savepath + '/' + image_name + '.' + img_datatype
 
         # use opener method
         headers                 = dl.build_original_headers(basepages[index])
@@ -534,30 +540,29 @@ class WkvCwApi(object):
         self.opener.addheaders  = list_headers
         urllib.request.install_opener(self.opener)      # update install opener
 
-        # this request image step will delay much time
+        # first try default png format, if failed change to jpg
         try:
             response = self.opener.open(fullurl=url, timeout=timeout)
         except urllib.error.HTTPError as e:
-            ## log_content = "Error type: " + str(e)
-            ## self.wca_logprowork(logpath, log_content)
             # http error 404, change image type
             if e.code == dl.HTTP_REP_404_CODE:
-                img_datatype = 'jpg'                    # change data type
-                jpg_img_url = url[0:-3] + img_datatype  # replace url content
+                img_datatype = 'jpg'
+                jpg_img_url = url[:-3] + img_datatype
                 try:
                     response = self.opener.open(fullurl=jpg_img_url, timeout=timeout)
                 except urllib.error.HTTPError:
-                    pass                                # might raise 404, don't mind
+                    pass
             else:
                 pass
 
-        # save image bin data to files
         if response.getcode() == dl.HTTP_REP_OK_CODE:
             img_bindata = response.read()
             source_size = round(float(len(img_bindata) / 1024), 2)
             WkvCwApi._datastream_pool += source_size        # multi-thread, no resource lock, it must use class name to call
             with open(img_save_path, 'wb') as img:
                 img.write(img_bindata)
+        else:
+            pass
 
     class _MultiThreading(threading.Thread):
         """Overrides its run method by inheriting the Thread class
@@ -567,7 +572,6 @@ class WkvCwApi(object):
         That is less burdensome than process creation
         Only internal call
         """
-
         queue_t    = []
         event_t    = threading.Event()    # use event let excess threads wait
         lock_t     = threading.Lock()     # thread lock
@@ -599,10 +603,8 @@ class WkvCwApi(object):
                 log_content = dl.BR_CB("Error type: " + str(e))
                 WkvCwApi.wca_logprowork(log_content, self.logpath)
 
-            # thread queue adjust, lock it
-            # remove end thread from list
-            self.lock_t.acquire()
-            self.queue_t.remove(self)
+            self.lock_t.acquire()           # thread queue adjust, lock it
+            self.queue_t.remove(self)       # remove end thread from list
             if len(self.queue_t) == dl.SYSTEM_MAX_THREADS - 1:
                 self.event_t.set()
                 self.event_t.clear()
@@ -683,7 +685,6 @@ class WkvCwApi(object):
         log_content = dl.BY_CB('hit %d target(s), start download task(s)' % queueLength)
         self.wca_logprowork(log_path, log_content)
 
-        # the download process may fail
         # capture timeout and the user interrupt fault and exit the failed thread
         try:
             for i, one_url in enumerate(urls):
@@ -734,7 +735,6 @@ class WkvCwApi(object):
                         ((queueLength - (alive_thread_cnt - 1)) / queueLength), 
                         (float(WkvCwApi._datastream_pool / 1024)))
             print(dl.BY_CB(', sub-threads execute finished'))
-        # user press ctrl+c interrupt thread
         except KeyboardInterrupt:
             print(dl.BY_CB(', user interrupt a thread, exit all threads'))
 
@@ -754,8 +754,6 @@ class WkvCwApi(object):
         :return:            none
         """
         html_file = open(html_path, "w")
-        # build html background page text
-        # write a title
         html_file.writelines(
             "<!Doctype html>\r\n"
             "<html>\r\n"
@@ -786,13 +784,11 @@ class WkvCwApi(object):
                     workdir + '/' + i).size
                 i = i.replace("#", "%23")
                 ## html_file.writelines("<a href = \"%s\">"%("./" + filename))
-                # set image size
                 html_file.writelines(
                     "<img src = \"%s\" width = \"%dpx\" height = \"%dpx\" "
                     "oriWidth = %d oriHeight = %d />\r\n"
                     % ("./" + i, width * 1.0 / height * 200, 200, width, height))
                 ## html_file.writelines("</a>\r\n")
-        # end of html file
         html_file.writelines(
             "</body>\r\n"
             "</html>")

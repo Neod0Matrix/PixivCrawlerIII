@@ -179,7 +179,7 @@ ALLREPOINFO_URL         = lambda aid, ids_sym, is_first_page: \
 
 ONE_PAGE_COMMIT         = 48
 JUDGE_NOGIF_WORD        = '_p0_master1200.jpg'              # ignore gif
-PROXYIP_STR_BUILD       = lambda ix, list_: 'http://' + list_[ix - 1] + ':' + list_[ix]
+FROM_URL_GET_IMG_NAME   = lambda url: url[57:-4]            # from url get image name
 
 # http status code
 HTTP_REP_OK_CODE        = 200

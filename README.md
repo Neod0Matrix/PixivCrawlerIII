@@ -26,6 +26,7 @@
     Version: 3.2.4
     Fixed custom label bug.
     Refactor mode option structure.
+    Refactor wkv crawler api.
 
     2020/01/19
     Version: 3.2.3

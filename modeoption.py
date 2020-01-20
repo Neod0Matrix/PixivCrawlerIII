@@ -213,7 +213,7 @@ class RankingTop(object):
             ["ImageNumber", "ImageID", "ImageTitle", "ImageID+PageNumber", "AuthorID", "AuthorName"])
         for k, i in enumerate(img_info_lst[:img_nbr]):
             self.rtn_basepages.append(dl.BASEPAGE_URL(i[3]))        # url request header use
-            image_info_table.add_row([(k + 1), i[3], i[1], self.rtn_target_urls[k][57:-4], i[4], i[2]])
+            image_info_table.add_row([(k + 1), i[3], i[1], dl.FROM_URL_GET_IMG_NAME(self.rtn_target_urls[k]), i[4], i[2]])
 
         # damn emoji, maybe dump failed
         try:
@@ -512,7 +512,7 @@ class RepertoAll(object):
 
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
-            image_info_table.add_row([(k + 1), i[0], i[1], i[2][57:-4]])
+            image_info_table.add_row([(k + 1), i[0], i[1], dl.FROM_URL_GET_IMG_NAME(i[2]))
 
         # damn emoji, maybe dump failed
         try:
