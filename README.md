@@ -22,13 +22,14 @@
 
 # CHANGELOG
 
-    2020/01/20
+    2020/02/02
     Version: 3.3.2
     Fixed last month commit bug.
     Refactor main logic.
     Server IRA mode add multi-id input.
     Add class declare for mode option class init.
     Add R18G rank in RTN mode.
+    Spec file update.
 
     2020/01/20
     Version: 3.2.4
