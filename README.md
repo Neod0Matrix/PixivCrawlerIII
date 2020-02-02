@@ -22,7 +22,7 @@
 
 # CHANGELOG
 
-    2020/02/02
+    2020/02/03
     Version: 3.3.2
     Fixed last month commit bug.
     Refactor main logic.
@@ -138,7 +138,7 @@
 
 # PROBLEMS THAT MAY ARISE
 
-    May the good network status with you
+    May the good network status with you.
 
     To ensure that the display output is normal, 
     please set the console code to UTF-8, 
@@ -146,10 +146,10 @@
 
     If you use the crawler too often to request data from the server, 
     the server may return an 10060 error for you, 
-    just need to wait for a while and then try again, or use a proxy server
+    just need to wait for a while and then try again, or use a proxy server.
     
     If your test network environment has been dns-polluted, I suggest you 
-    fix your PC dns-server to a pure server or get a proxy server
+    fix your PC dns-server to a pure server or get a proxy server.
 
     Version 2.7.8 is the last batch download solution 
     that loads the main-page for the Pixiv website's old static HTML page.
@@ -162,3 +162,9 @@
 
     If you want to optimze CPU and memory usage, you can use cProfile tool to 
     analysis object usage and use module gc to collecte garbage.
+
+    Since January 2020, this project uses selenium module and chromedriver to obtain cookies 
+    to solve recaptcha authentication problem of pixiv website.
+    You need to configure and install chromedriver according to the 
+    official Selenium tutorial(https://selenium-python.readthedocs.io/index.html) 
+    in the corresponding system environment and modify its path in the dataload.py(chrome_user_data_dir).

@@ -132,7 +132,7 @@ RANK_DIR            = g_dl_work_dir + 'rankingtop_%s/' % _ymd
 LOG_PATH            = RANK_DIR + LOG_NAME
 HTML_PATH           = RANK_DIR + HTML_NAME
 
-# selenium method use
+# selenium method use, you need to replace to your own chromedriver path
 chrome_user_data_dir    = 'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
 local_cache_cookie_path = os.getcwd() + '/.pixiv_cookies.txt'
 
