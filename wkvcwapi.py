@@ -37,7 +37,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2020 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 3.2.4 LTE                                                                                      |
+    |       Version: 3.3.1 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -55,11 +55,12 @@ class WkvCwApi(object):
     |                                                                                                               |
     |       Example:                                                                                                |
     |       python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0                                                          |
-    |       python3 pixivcrawleriii.py -m 2 -i 0000000                                                              |
+    |       python3 pixivcrawleriii.py -m 2 -i 0000001,0000002,0000003                                              |
     =================================================================================================================
     """
 
-    _datastream_pool = 0        # statistics data stream, must set as global variable
+    _datastream_pool    = 0         # statistics data stream, must set as global variable
+    _login_once_flag    = False     # login once global flag
 
     def __init__(self, ir_mode):
         """Create a class public call webpage opener with cookie
@@ -112,7 +113,6 @@ class WkvCwApi(object):
         """
         if os.path.exists(aes_file_path):
             # stable read rows get username and password
-            # read bin file content to a list
             read_aes_file = open(aes_file_path, 'rb+')
             readline_cache = read_aes_file.readlines()                      # all line list
             read_aes_file.close()
@@ -128,9 +128,8 @@ class WkvCwApi(object):
             password_aes_decrypt_cipher = AES.new(dl.AES_SECRET_KEY, AES.MODE_CFB, aes_info['iv_param'])
             passwd = str(password_aes_decrypt_cipher.decrypt(aes_info['passwd'][AES.block_size:]), 'UTF-8')
 
-            # in intercative mode check username and password
             if self.ir_mode == dl.MODE_INTERACTIVE:
-                check = dl.LT_INPUT(dl.HL_CY("Read user login information configuration ok, check this: \n"
+                check = dl.LT_INPUT(dl.HL_CY("get user account info ok, check: \n"
                     "[*Username] %s\n[*Password] %s\n"
                     "Is that correct? (Y/N): " % (username, passwd)))
 
@@ -143,7 +142,6 @@ class WkvCwApi(object):
                     passwd = getpass.getpass(dl.realtime_logword(dl.base_time)
                         + dl.HL_CY('enter your account password: '))
                     self._generate_aes_info(aes_file_path, username, passwd)
-                # read info correct, jump out here
                 else:
                     pass
             elif self.ir_mode == dl.MODE_SERVER:
@@ -237,9 +235,9 @@ class WkvCwApi(object):
         is_folder_existed = os.path.exists(folder)
         if not is_folder_existed:
             os.makedirs(folder)
-            log_content = 'Create a new work folder'
+            log_content = 'create a new work folder'
         else:
-            log_content = 'Target folder has already existed'
+            log_content = 'target folder has already existed'
 
         # log file first line here
         if os.path.exists(log_path):
@@ -413,6 +411,11 @@ class WkvCwApi(object):
         @@API that allows external calls
         :return:        status code
         """
+        if WkvCwApi._login_once_flag:
+            return dl.PUB_E_OK
+        else:
+            WkvCwApi._login_once_flag = True
+
         if self._gatherpostkey() != dl.PUB_E_OK:
             exit(dl.PUB_E_RESPONSE_FAIL)
 

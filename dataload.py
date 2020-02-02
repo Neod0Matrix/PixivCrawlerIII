@@ -18,7 +18,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.2.4'
+VERSION             = '3.3.1'
 
 # operation result status code
 PUB_E_OK            = 0

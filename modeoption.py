@@ -266,11 +266,10 @@ class RepertoAll(object):
         :param ext_id:      external illustrator id
         """
         if ir_mode == dl.MODE_INTERACTIVE:
-            target_id = dl.LT_INPUT(dl.HL_CY('target crawl illustrator pixiv-id: '))
+            self.user_input_id  = dl.LT_INPUT(dl.HL_CY('target crawl illustrator pixiv-id: '))
         elif ir_mode == dl.MODE_SERVER:
-            target_id = ext_id
+            self.user_input_id  = ext_id
 
-        self.user_input_id      = target_id
         self.workdir            = workdir + 'illustrepo_' + self.user_input_id
         self.logpath            = self.workdir + log_name
         self.htmlpath           = self.workdir + html_name
@@ -305,25 +304,26 @@ class RepertoAll(object):
             self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
             return dl.PUB_E_REGEX_FAIL
 
-        # id list result may include some garbages, use number regex get pure result
         number_pattern = re.compile(dl.NUMBER_REGEX, re.S)
         for index in ajax_idlist:
-            one_pure_id = re.findall(number_pattern, index)
-            if one_pure_id:
-                self.ira_pure_idlist.append(one_pure_id[0])
+            if index.isdigit():
+                self.ira_pure_idlist.append(index)
             else:
-                log_content = dl.BR_CB('get ajax json data failed')
-                self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
-                return dl.PUB_E_RESPONSE_FAIL
+                # id list result may include some garbages, use number regex get pure result
+                one_pure_id = re.findall(number_pattern, index)
+                if one_pure_id:
+                    self.ira_pure_idlist.append(one_pure_id[0])
+                else:
+                    pass
 
-        # descending quick-sort process id list as website request format
+        # website server require the descending list of sort artwork id
         pure_idlist_nbr = []
         for index in self.ira_pure_idlist:
             pure_idlist_nbr.append(int(index))
         self.wkv_cw_api.wca_quick_sort(pure_idlist_nbr, 0, len(pure_idlist_nbr) - 1)
-        pure_idlist_nbr.reverse()
+
         self.ira_pure_idlist.clear()
-        for index in pure_idlist_nbr:
+        for index in reversed(pure_idlist_nbr):
             self.ira_pure_idlist.append(str(index))
         del pure_idlist_nbr
         self.ira_max_cnt = len(self.ira_pure_idlist)
@@ -512,7 +512,7 @@ class RepertoAll(object):
 
         image_info_table = PrettyTable(["ImageNumber", "ImageID", "ImageTitle", "ImagePageName"])
         for k, i in enumerate(repo_target_all_list[:require_img_nbr]):
-            image_info_table.add_row([(k + 1), i[0], i[1], dl.FROM_URL_GET_IMG_NAME(i[2]))
+            image_info_table.add_row([(k + 1), i[0], i[1], dl.FROM_URL_GET_IMG_NAME(i[2])])
 
         # damn emoji, maybe dump failed
         try:

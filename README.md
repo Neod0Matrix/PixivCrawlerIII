@@ -23,6 +23,12 @@
 # CHANGELOG
 
     2020/01/20
+    Version: 3.3.1
+    Fixed last month commit bug.
+    Refactor main logic.
+    Server IRA mode add multi-id input.
+
+    2020/01/20
     Version: 3.2.4
     Fixed custom label bug.
     Refactor mode option structure.
@@ -102,11 +108,11 @@
     > -r/--R18        @Ordinary(1) | R18(2), only support Mode RTN\
     > -l/--list       @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN\
     > -s/--sex        @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN\
-    > -i/--id         @Illustrator ID, only support Mode IRA\
+    > -i/--id         @Illustrator ID list, only support Mode IRA\
     >\
     > Example:\
     > python3 pixivcrawleriii.py -m 1 -r 1 -l 1 -s 0\
-    > python3 pixivcrawleriii.py -m 2 -i 0000000
+    > python3 pixivcrawleriii.py -m 2 -i 0000001,0000002,0000003
 
     Notice:
     If the sex option selects male or female, then the list option only can be daily.
