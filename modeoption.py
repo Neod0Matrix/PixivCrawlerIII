@@ -13,6 +13,7 @@
 
 import re
 from prettytable import PrettyTable
+from wkvcwapi import WkvCwApi
 import dataload as dl
 
 class RankingTop(object):
@@ -25,6 +26,10 @@ class RankingTop(object):
         log save path
         result html page file save path
         API lib class instance
+        mode: intercative or server
+        option: ordinary or r18
+        ranking top type
+        sex
     """
     def __init__(self, workdir, log_path, html_path, wkv_cw_api, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_sex_opt='0'):
         """
@@ -40,6 +45,7 @@ class RankingTop(object):
         self.workdir            = workdir
         self.logpath            = log_path
         self.htmlpath           = html_path
+        self.wkv_cw_api         = WkvCwApi(ir_mode) # declare object type
         self.wkv_cw_api         = wkv_cw_api
         self.ir_mode            = ir_mode
         # class inside global variable
@@ -62,12 +68,16 @@ class RankingTop(object):
         img_cnt = 0
 
         if page_opt == dl.PAGE_ORDINARY:
-            img_str = dl.LT_INPUT(dl.HL_CY('crawl ordinary valid target %d, enter you want: ' % whole_nbr))
+            label = 'ordinary'
         elif page_opt == dl.PAGE_R18:
-            img_str = dl.LT_INPUT(dl.HL_CY('crawl R18 vaild target %d, enter you want: ' % whole_nbr))
+            label = 'r18'
+        elif page_opt == dl.PAGE_R18G:
+            label = 'r18g'
         else:
             dl.nolog_raise_arguerr()
             return dl.PUB_E_PARAM_FAIL
+
+        img_str = dl.LT_INPUT(dl.HL_CY('crawl %s valid target %d, enter you want: ' % (label, whole_nbr)))
 
         while not img_str.isdigit():
             img_str = dl.LT_INPUT(dl.HL_CY('input error, enter again(max is %d): ' % whole_nbr))
@@ -91,8 +101,8 @@ class RankingTop(object):
         dwm_opt     = None      # daily/weekly/monthly
 
         if self.ir_mode == dl.MODE_INTERACTIVE:
-            page_opt    = dl.LT_INPUT(dl.HL_CY('select ranking type, ordinary(1) or r18(2): '))
-            sex_opt     = dl.LT_INPUT(dl.HL_CY('select sex favor, normal(0) or male(1) or female(2): '))
+            page_opt    = dl.LT_INPUT(dl.HL_CY('select ranking type, ordinary(1) | r18(2) | r18g(3): '))
+            sex_opt     = dl.LT_INPUT(dl.HL_CY('select sex favor, normal(0) | male(1) | female(2): '))
         elif self.ir_mode == dl.MODE_SERVER:
             page_opt    = self.rtn_r18_arg
             sex_opt     = self.rtn_sex_opt
@@ -111,28 +121,26 @@ class RankingTop(object):
 
             if dwm_opt == dl.RANK_DAILY:
                 if sex_opt == dl.SEX_NORMAL:
-                    req_url = dl.RANK_DAILY_URL
-                    rank_word = dl.DAILY_WORD
+                    req_url     = dl.RANK_DAILY_URL
+                    rank_word   = dl.DAILY_WORD
                 elif sex_opt == dl.SEX_MALE:
-                    req_url = dl.RANK_DAILY_MALE_URL
-                    rank_word = dl.MALE_WORD
+                    req_url     = dl.RANK_DAILY_MALE_URL
+                    rank_word   = dl.MALE_WORD
                 elif sex_opt == dl.SEX_FEMALE:
-                    req_url = dl.RANK_DAILY_FEMALE_URL
-                    rank_word = dl.FEMALE_WORD
+                    req_url     = dl.RANK_DAILY_FEMALE_URL
+                    rank_word   = dl.FEMALE_WORD
                 else:
                     dl.nolog_raise_arguerr()
                     return dl.PUB_E_PARAM_FAIL
-
             elif dwm_opt == dl.RANK_WEEKLY:
-                req_url = dl.RANK_WEEKLY_URL
-                rank_word = dl.WEEKLY_WORD
+                req_url     = dl.RANK_WEEKLY_URL
+                rank_word   = dl.WEEKLY_WORD
             elif dwm_opt == dl.RANK_MONTHLY:
-                req_url = dl.RANK_MONTHLY_URL
-                rank_word = dl.MONTHLY_WORD
+                req_url     = dl.RANK_MONTHLY_URL
+                rank_word   = dl.MONTHLY_WORD
             else:
                 dl.nolog_raise_arguerr()
                 return dl.PUB_E_PARAM_FAIL
-            log_content = 'crawler set target to %s rank top' % rank_word
 
         elif page_opt == dl.PAGE_R18:
             if self.ir_mode == dl.MODE_INTERACTIVE:
@@ -142,36 +150,39 @@ class RankingTop(object):
             else:
                 dl.nolog_raise_arguerr()
                 return dl.PUB_E_PARAM_FAIL
-
             if dwm_opt == dl.RANK_DAILY:
                 if sex_opt == dl.SEX_NORMAL:
-                    req_url = dl.RANK_DAILY_R18_URL
-                    rank_word = dl.DAILY_WORD
+                    req_url     = dl.RANK_DAILY_R18_URL
+                    rank_word   = dl.DAILY_WORD
                 elif sex_opt == dl.SEX_MALE:
-                    req_url = dl.RANK_DAILY_MALE_R18_URL
-                    rank_word = dl.MALE_WORD
+                    req_url     = dl.RANK_DAILY_MALE_R18_URL
+                    rank_word   = dl.MALE_WORD
                 elif sex_opt == dl.SEX_FEMALE:
-                    req_url = dl.RANK_DAILY_FEMALE_R18_URL
-                    rank_word = dl.FEMALE_WORD
+                    req_url     = dl.RANK_DAILY_FEMALE_R18_URL
+                    rank_word   = dl.FEMALE_WORD
                 else:
                     dl.nolog_raise_arguerr()
                     return dl.PUB_E_PARAM_FAIL
-
             elif dwm_opt == dl.RANK_WEEKLY:
-                req_url = dl.RANK_WEEKLY_R18_URL
-                rank_word = dl.WEEKLY_WORD
+                req_url     = dl.RANK_WEEKLY_R18_URL
+                rank_word   = dl.WEEKLY_WORD
             else:
                 dl.nolog_raise_arguerr()
                 return dl.PUB_E_PARAM_FAIL
-            log_content = dl.BY_CB('crawler set target to %s r18 rank top' % rank_word)
+
+        elif page_opt == dl.PAGE_R18G:
+            req_url     = dl.RANK_R18G_URL
+            rank_word   = dl.R18G_WORD
+            dl.LT_PRINT(dl.BR_CB('warning: you choose the r18g rank, hope you know what it means'))
 
         else:
             dl.nolog_raise_arguerr()
             return dl.PUB_E_PARAM_FAIL
 
+        log_content = dl.BY_CB('base select option, set rank target url: [%s]' % req_url)
         self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
         self.rtn_req_url    = req_url
-        self.page_opt        = page_opt
+        self.page_opt       = page_opt
 
         return dl.PUB_E_OK
 
@@ -240,8 +251,7 @@ class RankingTop(object):
         if self.rtn_gather_rankingdata() != dl.PUB_E_OK:
             return dl.PUB_E_FAIL
 
-        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.rtn_target_urls, 
-                                                self.rtn_basepages, self.workdir)
+        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.rtn_target_urls, self.rtn_basepages, self.workdir)
         self.wkv_cw_api.wca_htmlpreview_build(self.workdir, self.htmlpath, self.logpath)
 
 class RepertoAll(object):
@@ -254,6 +264,8 @@ class RepertoAll(object):
         log file name
         result html page file name
         API lib class instance
+        mode: interactive or server
+        target illustrator id
     """
 
     def __init__(self, workdir, log_name, html_name, wkv_cw_api, ir_mode, ext_id=''):
@@ -273,6 +285,7 @@ class RepertoAll(object):
         self.workdir            = workdir + 'illustrepo_' + self.user_input_id
         self.logpath            = self.workdir + log_name
         self.htmlpath           = self.workdir + html_name
+        self.wkv_cw_api         = WkvCwApi(ir_mode) # declare object type
         self.wkv_cw_api         = wkv_cw_api
         self.ir_mode            = ir_mode
         # class inside call global variable
@@ -540,6 +553,5 @@ class RepertoAll(object):
         if self.ira_crawl_allpage_target() != dl.PUB_E_OK:
             return dl.PUB_E_FAIL
 
-        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.ira_target_capture, 
-                                                self.ira_basepages, self.workdir)
+        self.wkv_cw_api.wca_download_alltarget(self.logpath, self.ira_target_capture, self.ira_basepages, self.workdir)
         self.wkv_cw_api.wca_htmlpreview_build(self.workdir, self.htmlpath, self.logpath)

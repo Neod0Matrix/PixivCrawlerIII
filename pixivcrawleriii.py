@@ -55,14 +55,14 @@ def main():
                     exit(dl.PUB_E_OK)
 
         if select_option == dl.SELECT_RTN:
-            dl.LT_PRINT(dl.BY_CB('Mode: [Ranking Top N]'))
+            dl.LT_PRINT(dl.BY_CB('mode: [Ranking Top N]'))
             rtn_instance = rtn(dl.RANK_DIR, dl.LOG_PATH, 
                 dl.HTML_PATH, api_instance, mode_interactive_server, 
                 rtn_page_opt, rtn_rank_opt, rtn_sex_opt)
             rtn_instance.start()
 
         elif select_option == dl.SELECT_IRA:
-            dl.LT_PRINT(dl.BY_CB('Mode: [Illustrator Repository All]'))
+            dl.LT_PRINT(dl.BY_CB('mode: [Illustrator Repository All]'))
             if mode_interactive_server == dl.MODE_SERVER:
                 for ira_illust_id in ira_illust_id_list:
                     ira_instance = ira(dl.g_dl_work_dir, dl.LOG_NAME, 
@@ -77,7 +77,7 @@ def main():
             print(dl.HL_CR(WkvCwApi.__doc__))
 
         elif select_option == dl.SELECT_EXIT:
-            dl.LT_PRINT(dl.BY_CB("User exit program"))
+            dl.LT_PRINT(dl.BY_CB("user exit program"))
             dl.crawler_logo()         # exit print logo
             exit(dl.PUB_E_OK)
 

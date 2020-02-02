@@ -36,8 +36,8 @@ class WkvCwApi(object):
     |       ██║     ██║██╔╝ ██╗██║ ╚████╔╝ ╚██████╗██║  ██║██║  ██║╚███╔███╔╝███████╗███████╗██║  ██║██║██║██║      |
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
-    |       Copyright (c) 2017-2020 T.WKVER </MATRIX>. All rights reserved.                                         |
-    |       Version: 3.3.1 LTE                                                                                      |
+    |       Copyright (c) 2017-2020 T.WKVER | </MATRIX>. All rights reserved.                                       |
+    |       Version: 3.3.2 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -48,7 +48,7 @@ class WkvCwApi(object):
     |       Server Mode Help Content                                                                                |
     |       -h/--help      @Print usage page                                                                        |
     |       -m/--mode      @Set mode, RTN(1) | IRA(2)                                                               |
-    |       -r/--R18       @Ordinary(1) | R18(2), only support Mode RTN                                             |
+    |       -r/--R18       @Ordinary(1) | R18(2) | R18G(3), only support Mode RTN                                   |
     |       -l/--list      @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN                                |
     |       -s/--sex       @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN                             |
     |       -i/--id        @Illustrator ID, only support Mode IRA                                                   |
@@ -130,7 +130,7 @@ class WkvCwApi(object):
 
             if self.ir_mode == dl.MODE_INTERACTIVE:
                 check = dl.LT_INPUT(dl.HL_CY("get user account info ok, check: \n"
-                    "[*Username] %s\n[*Password] %s\n"
+                    "[*username] %s\n[*password] %s\n"
                     "Is that correct? (Y/N): " % (username, passwd)))
 
                 # if user judge info are error, delete old AES file and record new info
@@ -654,7 +654,7 @@ class WkvCwApi(object):
             :param **kwargs:    pythonic variable argument
             :return:            none
             """
-            log_content = "Launch timer decorator, start download threads timer"
+            log_content = "launch timer decorator, start download threads timer"
             self.wca_logprowork(log_path, log_content)
             starttime = time.time()
 
@@ -664,7 +664,7 @@ class WkvCwApi(object):
             elapesd_time = endtime - starttime
             average_download_speed = float(WkvCwApi._datastream_pool / elapesd_time)
             log_content = (dl.BY_CB(
-                "All of threads reclaim, total download data-stream size: %0.2fMB, "
+                "all of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
                 % (float(WkvCwApi._datastream_pool / 1024), average_download_speed)))
             self.wca_logprowork(log_path, log_content)
@@ -796,5 +796,5 @@ class WkvCwApi(object):
             "</body>\r\n"
             "</html>")
         html_file.close()
-        log_content = 'Image HTML browse page generate finished'
+        log_content = 'image browse html file generate ok'
         self.wca_logprowork(log_path, log_content)

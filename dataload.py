@@ -18,7 +18,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.3.1'
+VERSION             = '3.3.2'
 
 # operation result status code
 PUB_E_OK            = 0
@@ -45,6 +45,7 @@ RANK_MONTHLY        = '3'
 # ranking top page type
 PAGE_ORDINARY       = '1'
 PAGE_R18            = '2'
+PAGE_R18G           = '3'
 
 # sex word
 SEX_NORMAL  = '0'
@@ -52,10 +53,10 @@ SEX_MALE    = '1'
 SEX_FEMALE  = '2'
 
 NORMAL = "\033[0m"
-HL_CR = lambda pcode: "\033[0;31;40m" + pcode + NORMAL      # code red, use in logo
-BR_CB = lambda pcode: "\033[7;31m" + pcode + NORMAL         # background red, use in error or failed operate
-HL_CY = lambda pcode: "\033[0;33;40m" + pcode + NORMAL      # code yellow, use in ask question
-BY_CB = lambda pcode: "\033[7;33;44m" + pcode + NORMAL      # code blue and background yellow, use in important info
+HL_CR = lambda pcode: "\033[0;31;40m"   + pcode + NORMAL    # code red, use in logo
+BR_CB = lambda pcode: "\033[7;31m"      + pcode + NORMAL    # background red, use in error or failed operate
+HL_CY = lambda pcode: "\033[0;33;40m"   + pcode + NORMAL    # code yellow, use in ask question
+BY_CB = lambda pcode: "\033[7;33;44m"   + pcode + NORMAL    # code blue and background yellow, use in important info
 
 # logfile log real-time operation
 base_time = time.time()
@@ -158,7 +159,7 @@ MALE_WORD               = 'male'
 FEMALE_WORD             = 'female'
 MALE_R18_WORD           = 'male_r18'
 FEMALE_R18_WORD         = 'female_r18'
-R18_REF_WORD            = '&ref=rn-h-r18-3'                # debug use, browser tool has catched it
+R18G_WORD               = 'r18g'
 RANK_DAILY_URL          = RANKING_URL + DAILY_WORD
 RANK_DAILY_MALE_URL     = RANKING_URL + MALE_WORD
 RANK_DAILY_FEMALE_URL   = RANKING_URL + FEMALE_WORD
@@ -168,6 +169,7 @@ RANK_DAILY_R18_URL      = RANK_DAILY_URL + R18_WORD
 RANK_DAILY_MALE_R18_URL = RANKING_URL + MALE_R18_WORD
 RANK_DAILY_FEMALE_R18_URL = RANKING_URL + FEMALE_R18_WORD
 RANK_WEEKLY_R18_URL     = RANK_WEEKLY_URL + R18_WORD
+RANK_R18G_URL           = RANKING_URL + R18G_WORD
 
 # base artwork mainpage get origin image url
 BASEPAGE_URL            = lambda aid: 'http://pixiv.net/artworks/%s' % aid

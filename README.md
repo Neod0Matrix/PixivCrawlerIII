@@ -23,10 +23,12 @@
 # CHANGELOG
 
     2020/01/20
-    Version: 3.3.1
+    Version: 3.3.2
     Fixed last month commit bug.
     Refactor main logic.
     Server IRA mode add multi-id input.
+    Add class declare for mode option class init.
+    Add R18G rank in RTN mode.
 
     2020/01/20
     Version: 3.2.4
@@ -105,7 +107,7 @@
     > Arguments:\
     > -h/--help       @Print usage page\
     > -m/--mode       @Set mode, RTN(1) | IRA(2)\
-    > -r/--R18        @Ordinary(1) | R18(2), only support Mode RTN\
+    > -r/--R18        @Ordinary(1) | R18(2) | R18G(3), only support Mode RTN\
     > -l/--list       @Daily(1) | Weekly(2) | Monthly(3), only support Mode RTN\
     > -s/--sex        @Nomal(0) | Male(1) | Female(2) favor, only support Mode RTN\
     > -i/--id         @Illustrator ID list, only support Mode IRA\
