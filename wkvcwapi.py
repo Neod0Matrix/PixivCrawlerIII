@@ -185,25 +185,25 @@ class WkvCwApi(object):
 
         return string
 
-    def wca_logprowork(self, log_path, log_content, withtime=True):
+    def wca_logprowork(self, logpath, log_content, withtime=True):
         """Universal work log save
 
         @@API that allows external calls
         Notice: If here print series fucntion raise UnicodeEncodeError, it must web page 
         include emoji symbol encode title when use prettytable to package title info
-        :param log_path:    log save path
+        :param logpath:     log save path
         :param log_content: log save content
         :param withtime:    default parameter, print and save with real time or not
         :return:            none
         """
         # if log path is none, just print message and return, no log action
-        if log_path == None:
+        if logpath == None:
             dl.LT_PRINT(log_content)
             return
 
         # add context to the file use option 'a+'
         # write content may have some not utf8 code, example Japanese
-        log_fd = open(log_path, 'a+', encoding='utf-8')
+        log_fd = open(logpath, 'a+', encoding='utf-8')
 
         if withtime == True:
             dl.LT_PRINT(log_content)
@@ -222,11 +222,11 @@ class WkvCwApi(object):
             log_fd.write(log_content + '\n')
         log_fd.close()
 
-    def wca_mkworkdir(self, log_path, folder):
+    def wca_mkworkdir(self, logpath, folder):
         """Create a crawler work directory
 
         @@API that allows external calls
-        :param log_path:    log save path
+        :param logpath:     log save path
         :param folder:      folder create path
         :return:            folder create path
         """
@@ -240,9 +240,9 @@ class WkvCwApi(object):
             log_content = 'target folder has already existed'
 
         # log file first line here
-        if os.path.exists(log_path):
-            os.remove(log_path)
-        self.wca_logprowork(log_path, log_content)
+        if os.path.exists(logpath):
+            os.remove(logpath)
+        self.wca_logprowork(logpath, log_content)
 
     @staticmethod
     def _partition(array, l, r):
@@ -282,7 +282,7 @@ class WkvCwApi(object):
             self.wca_quick_sort(array, q + 1, r)
 
     def wca_url_request_handler(self, target_url, post_data, timeout, 
-                                target_page_word, log_path):
+                                target_page_word, logpath):
         """Universal URL request format handler
 
         @@API that allows external calls
@@ -291,7 +291,7 @@ class WkvCwApi(object):
         :param post_data:           post way data
         :param timeout:             request timeout, suggest 30s
         :param target_page_word:    target page symbol word
-        :param log_path:            log save path
+        :param logpath:             log save path
         :return:                    request result response(raw)
         """
         try:
@@ -300,14 +300,14 @@ class WkvCwApi(object):
                                         timeout=timeout)
         except Exception as e:
             log_content = dl.BR_CB('%s response failed, error: %s' % (target_page_word, str(e)))
-            self.wca_logprowork(log_path, log_content)
+            self.wca_logprowork(logpath, log_content)
             return dl.PUB_E_RESPONSE_FAIL
 
         if response.getcode() == dl.HTTP_REP_OK_CODE:
             log_content = target_page_word + ' response ok'
         else:
             log_content = dl.BR_CB(target_page_word + ' return code %d' % response.getcode())
-        self.wca_logprowork(log_path, log_content)
+        self.wca_logprowork(logpath, log_content)
 
         return response
 
@@ -325,7 +325,7 @@ class WkvCwApi(object):
                                                 post_data=None, # cannot set data when get post key
                                                 timeout=30, 
                                                 target_page_word='post-key',
-                                                log_path=None)
+                                                logpath=None)
 
         web_src = response.read().decode("UTF-8", "ignore")
         # debug recaptcha v3 token use
@@ -428,7 +428,7 @@ class WkvCwApi(object):
                                                 post_data=self.postway_data,
                                                 timeout=30, 
                                                 target_page_word='login',
-                                                log_path=None)
+                                                logpath=None)
         if response == dl.PUB_E_RESPONSE_FAIL:
             dl.LT_PRINT(dl.BR_CB('login response return a boolean FALSE, exit'))
             exit(dl.PUB_E_RESPONSE_FAIL)
@@ -519,7 +519,7 @@ class WkvCwApi(object):
         return {'url lst': tgt_url_lst, 'info lst': img_info_lst}
 
     @retry
-    def _save_oneimage(self, index, url, basepages, img_savepath, log_path):
+    def _save_oneimage(self, index, url, basepages, img_savepath, logpath):
         """Download one target image, then multi-thread will call here
 
         Add retry decorator, if first try failed, it will auto-retry
@@ -527,7 +527,7 @@ class WkvCwApi(object):
         :param url:             one image url
         :param basepages:       referer basic pages list
         :param img_savepath:    image save path
-        :param log_path:        log save path
+        :param logpath:         log save path
         :return:                none
         """
         img_datatype    = 'png'
@@ -579,18 +579,18 @@ class WkvCwApi(object):
         event_t    = threading.Event()    # use event let excess threads wait
         lock_t     = threading.Lock()     # thread lock
 
-        def __init__(self, index, url, basepages, workdir, log_path):
+        def __init__(self, index, url, basepages, workdir, logpath):
             """Provide class arguments
 
             :param index, url, basepages, workdir:  function _save_oneimage param
-            :param log_path:                        log save path
+            :param logpath:                         log save path
             """
             threading.Thread.__init__(self)         # callable class init
             self.index      = index
             self.url        = url
             self.basepages  = basepages
             self.workdir    = workdir
-            self.logpath    = log_path
+            self.logpath    = logpath
 
         def run(self):
             """Overwrite threading.thread run() method
@@ -645,20 +645,20 @@ class WkvCwApi(object):
         """
 
         @wraps(origin_func)     # reserve property of original function 
-        def _wrapper(self, log_path, *args, **kwargs):
+        def _wrapper(self, logpath, *args, **kwargs):
             """Timer wrapper
 
             Mainly for the function download_alltarget() to achieve timing expansion
-            :param log_path:    log save path
+            :param logpath:     log save path
             :param *args:       pythonic variable argument
             :param **kwargs:    pythonic variable argument
             :return:            none
             """
             log_content = "launch timer decorator, start download threads timer"
-            self.wca_logprowork(log_path, log_content)
+            self.wca_logprowork(logpath, log_content)
             starttime = time.time()
 
-            origin_func(self, log_path, *args, **kwargs)    # packaged original function 
+            origin_func(self, logpath, *args, **kwargs)    # packaged original function 
 
             endtime = time.time()
             elapesd_time = endtime - starttime
@@ -667,26 +667,26 @@ class WkvCwApi(object):
                 "all of threads reclaim, total download data-stream size: %0.2fMB, "
                 "average download speed: %0.2fkB/s"
                 % (float(WkvCwApi._datastream_pool / 1024), average_download_speed)))
-            self.wca_logprowork(log_path, log_content)
+            self.wca_logprowork(logpath, log_content)
             WkvCwApi._datastream_pool = 0    # clear global data stream list
 
         return _wrapper
 
     @wca_timer_decorator
-    def wca_download_alltarget(self, log_path, urls, basepages, workdir):
+    def wca_download_alltarget(self, logpath, urls, basepages, workdir):
         """Multi-process download all image
 
         @@API that allows external calls
         :param urls:        all original images urls
         :param basepages:   all referer basic pages
         :param workdir:     work directory
-        :param log_path:    log save path
+        :param logpath:     log save path
         :return:            none
         """
         thread_block_flag = False               # thread blocking flag
         alive_thread_cnt = queueLength = len(urls)
         log_content = dl.BY_CB('hit %d target(s), start download task(s)' % queueLength)
-        self.wca_logprowork(log_path, log_content)
+        self.wca_logprowork(logpath, log_content)
 
         # capture timeout and the user interrupt fault and exit the failed thread
         try:
@@ -703,7 +703,7 @@ class WkvCwApi(object):
                     self._MultiThreading.lock_t.release()
 
                 # build overwrite threading.Thread object
-                sub_thread = self._MultiThreading(i, one_url, basepages, workdir, log_path)
+                sub_thread = self._MultiThreading(i, one_url, basepages, workdir, logpath)
                 # set every download sub-process daemon property
                 # set false, then if you exit one thread, others threads will not end
                 # set true, quit one is quit all
@@ -741,7 +741,7 @@ class WkvCwApi(object):
         except KeyboardInterrupt:
             print(dl.BY_CB(', user interrupt a thread, exit all threads'))
 
-    def wca_htmlpreview_build(self, workdir, html_path, log_path):
+    def wca_htmlpreview_build(self, workdir, html_path, logpath):
         """Build a html file to browse image
 
         @@API that allows external calls
@@ -753,7 +753,7 @@ class WkvCwApi(object):
         :param self:        class self
         :param workdir:     work directory
         :param html_path:   html file save path
-        :param log_path:    log save path
+        :param logpath:     log save path
         :return:            none
         """
         html_file = open(html_path, "w")
@@ -797,4 +797,4 @@ class WkvCwApi(object):
             "</html>")
         html_file.close()
         log_content = 'image browse html file generate ok'
-        self.wca_logprowork(log_path, log_content)
+        self.wca_logprowork(logpath, log_content)

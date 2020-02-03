@@ -31,10 +31,10 @@ class RankingTop(object):
         ranking top type
         sex
     """
-    def __init__(self, workdir, log_path, html_path, wkv_cw_api, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_sex_opt='0'):
+    def __init__(self, workdir, logpath, html_path, wkv_cw_api, ir_mode, rtn_r18_arg='', rtn_rank_type='', rtn_sex_opt='0'):
         """
         :param workdir:         work directory
-        :param log_path:        log save path
+        :param logpath:        log save path
         :param html_path:       html save path
         :param wkv_cw_api:      API library class instance
         :param ir_mode:         interactive mode or server mode
@@ -43,7 +43,7 @@ class RankingTop(object):
         :param rtn_sex_opt:     RTN male or female favor setting
         """
         self.workdir            = workdir
-        self.logpath            = log_path
+        self.logpath            = logpath
         self.htmlpath           = html_path
         self.wkv_cw_api         = WkvCwApi(ir_mode) # declare object type
         self.wkv_cw_api         = wkv_cw_api
@@ -195,7 +195,7 @@ class RankingTop(object):
                                                         post_data=self.wkv_cw_api.getway_data, 
                                                         timeout=30, 
                                                         target_page_word='rankpage',
-                                                        log_path=self.logpath)
+                                                        logpath=self.logpath)
 
         # size info in webpage source
         web_src = response.read().decode("UTF-8", "ignore")
@@ -306,7 +306,7 @@ class RepertoAll(object):
                                                         post_data=self.wkv_cw_api.getway_data, 
                                                         timeout=30, 
                                                         target_page_word='ajaxpage',
-                                                        log_path=self.logpath)
+                                                        logpath=self.logpath)
 
         # get artworks id list
         web_src = response.read().decode("UTF-8", "ignore")
@@ -342,11 +342,15 @@ class RepertoAll(object):
         self.ira_max_cnt = len(self.ira_pure_idlist)
 
         # get author name from member-main-page
-        response = self.wkv_cw_api.wca_url_request_handler(target_url=dl.USERS_ARTWORKS_URL(self.user_input_id),
+        illust_mainpage_url = dl.USERS_ARTWORKS_URL(self.user_input_id)
+        log_content = dl.HL_CY('crawl illustrator url: [%s]' % illust_mainpage_url)
+        self.wkv_cw_api.wca_logprowork(self.logpath, log_content)
+
+        response = self.wkv_cw_api.wca_url_request_handler(target_url=illust_mainpage_url,
                                                         post_data=self.wkv_cw_api.getway_data, 
                                                         timeout=30, 
                                                         target_page_word='mainpage',
-                                                        log_path=self.logpath)
+                                                        logpath=self.logpath)
 
         # match illustrator name
         web_src = response.read().decode("UTF-8", "ignore")
@@ -374,7 +378,7 @@ class RepertoAll(object):
                                                         post_data=self.wkv_cw_api.getway_data, 
                                                         timeout=30, 
                                                         target_page_word='subpage %d' % index,
-                                                        log_path=self.logpath)
+                                                        logpath=self.logpath)
 
         # 20181002 event effect: cannot get web source, this web_src is server return raw json data
         web_src = response.read().decode("UTF-8", "ignore")
