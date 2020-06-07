@@ -37,7 +37,7 @@ class WkvCwApi(object):
     |       ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝╚═╝      |
     |                                                                                                               |
     |       Copyright (c) 2017-2020 T.WKVER | </MATRIX>. All rights reserved.                                       |
-    |       Version: 3.3.2 LTE                                                                                      |
+    |       Version: 3.3.3 LTE                                                                                      |
     |       Code by </MATRIX>@Neod Anderjon(LeaderN)                                                                |
     |       PixivCrawlerIII Help Page                                                                               |
     |       1.rtn  ---     RankingTopN, crawl Pixiv daily/weekly/month ranking top artworks                         |
@@ -301,7 +301,7 @@ class WkvCwApi(object):
         except Exception as e:
             log_content = dl.BR_CB('%s response failed, error: %s' % (target_page_word, str(e)))
             self.wca_logprowork(logpath, log_content)
-            return dl.PUB_E_RESPONSE_FAIL
+            exit(dl.PUB_E_RESPONSE_FAIL)        # can't process error, directly exit
 
         if response.getcode() == dl.HTTP_REP_OK_CODE:
             log_content = target_page_word + ' response ok'
@@ -378,6 +378,8 @@ class WkvCwApi(object):
             return cookie_jar
 
         dl.LT_PRINT('start selenium webdriver')
+        dl.LT_PRINT('target page: %s' % url)
+
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')               # hide window
         chrome_options.add_argument('--disable-extensions')     # disable chrome externsions
@@ -394,10 +396,9 @@ class WkvCwApi(object):
         driver.close()
         dl.LT_PRINT('stop selenium webdriver')
 
-        ## dl.LT_PRINT('get cookies:\n%s' % json.dumps(cookies, sort_keys=True, indent=4))
         # save cookies to file
         with open(cache_path, "w") as fp:
-            json.dump(cookies, fp)
+            json.dump(cookies, fp, sort_keys=True, indent=4)
         # package to jar type
         for cookie in cookies:
             cookie_jar.set(cookie['name'], cookie['value'])

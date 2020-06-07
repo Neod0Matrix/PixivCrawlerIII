@@ -1,5 +1,5 @@
 ﻿# code by </MATRIX>@Neod Anderjon
-# don't upload python compile cache and private info files		
+# don't upload python compile cache and private info files
 
 __pycache__/
 .dist/
@@ -10,4 +10,4 @@ __pycache__/
 build/
 dist/
 [cmder_root]/
-.pixiv_cookies.txt
+.pixiv_cookies.json

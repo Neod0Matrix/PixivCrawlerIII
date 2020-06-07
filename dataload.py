@@ -18,7 +18,7 @@ PROJECT_NAME        = 'PixivCrawlerIII'
 DEVELOPER           = 'Neod Anderjon(LeaderN)'
 LABORATORY          = 'T.WKVER'
 ORGANIZATION        = '</MATRIX>'
-VERSION             = '3.3.2'
+VERSION             = '3.3.3'
 
 # operation result status code
 PUB_E_OK            = 0
@@ -134,7 +134,7 @@ HTML_PATH           = RANK_DIR + HTML_NAME
 
 # selenium method use, you need to replace to your own chromedriver path
 chrome_user_data_dir    = 'C:\\Users\\neod-anderjon\\AppData\\Local\\Google\\Chrome\\User Data'
-local_cache_cookie_path = os.getcwd() + '/.pixiv_cookies.txt'
+local_cache_cookie_path = os.getcwd() + '/.pixiv_cookies.json'
 
 # login and request image https proxy
 WWW_HOST_URL            = "www.pixiv.net"

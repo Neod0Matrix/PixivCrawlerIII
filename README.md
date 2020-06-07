@@ -22,6 +22,11 @@
 
 # CHANGELOG
 
+    2020/06/07
+    Version: 3.3.3
+    Selenium crawled the pixiv homepage cookie ok, 
+    but the login return to the server is invalid, not resolved.
+
     2020/02/03
     Version: 3.3.2
     Fixed last month commit bug.
@@ -168,3 +173,6 @@
     You need to configure and install chromedriver according to the 
     official Selenium tutorial(https://selenium-python.readthedocs.io/index.html) 
     in the corresponding system environment and modify its path in the dataload.py(chrome_user_data_dir).
+
+    If you update chrome in your environment, please update the chromedriver to the same version
+    in page http://chromedriver.storage.googleapis.com/index.html
